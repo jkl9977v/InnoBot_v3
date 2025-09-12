@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC
+        "-//mybatis.org//DTD Mapper 3.0//EN"
+     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.innochatbot.admin.mapper.DepartmentMapper">
+
+<insert id="departmentInsert" parameterType="departmentDTO">
+insert into department(department_id, department_name)
+values (#{departmentId}, #{departmentName})
+</insert>
+
+<select id="departmentCount" resultType="Integer">
+select count(department_id) from department
+</select>
+
+<select id="departmentList" resultType="departmentDTO" parameterType="StartEndPageDTO">
+select * from (
+select row_number() over (order by department_id) as rn,
+department_id, department_name
+from department
+<if test="searchWord!=null">
+where
+department_name like concat('%',#{searchWord},'%')
+</if>
+) as sub 
+<if test="(startRow!=0 and endRow!=0) and (startRow!=null and endRow!=null)">
+ where rn 
+ between #{startRow} and #{endRow}
+</if>
+</select>
+
+<select id="departmentDetail" parameterType="String" resultType="departmentDTO">
+select * from department
+where department_id=#{departmentId}
+</select>
+
+<update id="departmentUpdate" parameterType="departmentDTO">
+update department
+set department_name=#{departmentName}
+where department_Id=#{departmentId}
+</update>
+
+<delete id="departmentDelete" parameterType="string">
+delete from department
+where department_id = #{departmentId}
+</delete>
+
+</mapper>

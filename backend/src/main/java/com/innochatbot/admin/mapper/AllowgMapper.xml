@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC
+        "-//mybatis.org//DTD Mapper 3.0//EN"
+     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.innochatbot.admin.mapper.AllowgMapper">
+
+<insert id="allowgInsert" parameterType="gradeDTO">
+insert into allow_grade (allowg_id, allowg_name, grade_id)
+values(#{allowgId}, #{allowgName}, #{gradeId})
+</insert>
+
+<select id="allowgCount" resultType="Integer">
+select count(distinct allowg_id) from allow_grade
+</select>
+
+<select id="allowgList" parameterType="StartEndPageDTO" resultType="gradeDTO">
+select * from (
+select row_number() over (order by allowg_id) as rn
+, ag.allowg_id, ag.allowg_name
+, g.grade_id, g.grade_name, g.grade_level
+from allow_grade ag
+join grade g on ag.grade_id = g.grade_id
+join (
+	select ag2.allowg_id, min(g2.grade_level) as min_grade_level
+	from allow_grade ag2
+	join grade g2 on ag2.grade_id = g2.grade_id
+	group by ag2.allowg_id
+) as subb
+on ag.allowg_id = subb.allowg_id and g.grade_level = subb.min_grade_level
+<if test="searchWord!=null">
+where
+allowg_name like concat('%',#{searchWord},'%')
+</if>
+) as sub 
+where rn between #{startRow} and #{endRow}
+</select>
+
+<select id="allowgDetail" parameterType="String" resultType="gradeDTO">
+select *from 
+( select 
+row_number() over (order by grade_id) rn
+, allowg_id, allowg_name
+, ag.grade_id, grade_name, grade_level
+from allow_grade ag 
+join grade g on
+ag.grade_id = g.grade_id 
+where allowg_id=#{allowgId} 
+) as sub where rn=1
+</select>
+
+<update id="allowgUpdate" parameterType="gradeDTO">
+update allow_grade 
+set allowg_name=#{allowgName}
+, grade_id=#{gradeId}
+where allowg_id=#{allowgId}
+</update>
+
+<delete id="allowgDelete" parameterType="String">
+delete from allow_grade
+where allowg_id=#{allowgId}
+</delete>
+
+</mapper>

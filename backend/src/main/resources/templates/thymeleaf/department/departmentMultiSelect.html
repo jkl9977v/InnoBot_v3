@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+  	<link rel="icon" type="image/svg+xml" href="/img/tiumBot1.png" />
+  	<title>TiumBotAdmin</title>
+    <!-- Simple bar CSS -->
+    <link rel="stylesheet" href="/css/simplebar.css">
+    <!-- Fonts CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,100;0,200;0,300;0,400;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <!-- Icons CSS -->
+    <link rel="stylesheet" href="/css/feather.css">
+    <!-- Date Range Picker CSS -->
+    <link rel="stylesheet" href="/css/daterangepicker.css">
+    <!-- App CSS -->
+    <link rel="stylesheet" href="/css/app-light.css" id="lightTheme">
+    
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.1.min.js"></script>
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/popper.min.js"></script>
+    <script src="/js/moment.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="/js/simplebar.min.js"></script>
+    <script src='/js/daterangepicker.js'></script>
+    <script src='/js/jquery.stickOnScroll.js'></script>
+    <script src="/js/tinycolor-min.js"></script>
+    <script src="/js/config.js"></script>
+    <script src="/js/apps.js"></script>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-56159088-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+
+      function gtag()
+      {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('config', 'UA-56159088-1');
+    </script>
+    <script src="/js/checkBox.js"></script>
+<script type="text/javascript">
+$(function(){
+	//값을 부모창으로 전송
+	$("#selectComplite").click(function(){
+		const selectedDeps = [];
+		$('input[name="boxs"]:checked').each(function(){
+			selectedDeps.push({ //값을 객체로 만들어서 배열에 추가
+				departmentId: $(this).data('departmentid'),
+				departmentName: $(this).data('departmentname')
+			});
+		});
+		if(window.opener && typeof window.opener.setSelectedDepartments === 'function'){
+			window.opener.setSelectedDepartments(selectedDeps); //JSON 배열 전달
+		}
+		window.self.close();
+	});	
+});
+</script>
+  </head>
+  <body >
+    <div class="wrapper">
+
+      <main role="main" class="main-content">
+        <div class="container-fluid">
+          <div class="row justify-content-center">
+            <div class="col-12">
+              <div class="row align-items-center my-4">
+                <div class="col">
+                  <h2 class="h3 mb-0 page-title">부서 검색</h2>
+                </div>
+                <div class="col-auto">
+                  <button type="button" class="btn btn-primary" id="selectComplite">✔ 선택 완료</button>
+                </div>
+              </div>
+               
+              <!-- table -->
+     <div class="card shadow">
+      <div class="card-body">
+        <div id="dataTable-1_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
+
+          <!-- 상단 form 필터 -->
+         <form action="/admin/department/departmentMultiSelect" method="get" class="form-inline mb-3">
+
+  <div class="form-group mr-2">
+    <label class="mr-1">검색어</label>
+    <input type="text" class="form-control form-control-sm" name="searchWord" th:value="${searchWord}">
+  </div>
+
+  <div class="form-group mr-2">
+    <label class="mr-1">행 수</label>
+    <select class="form-control form-control-sm" name="limitRow">
+      <option value="10" th:selected="${limitRow==10 or limitRow == null or limitRow==''}">10</option>
+      <option value="15" th:selected="${limitRow==15}">15</option>
+      <option value="20" th:selected="${limitRow==20}">20</option>
+      <option value="25" th:selected="${limitRow==25}">25</option>
+      <option value="30" th:selected="${limitRow==30}">30</option>
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-sm btn-primary ml-2">검색</button>
+</form>
+
+<!-- 테이블 본문 -->
+<div class="row">
+  <div class="col-sm-12">
+    <table class="table datatables dataTable no-footer" id="dataTable-1" role="grid" > <!-- -->
+      <thead>
+        <tr role="row">
+          <th><input type="checkbox" id="checkBoxs"></th>
+          <th>부서명</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="dto : ${list}">
+          <td> <input type="checkbox" id="departmentCheck" name="boxs" 
+          th:attr="data-departmentid=${dto.departmentId}, data-departmentname=${dto.departmentName}">
+      	  </td>
+          <td>[[${dto.departmentName}]]</td>
+         
+        </tr>
+        <tr th:if="${list.size() <= 0}">
+          <td colspan="3" class="text-center">검색 결과가 없습니다.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+        </div> <!-- dataTable wrapper -->
+      </div> <!-- card-body -->
+    </div> <!-- card -->
+             
+            </div> <!-- .col-12 -->
+          </div> <!-- .row -->
+        </div> <!-- .container-fluid -->
+
+      </main> <!-- main -->
+    </div> <!-- .wrapper -->
+
+  </body>
+</html>
+

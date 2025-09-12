@@ -1,0 +1,37 @@
+version: "3.9"
+
+services:
+  # 1) 데이터베이스 컨테이너
+  db:
+    image: mariadb:11
+    environment:
+      MYSQL_ROOT_PASSWORD: pass
+      MYSQL_DATABASE: rag
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+#      - ./docs:/docs
+      - "D:/InnoBot_v3/docs:/docs"
+
+  # 2) 백엔드(Spring Boot) 컨테이너
+  backend:
+    build:
+      context: ./backend        #Spring Boot 프로젝트가 있는 폴더
+      dockerfile: Dockerfile    #아래에서 만들 Dockerfile 사용
+    image: inno-chatbot-backend #(선택) 이름 지정
+    env_file:
+      - .env                    #OPENAI_API_KEY, (필요 시) 기타 환경변수
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mariadb://db:3306/rag
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: pass
+      JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8
+      #OPENAI_API_KEY: ${OPENAI_API_KEY} #는 .env로부터 자동 주입
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+volumes:
+  dbdata: {}

@@ -1,0 +1,7 @@
+{
+  "/admin/training-data/page": "app/admin/training-data/page.js",
+  "/admin/embedding-setting/page": "app/admin/embedding-setting/page.js",
+  "/admin/user/userList/page": "app/admin/user/userList/page.js",
+  "/admin/file/fileList/page": "app/admin/file/fileList/page.js",
+  "/admin/analytics/page": "app/admin/analytics/page.js"
+}

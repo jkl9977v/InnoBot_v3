@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC
+        "-//mybatis.org//DTD Mapper 3.0//EN"
+     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.innochatbot.admin.mapper.UserMapper">
+
+<resultMap id="userDepGraMap" type="userDTO">
+	<id property="userNum" column="user_num" javaType="java.lang.String"/>
+	<result property="userName" column="user_name" javaType="java.lang.String"/>
+	<result property="userId" column="user_id" javaType="java.lang.String"/>
+	<result property="userPw" column="user_pw" javaType="java.lang.String"/>
+	<result property="departmentId" column="department_id" javaType="java.lang.String"/>
+	<result property="gradeId" column="grade_id" javaType="java.lang.String"/>
+	<result property="manager" column="manager" javaType="java.lang.String"/>
+	
+	<association property="gradeDTO" javaType="com.innochatbot.admin.dto.GradeDTO" autoMapping="true">
+		<id property="gradeId" column="grade_id" javaType="java.lang.String"/>
+		<result property="gradeName" column="grade_name" javaType="java.lang.String"/>
+	</association>
+	
+	<association property="departmentDTO" javaType="com.innochatbot.admin.dto.DepartmentDTO" autoMapping="true">
+		<id property="departmentId" column="department_id" javaType="java.lang.String"/>
+		<result property="departmentName" column="department_name" javaType="java.lang.String"/>
+	</association>
+</resultMap>
+
+<select id="userList" resultMap="userDepGraMap" parameterType="StartEndPageDTO">
+select * from (
+select row_number() over (order by user_num) as rn
+, user_num, user_name, user_id, manager
+, u.department_id, department_name as department_name
+, u.grade_id, grade_name as grade_name
+ from user u
+ left join department d 
+ on u.department_id = d.department_id
+ left join grade g
+ on u.grade_id = g.grade_id
+<if test="(searchWord != null and searchWord != '') or (kind != null and kind != '' ) or (kind2 != null and kind2 != '' ) ">
+where 
+	<if test="searchWord != null and searchWord != ''">
+	(user_name like concat('%',#{searchWord},'%')
+	or user_id like concat('%',#{searchWord},'%')
+	)
+	</if>
+	<if test="(searchWord != null and searchWord != '') and 
+	((kind != null and kind != '') or (kind2 != null and kind2 != '' ))">and</if>
+	<if test="kind != null and kind != ''">
+	u.department_id = #{kind}
+	</if>
+	<if test="kind != null and  kind != ''and kind2 != null and kind2 != ''">and</if>
+	<if test="kind2 != null and kind2 != ''">
+	u.grade_id = #{kind2}
+	</if>
+</if>
+) as sub where rn between #{startRow} and #{endRow}
+</select>
+
+<select id="userDetail" resultMap="userDepGraMap" parameterType="string">
+select user_num, user_name
+, user_id, user_pw, manager
+, u.department_id, department_name as department_name
+, g.grade_id, grade_name as grade_name, grade_level as gradeLevel
+ from user u
+ left join department d
+ on u.department_id = d.department_id
+ left join grade g
+ on u.grade_id = g.grade_id 
+where user_num=#{userNum}
+</select>
+
+<select id="userCount" resultType="Integer">
+select count(user_num) from user
+</select>
+
+<insert id="userInsert" parameterType="userDTO">
+insert into user (user_num, user_name, user_id, user_pw, department_id, grade_id, manager)
+values(#{userNum}, #{userName}, #{userId}, #{userPw}, #{departmentId}, #{gradeId}, #{manager})
+</insert>
+
+<update id="userUpdate" parameterType="userDTO">
+update user
+set user_name = #{userName}, user_pw = #{userPw}
+, department_id = #{departmentId}, grade_id = #{gradeId}
+, manager = #{manager}
+where user_num = #{userNum}
+</update>
+
+<delete id="userDelete" parameterType="string">
+delete from user where user_num = #{userNum}
+</delete>
+
+</mapper>

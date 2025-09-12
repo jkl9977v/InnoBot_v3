@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC
+        "-//mybatis.org//DTD Mapper 3.0//EN"
+     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.innochatbot.api.mapper.ChunkMapper">
+
+<insert id="chunkInsert" parameterType="chunkDTO">
+insert into chunk (chunk_id, file_id, sequence, content, embedding)
+values (#{chunkId}, #{fileId}, #{sequence}, #{content}, #{embedding})
+</insert>
+
+<delete id="chunkDelete" parameterType="string">
+delete from chunk
+where file_id = #{fileId}
+</delete>
+
+</mapper>

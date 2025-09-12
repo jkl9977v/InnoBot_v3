@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+  	<link rel="icon" type="image/svg+xml" href="/img/tiumBot1.png" />
+  	<title>TiumBotAdmin</title>
+    <!-- Simple bar CSS -->
+    <link rel="stylesheet" href="/css/simplebar.css">
+    <!-- Fonts CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,100;0,200;0,300;0,400;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <!-- Icons CSS -->
+    <link rel="stylesheet" href="/css/feather.css">
+    <link rel="stylesheet" href="css/dataTables.bootstrap4.css">
+    <!-- Date Range Picker CSS -->
+    <link rel="stylesheet" href="/css/daterangepicker.css">
+    <!-- App CSS -->
+    <link rel="stylesheet" href="/css/app-light.css" id="lightTheme">
+    
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.1.min.js"></script>
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/popper.min.js"></script>
+    <script src="/js/moment.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="/js/simplebar.min.js"></script>
+    <script src='/js/daterangepicker.js'></script>
+    <script src='/js/jquery.stickOnScroll.js'></script>
+    <script src="/js/tinycolor-min.js"></script>
+    <script src="/js/config.js"></script>
+    <script src="/js/apps.js"></script>
+    
+    <script src='js/jquery.dataTables.min.js'></script>
+    <script src='js/dataTables.bootstrap4.min.js'></script>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-56159088-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+
+      function gtag()
+      {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('config', 'UA-56159088-1');
+    </script>
+    <script type="text/javascript" src="/js/getHtml.js"></script>
+    <script>
+    	loadGetHeader("getHeader", "/admin/getHeader");
+    	loadGetMain2("getMain2", "/admin/getMain2");
+    </script>
+  </head>
+
+  
+  <body class="vertical  light  ">
+    <div class="wrapper">
+    <!-- header -->
+    <div id="getHeader"></div>
+      <main role="main" class="main-content">
+      	<!-- main2 -->
+     	<div id="getMain2"></div>
+      	<!-- main1 -->
+        <div class="container-fluid">
+          <div class="row justify-content-center">
+            <div class="col-12">
+              <h2 class="mb-2 page-title">File / Directory</h2>
+  
+<div class="row my-4">
+  <div class="col-md-12">
+  <div class="form-row">
+  	<div class="col-md-6 d-flex align-items-end">
+  		<h5 class="mb-4 mt-4">현재경로 : [[${filePathDTO.path}]]</h5>
+  	</div>
+  	<div class="col-md-6 text-right">
+  		<a type="button" class="btn btn-lm btn-primary ml-2" th:href="@{/admin/file/addAccessRule(pathId=${pathId})}">
+  		현재 경로 접근권한 설정
+  		</a>
+   	</div>
+   </div>
+    <div class="card shadow">
+      <div class="card-body">
+        <div id="dataTable-1_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
+
+          <!-- 상단 form 필터 -->
+          <form action="/admin/file/fileList" method="get" class="form-inline mb-3">
+            <input type="text" name="pathId" th:value="${pathId}" hidden>
+            <div class="form-group mr-2">
+              <label class="mr-1">확장자</label>
+              <select class="form-control form-control-sm" name="kind">
+                <option value="" th:selected="${kind ==null or kind==''}">모든 확장자</option>
+                <option value="pdf" th:selected="${kind =='pdf'}">pdf</option>
+                <option value="txt" th:selected="${kind =='txt'}">txt</option>
+              </select>
+            </div>
+
+            <div class="form-group mr-2">
+              <label class="mr-1">검색어</label>
+              <input type="text" class="form-control form-control-sm" name="searchWord" th:value="${searchWord}">
+            </div>
+
+            <div class="form-group mr-2">
+              <label class="mr-1">행 수</label>
+              <select class="form-control form-control-sm" name="limitRow">
+                <option value="10" th:selected="${limitRow==10 or limitRow == null or limitRow==''}">10</option>
+                <option value="15" th:selected="${limitRow==15}">15</option>
+                <option value="20" th:selected="${limitRow==20}">20</option>
+                <option value="25" th:selected="${limitRow==25}">25</option>
+                <option value="30" th:selected="${limitRow==30}">30</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn btn-sm btn-primary ml-2">검색</button>
+          </form>
+
+          <!-- 테이블 본문 -->
+          <div class="row">
+            <div class="col-sm-12">
+              <table class="table datatables dataTable no-footer" id="dataTable-1" role="grid">
+                <thead>
+                  <tr role="row">
+                    <th>파일 / 폴더명</th>
+                    <th>크기</th>
+                    <th>수정일</th>
+                    <th>자세히</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr th:if="${filePathDTO.depth > 0}">
+                  	<td >
+                  		<a th:href="@{/admin/file/fileList(pathId=${filePathDTO.parentId})}">📁  ...</a>
+                  	</td>
+                  	<td> </td>
+                  	<td> </td>
+                  	<td> </td>
+                  </tr>
+                  <tr th:if="${list != null and #lists.size(list) > 0}" 
+                  		th:each="dto, iter : ${list}">
+                  	<!-- 폴더/파일 구분 -->
+                  	<td>
+                  	<span th:switch="${dto.itemType}">
+						<!-- 폴더 행 -->
+                  		<a th:case="'directory'"
+                  		class="d-inline-flex align-items-center"
+                  		th:href="@{/admin/file/fileList(pathId=${dto.pathId})}">
+                  			📁 <span th:text="${dto.path != null ? dto.path.substring(dto.path.lastIndexOf('/') + 1) : ''}"></span>
+                  		</a>
+                  		<!-- 파일 행 -->
+                  		<span th:case="'file'" class="d-inline-flex align-items-center"> 
+                  			<!-- <i class="fe fe-file me-2"></i> -->
+            				<span th:text="${dto.fileDTO != null ? dto.fileDTO.fileName : '—'}"></span>
+                  		</span>
+                  	</span>
+                  	</td>
+                  	<!-- 크기: 파일만 표시, 폴더는 '-' -->
+      				<td th:text="${dto.itemType == 'file' && dto.fileDTO != null
+                    	? #numbers.formatDecimal(dto.fileDTO.size/1024.0, 0, 1) + ' KB'
+                    	: '-'}">-</td>
+
+      				<!-- 수정일: 파일만 표시 -->
+      				<td th:text="${dto.itemType == 'file' && dto.fileDTO != null
+                    	? #dates.format(dto.fileDTO.updateTime, 'yyyy-MM-dd HH:mm')
+                    	: '-'}">-</td>
+
+      				<!-- 자세히: 파일은 상세, 폴더는 열기 -->
+      				<td>
+        				<a th:if="${dto.itemType == 'file' && dto.fileDTO != null}"
+           				class="btn btn-sm btn-outline-primary"
+           				th:href="@{/admin/file/fileDetail(fileId=${dto.fileDTO.fileId})}">
+          				자세히
+        				</a>
+        				<!-- <a th:if="${dto.itemType == 'directory'}"
+           				class="btn btn-sm btn-outline-secondary"
+           				th:href="@{/admin/file/list(idColumn=${dto.pathId})}">
+          				열기
+        				</a> -->
+      				</td>
+                  	
+                    <!-- <td>${dto.fileDTO.fileName}</td>
+                    <td>${dto.fileDTO.size}</td>
+                    <td>${dto.fileDTO.updateTime}</td>
+                    <td>
+                      <a class="btn btn-sm btn-outline-primary"
+                         th:href="@{/admin/file/fileDetail(fileId=${dto.fileDTO.fileId})}">자세히 기능 개발 예정</a>
+                    </td> -->
+                  </tr>
+                  <!-- 데이터가 없을 때 -->
+    			  <tr th:if="${list == null or #lists.size(list) == 0}">
+      				  <td colspan="4" class="text-center">검색 결과가 없습니다.</td>
+    			  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 하단: Showing + Pagination -->
+          <div class="row">
+            <div class="col-sm-12 col-md-5">
+              <div class="dataTables_info" id="dataTable-1_info" role="status" aria-live="polite">
+                전체 파일 수: [[${list.size()}]]
+              </div>
+            </div>
+            <div class="col-sm-12 col-md-7">
+              <div class="dataTables_paginate paging_simple_numbers" id="dataTable-1_paginate">
+                <ul class="pagination justify-content-end">
+
+                  <!-- 이전 -->
+                  <li class="paginate_button page-item" th:classappend="${page <= 1} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="${page > 1} ? @{/admin/file/fileList(pathId=${pathId},page=${page-1},searchWord=${searchWord})} : '#'">
+                      이전
+                    </a>
+                  </li>
+
+                  <!-- 숫자 페이지 -->
+                  <li class="paginate_button page-item"
+                      th:each="i : ${#numbers.sequence(startPageNum, endPageNum)}"
+                      th:classappend="${i == page} ? 'active'">
+                    <a class="page-link"
+                       th:href="@{/admin/file/fileList(pathId=${pathId},page=${i},searchWord=${searchWord})}">
+                      [[${i}]]
+                    </a>
+                  </li>
+
+                  <!-- 다음 -->
+                  <li class="paginate_button page-item" th:classappend="${page >= maxPage} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="${page < maxPage} ? @{/admin/file/fileList(pathId=${pathId},page=${page+1},searchWord=${searchWord})} : '#'">
+                      다음
+                    </a>
+                  </li>
+
+                </ul>
+              </div>
+            </div>
+          </div>
+
+        </div> <!-- dataTable wrapper -->
+      </div> <!-- card-body -->
+    </div> <!-- card -->
+  </div> <!-- col -->
+</div> <!-- row -->
+
+            
+            </div> <!-- .col-12 -->
+          </div> <!-- .row -->
+        </div> <!-- .container-fluid -->
+      </main> <!-- main -->
+    </div> <!-- .wrapper -->
+
+  </body>
+</html>
+      

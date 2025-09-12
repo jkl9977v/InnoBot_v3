@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC
+        "-//mybatis.org//DTD Mapper 3.0//EN"
+     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.innochatbot.admin.mapper.FilePathMapper">
+
+<resultMap id="filePathWithFileMap" type="pathDTO">
+	<id property="rowNum" column="rn" javaType="int"/>
+	<result property="itemType" column="item_type" javaType="java.lang.String"/> <!-- directory 또는 file -->
+	<result property="pathId" column="path_id" javaType="java.lang.String"/>
+	<result property="path" column="path" javaType="java.lang.String"/>
+	<result property="accessId" column="access_id" javaType="java.lang.String"/>
+	<result property="depth" column="depth" javaType="int"/>
+	<result property="parentId" column="parent_id" javaType="java.lang.String"/>
+	
+	<association property="fileDTO" javaType="com.innochatbot.admin.dto.FileDTO" autoMapping="true">
+ 		<id property="fileId" column="file_id" javaType="java.lang.String"/>
+		<result property="fileName" column="file_name" javaType="java.lang.String"/>
+		<result property="extension" column="extension" javaType="java.lang.String"/>
+		<result property="pathId" column="file_path_id" javaType="java.lang.String"/>
+		<result property="hash" column="hash" javaType="java.lang.String"/>
+		<result property="size" column="size" javaType="Long"/>
+ 		<result property="updateTime" column="update_time" javaType="java.sql.Timestamp"/> 
+	</association>
+</resultMap>
+
+<select id="filePathList" resultMap="filePathWithFileMap"  parameterType="StartEndPageDTO">
+select * 
+from (
+select row_number() over (order by item_type ASC <!--, sort_name ASC --> ) as rn <!-- order by file_id -->
+, t.*
+from (
+select 
+'directory' as item_type  <!-- 하위폴더 -->
+, fp.path_id as path_id, fp.path as path
+, fp.access_id as access_id, fp.depth as depth
+, fp.parent_id as parent_id
+<!-- 파일컬럼 null -->
+, null as file_id, null as file_name, null as extension, null as file_path_id
+, null as hash, null as size, null as update_time
+<!-- 표시/정렬용 이름 -->
+<!-- ,    fp.path          AS name -->
+<!-- 정렬 키(폴더는 path 기준, 필요하면 폴더명만 추출해서 쓰기) -->
+<!--     , fp.path          AS sort_name -->
+from file_path fp
+where fp.parent_id =#{idColumn}
+<if test="searchWord != null and searchWord != '' ">
+ and fp.path like concat ('%', #{searchWord}, '%')
+</if>
+union all
+<!-- 현재 경로 내 파일 -->
+select 
+'file' as item_type
+, fp.path_id as path_id, fp.path as path, fp.access_id as access_id
+, fp.depth as depth, fp.parent_id as parent_id
+, f.file_id as file_id, f.file_name as file_name
+, f.extension as extension, f.path_id as file_path_id
+, f.hash as hash, f.size as size
+, f.update_time as update_time
+<!-- 표시/정렬용 이름 -->
+<!-- ,    fp.path          AS name -->
+<!-- 정렬 키(폴더는 path 기준, 필요하면 폴더명만 추출해서 쓰기) -->
+<!--     , fp.path          AS sort_name -->
+from file_path fp
+left join file f
+on f.path_id = fp.path_id
+where fp.path_id = #{idColumn}
+<if test="searchWord != null and searchWord != ''">
+and f.file_name Like concat('%', #{searchWord}, '%')
+</if>
+<if test="kind != null and kind !=  ''">
+and f.extension like concat('%', #{kind} , '%')
+</if>
+)as t
+) as sub where sub.rn between #{startRow} and #{endRow}
+order by sub.item_type ASC <!-- , sub.sort_name ASC -->
+</select>
+
+<select id="filePathListAll" resultType="pathDTO" parameterType="String">
+select fp1.path_id, fp1.path
+, fp1.access_id, fp1.parent_id
+, fp2.path as parentPath, fp1.depth
+from file_path fp1
+left join file_path fp2
+on fp1.parent_id = fp2.path_id
+<if test="searchWord != null and searchWord != ''">
+where fp1.path like concat('%', #{searchWord}, '%')
+</if>
+</select>
+
+<select id="pathIdSelect" parameterType="String" resultType="String">
+select path_id
+from file_path
+where path = #{path}
+</select>
+
+<select id="filePathCount" resultType="Integer" parameterType="String">
+select count(*) 
+from file f join file_path fp on
+f.path_id=fp.path_id  
+where f.path_id=#{pathId}
+<!-- fp.parent_id=#{pathId} -->
+</select>
+
+<select id="selectPathId" resultType="String" parameterType="String">
+select path_id from file_path where path=#{fullFilePath}
+</select>
+
+<select id="filePathDetail" resultType="pathDTO" parameterType="string">
+select 
+fp1.path_id, fp1.path, fp1.access_id
+, fp1.depth, fp1.parent_id, fp2.path as parentPath
+from file_path fp1
+left join file_path fp2
+on fp1.parent_id = fp2.path_id
+where fp1.path_id=#{pathId}
+</select>
+
+<select id="filePathDetail2" parameterType="String" resultType="pathDTO">
+select *
+from file_path
+where path_id = #{pathId}
+</select>
+
+<insert id="filePathInsert" parameterType="pathDTO">
+insert into file_path (path_id, path, parent_id, depth)
+values(#{pathId}, #{path}, #{parentId}, #{depth})
+</insert>
+
+<update id="filePathUpdate" parameterType="pathDTO">
+update file_path
+set path=#{path}, access_id=#{accessId}
+where path_id=#{pathId}
+</update>
+
+<delete id="filePathDelete" parameterType="string">
+delete from file_path where path_id = #{pathId}
+</delete>
+
+</mapper>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC
+        "-//mybatis.org//DTD Mapper 3.0//EN"
+     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.innochatbot.admin.mapper.AllowdMapper">
+
+<!-- allowd -->
+
+<insert id="allowdInsert" parameterType="departmentDTO">
+Insert into allow_departments (allowd_id, allowd_name, department_id)
+values(#{allowdId}, #{allowdName}, #{departmentId})
+</insert>
+
+<select id="allowdCount" resultType="Integer">
+select count(distinct allowd_id) from allow_departments
+</select>
+
+<select id="allowdList" parameterType="StartEndPageDTO" resultType="departmentDTO">
+select * from (
+select row_number() over (order by allowd_id) as rn
+ , allowd_id, allowd_name
+from 
+(select distinct allowd_id, allowd_name from allow_departments) as distinct_allowd
+<if test="searchWord!=null">
+where 
+allowd_name like concat('%',#{searchWord},'%')
+</if>
+) as sub 
+<if test="startRow!=null and endRow != null">
+where rn between #{startRow} and #{endRow}
+</if>
+</select>
+
+<select id="allowdDetail" parameterType="String" resultType="departmentDTO">
+select allowd_id, allowd_name
+, ad.department_id, department_name
+from allow_departments ad
+left join department d
+on ad.department_id = d.department_id
+where allowd_id=#{allowdId}
+</select>
+
+<update id="allowdUpdate" parameterType="departmentDTO">
+update allow_departments
+set allowd_name=#{allowdName}
+, department_id=#{departmentId}
+where allowd_id=#{allowdId}
+</update>
+
+<delete id="allowdDelete" parameterType="String">
+delete from allow_departments
+where allowd_id=#{allowdId}
+</delete>
+
+</mapper>

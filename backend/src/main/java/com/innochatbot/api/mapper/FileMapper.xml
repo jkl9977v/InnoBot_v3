@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC
+        "-//mybatis.org//DTD Mapper 3.0//EN"
+     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.innochatbot.api.mapper.FileMapper">
+
+<select id="filehashSelect" resultType="string" parameterType="string">
+select hash from file where file_id = #{fileId}
+</select>
+
+<select id="fileIdSelect" resultType="string">
+select file_id
+from file f
+left join file_path fp
+on f.path_id = fp.path_id
+where file_name like concat('%', #{fileName},'%') 
+and fp.path = #{path} 
+</select>
+
+<select id="fileDetail" resultType="fileDTO" parameterType="string">
+select file_id, file_name, extension
+, f.path_id, fp.path
+, size, update_time 
+ from file f
+left join file_path fp
+on f.path_id = fp.path_id
+where file_id= #{fileId}
+</select>
+
+<insert id="fileInsert" parameterType="fileDTO">
+insert into file (file_id, file_name, extension, 
+path_id, size, hash, update_time, embedding)
+values (#{fileId}, #{fileName}, #{extension}, 
+#{pathId}, #{size}, #{hash}, #{updateTime}, #{embedding})
+</insert>
+
+<update id="fileHashUpdate" >
+update file 
+set hash = #{newHash}
+where file_Id = #{fileId}
+</update>
+
+
+
+</mapper>

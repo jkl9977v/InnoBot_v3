@@ -1,0 +1,16 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8" />
+  <title>React App</title>
+  <!-- 프로덕션 빌드시 복사한 CSS가 있으면 경로 맞춰 포함 -->
+  <link rel="stylesheet" th:href="@{/react/static/css/main.css}" />
+</head>
+<body>
+  <!-- 서버는 화면을 렌더하지 않음(빈 root) -->
+  <div id="root"></div>
+
+  <!-- 빌드한 React JS 로드 (빌드 후 static/react 내부 경로와 일치해야 함) -->
+  <script th:src="@{/react/static/js/main.js}"></script>
+</body>
+</html>

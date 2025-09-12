@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC
+        "-//mybatis.org//DTD Mapper 3.0//EN"
+     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.innochatbot.admin.mapper.GradeMapper">
+
+<!-- grade -->
+<insert id="gradeInsert" parameterType="gradeDTO">
+insert into grade(grade_id, grade_name, grade_level)
+values(#{gradeId}, #{gradeName}, #{gradeLevel})
+</insert>
+
+<select id="gradeCount" resultType="Integer" parameterType="Integer">
+select count(grade_id) from grade
+<if test="gradeLevel != null">
+where grade_level >= #{gradeLevel}
+</if>
+</select>
+
+<select id="gradeList" resultType="gradeDTO"  >
+select * from (
+select row_number() over (order by grade_id) as rn
+, grade_id, grade_name, grade_level
+from grade
+<if test="dto != null and dto.searchWord != null">
+where
+grade_name like concat('%',#{dto.searchWord},'%')
+</if>
+) as sub 
+<if test="dto != null and dto.startRow!=null and dto.endRow!=null">
+where rn 
+between #{dto.startRow} and #{dto.endRow}
+</if>
+<if test="gradeLevel != null and gradeLevel != ''">
+where grade_level >= #{gradeLevel}
+</if>
+</select>
+
+<select id="gradeDetail" resultType="gradeDTO" parameterType="String">
+select * from grade
+where grade_id = #{gradeId}
+</select>
+
+<update id="gradeUpdate" parameterType="gradeDTO">
+update grade
+set grade_name = #{gradeName}
+, grade_level = #{gradeLevel}
+where grade_id = #{gradeId}
+</update>
+
+<delete id="gradeDelete" parameterType="String">
+delete from grade
+where grade_id = #{gradeId}
+</delete>
+
+</mapper>

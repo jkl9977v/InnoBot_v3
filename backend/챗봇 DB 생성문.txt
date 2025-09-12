@@ -1,0 +1,125 @@
+챗봇 DB 생성문
+
+-- 접근규칙 테이블
+CREATE TABLE access_rule (
+  access_id   VARCHAR(50)  NOT NULL COMMENT '접근규칙 고유번호',
+  access_name VARCHAR(100) NULL     COMMENT '규칙 이름',
+  allowd_id   VARCHAR(50)  NOT NULL COMMENT '허용 부서 규칙 고유번호',
+  allowg_id  VARCHAR(50)  NOT NULL COMMENT '허용 등급 규칙 고유번호',
+  access_type ENUM('all', 'internal_all', 'dept_only', 'grade_only', 'dept_grade') 
+             NULL COMMENT '접근 유형',
+  PRIMARY KEY (access_id)
+) COMMENT '접근규칙';
+
+-- 허용 부서 규칙 테이블
+CREATE TABLE allow_departments (
+  allowd_id     VARCHAR(50) NOT NULL COMMENT '허용 부서 규칙 고유번호',
+  department_id VARCHAR(50) NOT NULL COMMENT '부서 ID',
+  PRIMARY KEY (allowd_id, department_id)
+) COMMENT '허용 부서 규칙';
+
+-- 허용 등급 규칙 테이블
+CREATE TABLE allow_grade (
+  allowg_id VARCHAR(50) NOT NULL COMMENT '허용 등급 규칙 고유번호',
+  grade_id   VARCHAR(50) NOT NULL COMMENT '직급 ID',
+  PRIMARY KEY (allowg_id, grade_id)
+) COMMENT '허용 등급 규칙';
+
+-- 텍스트 임베딩 (청크) 테이블
+CREATE TABLE chunk (
+  chunk_id  BIGINT     NOT NULL COMMENT '청크 고유번호',
+  file_id   VARCHAR(50)     NOT NULL COMMENT '파일 고유번호',
+  sequence  INT             NULL     COMMENT '청크 순서(파일별)',
+  content   TEXT            NULL     COMMENT '내용',
+  embedding VARBINARY(8192) NULL     COMMENT '벡터데이터',
+  //summary   TEXT            NULL     COMMENT '요약', //여기 주석처리하고 개발하기
+  PRIMARY KEY (chunk_id)
+) COMMENT '텍스트 임베딩';
+
+-- 파일 테이블
+CREATE TABLE file (
+  file_id     VARCHAR(50)  NOT NULL COMMENT '파일 고유번호',
+  file_name   VARCHAR(200) NOT NULL COMMENT '파일 이름',
+  extension   VARCHAR(20)  NULL     COMMENT '확장자',
+  path_id     VARCHAR(50)  NOT NULL COMMENT '파일 경로 고유번호',
+  size        BIGINT       NOT NULL COMMENT '파일크기',
+  hash        TEXT         NULL     COMMENT '파일 변경 감지용',
+  update_time DATETIME     NULL     COMMENT '수정 시간',
+  PRIMARY KEY (file_id)
+) COMMENT '파일';
+
+-- 파일 경로 테이블
+CREATE TABLE file_path (
+  path_id   VARCHAR(50) NOT NULL COMMENT '파일 경로 고유번호',
+  path      TEXT        NOT NULL COMMENT '경로 위치',
+  access_id VARCHAR(50) NULL     COMMENT '접근규칙 고유번호',
+  PRIMARY KEY (path_id)
+) COMMENT '파일 경로';
+
+CREATE TABLE department
+(
+  department_id VARCHAR(50) NOT NULL COMMENT '부서 고유번호',
+  PRIMARY KEY (department_id)
+) COMMENT '부서 임시테이블';
+
+CREATE TABLE grade
+(
+  grade_id VARCHAR(50) NOT NULL COMMENT '직급 고유번호',
+  PRIMARY KEY (grade_id)
+) COMMENT '직급 임시테이블';
+
+-- 유저 임시 테이블
+CREATE TABLE user 
+(
+  user_num      VARCHAR(50) NOT NULL COMMENT '유저 고유번호',
+  user_id       VARCHAR(50) NULL     COMMENT '유저 아이디',
+  user_pw       VARCHAR(50) NULL     COMMENT '유저 비밀번호',
+  grade_id      VARCHAR(50) NOT NULL COMMENT '직급 고유번호',
+  department_id VARCHAR(50) NOT NULL COMMENT '부서 고유번호',
+  PRIMARY KEY (user_num)
+) COMMENT '유저 임시 테이블';
+
+ALTER TABLE file
+  ADD CONSTRAINT FK_File_path_TO_File
+    FOREIGN KEY (path_id)
+    REFERENCES File_path (path_id);
+
+ALTER TABLE chunk
+  ADD CONSTRAINT FK_File_TO_chunk
+    FOREIGN KEY (file_id)
+    REFERENCES File (file_id);
+
+ALTER TABLE file_path
+  ADD CONSTRAINT FK_access_rule_TO_File_path
+    FOREIGN KEY (access_id)
+    REFERENCES access_rule (access_id);
+
+ALTER TABLE access_rule
+  ADD CONSTRAINT FK_allow_departments_TO_access_rule
+    FOREIGN KEY (allowd_id)
+    REFERENCES allow_departments (allowd_id);
+
+ALTER TABLE access_rule
+  ADD CONSTRAINT FK_allow_grade_TO_access_rule
+    FOREIGN KEY (allowg_id)
+    REFERENCES allow_grade (allowg_id);
+
+ALTER TABLE user 
+  ADD CONSTRAINT FK_grade_TO_user 
+    FOREIGN KEY (grade_id)
+    REFERENCES grade (grade_id);
+
+ALTER TABLE user 
+  ADD CONSTRAINT FK_department_TO_user 
+    FOREIGN KEY (department_id)
+    REFERENCES department (department_id);
+    
+ALTER TABLE allow_grade
+  ADD CONSTRAINT FK_grade_TO_allow_grade
+    FOREIGN KEY (grade_id)
+    REFERENCES grade (grade_id);
+    
+ALTER TABLE allow_departments
+  ADD CONSTRAINT FK_department_TO_allow_departments
+    FOREIGN KEY (department_id)
+    REFERENCES department (department_id);

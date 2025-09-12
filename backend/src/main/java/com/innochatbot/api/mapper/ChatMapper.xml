@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC
+        "-//mybatis.org//DTD Mapper 3.0//EN"
+     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.innochatbot.api.mapper.ChatMapper">
+
+
+<!-- 1. chunk만 유사도 검색 -->
+<select id="chunkEmbeddingOnlySelect" resultType="map" parameterType="int">
+select chunk_id, file_id, content, embedding
+from chunk
+Limit #{chunkLimit}
+</select>
+
+<!-- 2. file과 chunk 동시에 유사도 검색 -->
+<select id="fileAndChunkEmbeddingSelect" resultType="map">
+select f.file_id, f.file_name, f.embedding
+, c.chunk_id, c.content, c.embedding
+from file f
+join chunk c on f.file_id = c.file_id
+where f.embedding is not null
+and c.embedding is not null
+</select>
+
+<!-- 3. file -> chunk 순서로 유사도 검색 -->	
+<select id="fileNameEmbeddingSelect1" resultType="map">
+SELECT file_id, file_name, embedding 
+from file 
+where embedding is not null;
+</select>
+
+<select id="chunkEmbeddingSelect2" resultType="map" parameterType="list">
+select chunk_id, file_id, content, embedding
+from chunk
+where file_id in
+	<foreach item="id" collection="fileIds" open='(' separator=',' close=')'>
+	#{id}
+	</foreach>
+</select>
+
+</mapper>

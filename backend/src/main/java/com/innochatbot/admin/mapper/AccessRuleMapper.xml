@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC
+        "-//mybatis.org//DTD Mapper 3.0//EN"
+     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.innochatbot.admin.mapper.AccessRuleMapper">
+
+<resultMap id="accessRuleMap" type="accessRuleDTO">
+	<id property="accessId" column="access_id" javaType="java.lang.String"/>
+	<result property="accessName" column="access_name" javaType="java.lang.String"/>
+	<result property="accessType" column="access_type" javaType="java.lang.String"/>
+	<result property="allowdId" column="allowd_id" javaType="java.lang.String"/>
+	<result property="allowgId" column="allowg_id" javaType="java.lang.String"/>
+	
+	<association property="departmentDTO" javaType="com.innochatbot.admin.dto.DepartmentDTO" autoMapping="true">
+		<id property="allowdId" column="allowd_id" javaType="java.lang.String"/>
+		<result property="allowdName" column="allowd_name" javaType="java.lang.String"/>
+	</association>
+	
+	<association property="gradeDTO" javaType="com.innochatbot.admin.dto.GradeDTO" autoMapping="true">
+		<id property="allowgId" column="allowg_id" javaType="java.lang.String"/>
+		<result property="allowgName" column="allowg_name" javaType="java.lang.String"/>
+	</association>
+</resultMap>
+
+<select id="accessRuleList" resultType="accessRuleDTO" parameterType="StartEndPageDTO">
+select * from (
+select row_number() over (order by access_id) as rn
+, access_id, access_name
+<!-- , ar.allowd_id, ar.allowg_id -->
+, access_type
+ from 
+ (select distinct access_id, access_name, access_type from access_rule ) as distinct_access
+ <!-- access_rule ar
+ left join allow_departments ad
+ on ar.allowd_id = ad.allowd_id
+ left join allow_grade ag
+ on ar.allowg_id = ag.allowg_id  -->
+ <if test="searchWord !=null or (kind!=null and kind!='')">
+ where
+	 <if test="searchWord != null">
+	 	access_name like concat('%',#{searchWord},'%')
+	 </if>
+	 <if test="searchWord !=null and kind!=null and kind != '' " >and</if>
+	 <if test="kind != null and kind != ''">
+	 	access_type like concat('%',#{kind},'%')
+	 </if>
+ </if>
+ ) as sub where rn between #{startRow} and #{endRow} 
+</select>
+
+<select id="accessRuleCount" resultType="Integer">
+select count(access_id) from access_rule
+</select>
+
+<select id="accessRuleDetail" resultMap="accessRuleMap" parameterType="string">
+select 
+access_id, access_name , access_type
+, ar.allowd_id, allowd_name
+, ar.allowg_id, allowg_name
+from access_rule ar
+left join allow_departments ad
+on ar.allowd_id = ad.allowd_id
+left join allow_grade ag
+on ar.allowg_id = ag.allowg_id
+where access_id = #{accessId}
+</select>
+
+<insert id="accessRuleInsert" parameterType="accessRuleDTO">
+insert into access_rule (access_id, access_name, allowd_id, allowg_id, access_type)
+values(#{accessId}, #{accessName}, #{allowdId}, #{allowgId}, #{accessType})
+</insert>
+
+<update id="accessRuleUpdate" parameterType="accessRuleDTO">
+update access_rule
+set access_name=#{accessName},  allowd_id=#{allowdId}
+, allowg_id=#{allowgId}, access_type=#{accessType}
+where access_id=#{accessId}
+</update>
+
+<delete id="accessRuleDelete" parameterType="string">
+delete from access_rule where access_id = #{accessId}
+</delete>
+
+</mapper>

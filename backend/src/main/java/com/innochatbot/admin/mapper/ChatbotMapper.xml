@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC
+        "-//mybatis.org//DTD Mapper 3.0//EN"
+     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.innochatbot.admin.mapper.ChatbotMapper">
+
+<insert id="botSettingUpdate" parameterType="chatbotDTO">
+insert into chatbot_setting
+(setting_id, path, hour, min)
+values(#{settingId}, #{path}, #{hour}, #{min})
+on duplicate key update
+setting_id = values(setting_id)
+, path = values(path)
+, hour = values(hour)
+, min = values(min)
+</insert>
+<!--  로직이 이상함, setting Id 관련 부분 => settingId가 없을떄의 대책이 없음
+왜냐하면 입력을 받고, 입력 받은 값만 넣고 있기 때문, 해결이 필요함 -->
+
+<select id="ChatbotDetail" parameterType="String" resultType="chatbotDTO">
+select * from chatbot_setting
+where setting_id = #{settingId}
+</select>
+
+</mapper>

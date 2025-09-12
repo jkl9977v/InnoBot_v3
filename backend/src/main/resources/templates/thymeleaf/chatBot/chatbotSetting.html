@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+  	<link rel="icon" type="image/svg+xml" href="/img/tiumBot1.png" />
+  	<title>TiumBotAdmin</title>
+    <!-- Simple bar CSS -->
+    <link rel="stylesheet" href="/css/simplebar.css">
+    <!-- Fonts CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,100;0,200;0,300;0,400;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <!-- Icons CSS -->
+    <link rel="stylesheet" href="/css/feather.css">
+    <!-- Date Range Picker CSS -->
+    <link rel="stylesheet" href="/css/daterangepicker.css">
+    <!-- App CSS -->
+    <link rel="stylesheet" href="/css/app-light.css" id="lightTheme">
+    
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.1.min.js"></script>
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/popper.min.js"></script>
+    <script src="/js/moment.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="/js/simplebar.min.js"></script>
+    <script src='/js/daterangepicker.js'></script>
+    <script src='/js/jquery.stickOnScroll.js'></script>
+    <script src="/js/tinycolor-min.js"></script>
+    <script src="/js/config.js"></script>
+    <script src="/js/apps.js"></script>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-56159088-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+
+      function gtag()
+      {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('config', 'UA-56159088-1');
+    </script>
+    <script type="text/javascript" src="/js/getHtml.js"></script>
+        <script>
+    	loadGetHeader("getHeader", "/admin/getHeader");
+    	loadGetMain2("getMain2", "/admin/getMain2");
+    </script>
+      <script type="text/javascript">
+document.getElementById("chatbotSettingForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const data = {
+    model_name: document.querySelector('[name="model_name"]').value,
+    embedding_model: document.querySelector('[name="embedding_model"]').value,
+    refresh_cycle_min: document.querySelector('[name="refresh_cycle_min"]').value,
+    file_extensions: document.querySelector('[name="file_extensions"]').value
+  };
+
+  fetch('/admin/chatbot-setting', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(data)
+  })
+  .then(res => res.text())
+  .then(msg => alert(msg))
+  .catch(err => alert('저장 실패: ' + err));
+});
+</script>
+<script type="text/javascript">
+$(function(){
+	$('#embeddingRun').click(function(e){
+		e.preventDefault(); //폼 제출 등 기본 동작 막기
+		
+		//버튼 비활성화로 중복 클릭 방지
+		var $btn = $(this);
+		$btn.prop('disabled', true).text('요청 중...');
+		
+		//AJAX POST요청
+		$.ajax({
+			url : '/admin/embedding/run',
+			type : 'POST',
+			success : function(data, textStatus, jqXHR){
+				//성공 처리 - 서버가 문자열 또는 JSON을 반환할 수 있으니 console과 화면에 출력
+				console.log('성공: ', data);
+				$('#embeddingResult').text('요청 성공: ' + (typeof data === 'string' ? data : JSON.stringify(data)));	
+			},
+			error: function(jqXHR, textStatus, errorThrown){
+				console.error('에러: ', textStatus, errorThrown);
+				$('#embeddingResult').text('요청 실패 : ' + (errorThrown || textgStatus));
+			},
+			complete : function(){
+				//완료 시 버튼 다시 활성화
+				$btn.prop('disabled', false).text('임베딩 실행');
+			}
+		});
+	});	
+});
+</script>
+<script type="text/javascript">
+$(function(){
+	$("#filePathSearch").click(function(){
+		window.open("/admin/file/pathSearch", "경로 검색"
+				, "width=620, height=400, left=30, top=50")
+	});
+})
+</script>
+  </head>
+
+  
+  <body class="vertical  light  ">
+    <div class="wrapper">
+    <!-- header -->
+    <div id="getHeader"></div>
+      <main role="main" class="main-content">
+      	<!-- main2 -->
+     	<div id="getMain2"></div>
+      	<!-- main1 -->
+        <div class="container-fluid">
+          <div class="row justify-content-center">
+            <div class="col-12">
+              <h1 class="page-title">챗봇 설정</h1>
+              <form id="chatbotSettingForm" action="/admin/chatbot-setting" method="post">
+                <hr class="my-4">
+                <h5 class="mb-2 mt-4">텍스트 임베딩 설정</h5>
+                <p class="mb-4">파일의 텍스트를 추출해서 DB에 저장하기 위한 기본 설정을 합니다.</p>
+                <!--<div class="form-row">
+                  <div class="form-group col-md-6">
+ 				  <label>LLM API 모델</label>
+ 				  </div>
+ 				  <div class="form-group col-md-6">
+				  <select name="answerModel">
+				    <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+				    <option value="gpt-4">gpt-4</option>
+				    <option value="gpt-4o">gpt-4o</option>
+				  </select>
+				  </div>
+				</div>
+				 
+				<br/>-->
+<!-- 			<div class="form-row">
+                  <div class="form-group col-md-6">
+				  <label>임베딩 모델</label>
+				  </div>
+				  <div class="form-group col-md-6">
+				  <select name="embedding_model">
+				    <option value="text-embedding-3-small">text-embedding-3-small</option>
+				    <option value="text-embedding-ada-002">text-embedding-ada-002</option>
+				  </select> 
+				  </div>
+				</div>
+				<br/> -->
+				<div class="form-row">
+                  <div class="form-group col-md-2">
+					<label>기준 경로</label>
+				  </div>
+				  <div class="form-group col-md-4">
+					<input type="text" name="path" class="form-control" id="path" th:value="${dto.path}" placeholder="실제 경로를 입력하세요"/>
+				  </div>
+				  <div class="form-group col-md-3">
+				  	<button type="button" id="filePathSearch" class="btn btn-lm btn-primary ml-2">경로 검색</button>
+				  </div>
+				</div>
+				<div class="form-row">
+                  <div class="form-group col-md-2">
+				  <label>임베딩 주기 </label>
+				  </div>
+				  <div class="form-group col-md-1">
+				  <select name="hour" class="form-control">
+				  	<option th:each="i : ${#numbers.sequence(0,24)}"
+				  	th:value="${i}"
+				  	th:text="${i}"
+				  	th:selected="${dto.hour == i}"
+				  	 />
+				  </select>
+				  </div>
+				  <div class="form-group col-md-1 d-flex align-items-end">
+				  <label> 시간</label>
+				  </div>
+				  <div class="form-group col-md-1">
+				  <select name="min" class="form-control">
+				  	<option th:each=" i : ${#numbers.sequence(0, 60)}" 
+				  	th:value="${i}"
+				  	th:text="${i}"
+				  	th:selected="${dto.min == i}"></option>
+				  </select>
+				  </div>
+				  <div class="form-group col-md-1 d-flex align-items-end">
+				  <label> 분</label>
+				  </div>
+				</div>
+				<div class="form-row">
+                  <div class="form-group col-md-6">
+					  <h6 class="mb-2 mt-6">텍스트 임베딩 할 확장자</h6>
+				  </div>
+				</div>
+				<div class="form-row">
+                  <div class="form-group col-md-1">
+					  <label>txt </label>
+				  </div>
+				  <div class="form-group col-md-1">
+					  <input type="checkbox" name="txt" value="y" >
+				  </div>
+				  <div class="form-group col-md-1">
+					  <label>pdf </label>
+				  </div>
+				  <div class="form-group col-md-1">
+					  <input type="checkbox" name="pdf" value="y" >
+				  </div>
+				  <div class="form-group col-md-1">
+					  <label>docx</label>
+				  </div>
+				  <div class="form-group col-md-1">
+					  <input type="checkbox" name="docx" value="y" >
+				  </div>
+				  <div class="form-group col-md-1">
+					  <label>xlsx </label>
+				  </div>
+				  <div class="form-group col-md-1">
+					  <input type="checkbox" name="xlsx" value="y" >
+				  </div>
+				</div>
+				
+				<div class="form-row">
+				  <div class="form-group col-md-1">
+					  <label>pptx </label>
+				  </div>
+				  <div class="form-group col-md-1">
+					  <input type="checkbox" name="pptx" value="y" >
+				  </div>
+				  <div class="form-group col-md-1">
+					  <label>html </label>
+				  </div>
+				  <div class="form-group col-md-1">
+					  <input type="checkbox" name="html" value="y" >
+				  </div>
+				  <div class="form-group col-md-1">
+					  <label>cvs </label>
+				  </div>
+				  <div class="form-group col-md-1">
+					  <input type="checkbox" name="cvs" value="y" >
+				  </div>
+				  <div class="form-group col-md-1">
+					  <label>그 외 </label>
+				  </div>
+				  <div class="form-group col-md-1">
+					  <input type="checkbox" name="tika" value="y" >
+				  </div>
+				</div>  
+				<hr class="my-4">
+				<h5 class="mb-2 mt-4">수동 임베딩</h5>
+				
+				<div class="form-row">
+					<div class="form-group col-md-4 d-flex align-items-end">
+						<label>버튼을 클릭하면 텍스트 임베딩이 실행됩니다.</label>
+					</div>
+					<div class="form-group col-md-2">
+						<button type="button" id="embeddingRun" class="btn btn-lm btn-primary ml-2">임베딩 실행</button>
+					</div>
+				</div>
+				<div class="form-row">
+					<h6 class="mb-2 mt-6">실행 결과</h6>
+				</div>
+				<div class="form-row">
+					<div id="embeddingResult"></div>
+				</div>
+				<hr class="my-4">
+                <div class="form-row">
+                  <div class="col-md-6">
+                    
+                  </div>
+                  <div class="col-md-6 text-right">
+				  	<button type="submit" class="btn btn-primary">저장</button>
+				  </div>
+				</div>  
+				</form>
+            </div> <!-- .col-12 -->
+          </div> <!-- .row -->
+        </div> <!-- .container-fluid -->
+      </main> <!-- main -->
+    </div> <!-- .wrapper -->
+
+  </body>
+</html>

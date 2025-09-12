@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+  	<link rel="icon" type="image/svg+xml" href="/img/tiumBot1.png" />
+  	<title>TiumBotAdmin</title>
+    <!-- Simple bar CSS -->
+    <link rel="stylesheet" href="/css/simplebar.css">
+    <!-- Fonts CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,100;0,200;0,300;0,400;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <!-- Icons CSS -->
+    <link rel="stylesheet" href="/css/feather.css">
+    <!-- Date Range Picker CSS -->
+    <link rel="stylesheet" href="/css/daterangepicker.css">
+    <!-- App CSS -->
+    <link rel="stylesheet" href="/css/app-light.css" id="lightTheme">
+    <link rel="stylesheet" href="/css/app-dark.css" id="darkTheme" disabled>
+    
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.1.min.js"></script>
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/popper.min.js"></script>
+    <script src="/js/moment.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="/js/simplebar.min.js"></script>
+    <script src='/js/daterangepicker.js'></script>
+    <script src='/js/jquery.stickOnScroll.js'></script>
+    <script src="/js/tinycolor-min.js"></script>
+    <script src="/js/config.js"></script>
+    <script src="/js/apps.js"></script>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-56159088-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+
+      function gtag()
+      {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('config', 'UA-56159088-1');
+    </script>
+    <script type="text/javascript" src="/js/getHtml.js"></script>
+        <script>
+    	loadGetHeader("getHeader", "/admin/getHeader");
+    	loadGetMain2("getMain2", "/admin/getMain2");
+    </script>
+  </head>
+
+  
+  <body class="vertical  light  ">
+    <div class="wrapper">
+    <!-- header -->
+    <div id="getHeader"></div>
+      <main role="main" class="main-content">
+      	<!-- main2 -->
+     	<div id="getMain2"></div>
+      	<!-- main1 -->
+        <div class="container-fluid">
+          <div class="row justify-content-center">
+            <div class="col-12 col-xl-10">
+              <div class="row align-items-center my-4">
+                <div class="col">
+                  <h2 class="mb-2 page-title">파일 정보</h2>
+                </div>
+              </div>
+              <form action="/admin/file/addAccessRule" method="post" >
+                <hr class="my-4">
+                <h5 class="mb-2 mt-4"></h5>
+                <!-- <p class="mb-4">Mauris blandit nisl ullamcorper, rutrum metus in, congue lectus</p> -->
+                <div class="form-row">
+                  <div class="form-group col-md-3 d-flex align-items-end">
+                    <label >파일명</label>
+                  </div>
+                  <div class="form-group col-md-3">
+                    <input type="text" name="fileId" th:value="${dto.fileId}" readonly hidden>
+                    <input type="text" name="fileName" th:value="${dto.fileName}" placeholder="파일 명" class="form-control" readonly>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group col-md-3 d-flex align-items-end">
+                    <label >확장자</label>
+                  </div>
+                  <div class="form-group col-md-3">
+                    <input type="text" name="extension" th:value="${dto.extension}" placeholder="확장자" class="form-control" readonly>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group col-md-3 d-flex align-items-end">
+                    <label >파일 위치</label>
+                  </div>
+                  <div class="form-group col-md-3">
+                    <span type="text" name="path" th:text="${dto.path}" placeholder="파일 위치" class="form-control" readonly >
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group col-md-3 d-flex align-items-end">
+                    <label >파일크기</label>
+                  </div>
+                  <div class="form-group col-md-3">            
+                    <input type="text" name="size"  th:value="${#numbers.formatDecimal(dto.size/1024.0, 0, 1) + ' KB'}" placeholder="파일크기" class="form-control" readonly>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group col-md-3 d-flex align-items-end">
+                    <label >마지막 수정일자</label>
+                  </div>
+                  <div class="form-group col-md-3">
+                  	<input type="text" name="updateTime"   th:value="${#dates.format(dto.updateTime, 'yyyy-MM-dd   HH:mm')}" class="form-control"  readonly>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group col-md-6">
+                    
+                  </div>
+                </div>
+                <hr class="my-4">
+                <div class="form-row">
+                  <div class="col-md-6">
+                    
+                  </div>
+                  <div class="col-md-6 text-right">
+                    <button type="submit" class="btn btn-primary">설정 완료</button>
+                  </div>
+                </div>
+              </form>
+            </div> <!-- .col-12 -->
+          </div> <!-- .row -->
+        </div> <!-- .container-fluid -->
+      </main> <!-- main -->
+    </div> <!-- .wrapper -->
+
+  </body>
+</html>
