@@ -1,18 +1,20 @@
-//userWrite
+//  admin/user/userWrite
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminSidebar from '../../../../components/AdminSidebar';
 import AdminHeader from '../../../../components/AdminHeader';
+import DepartmentSearchModal, { DepartmentDTO } from '../../../../components/DepartmentSearchModal';
+import GradeSearchModal from '../../../../components/GradeSearchModal';
 
-interface Department {
+interface DepartmentDTO {
   id: string;
   name: string;
   code: string;
   description: string;
 }
 
-interface Position {
+interface GradeDTO {
   id: string;
   name: string;
   code: string;
@@ -26,9 +28,9 @@ export default function UserWritePage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [expandedSection, setExpandedSection] = useState<string | null>('user-management');
   const [isDepartmentSearchModalOpen, setIsDepartmentSearchModalOpen] = useState(false);
-  const [isPositionSearchModalOpen, setIsPositionSearchModalOpen] = useState(false);
+  const [isGradeSearchModalOpen, setIsGradeSearchModalOpen] = useState(false);
   const [departmentSearchQuery, setDepartmentSearchQuery] = useState('');
-  const [positionSearchQuery, setPositionSearchQuery] = useState('');
+  const [gradeSearchQuery, setGradeSearchQuery] = useState('');
   const router = useRouter();
 
   const [formData, setFormData] = useState({
@@ -36,11 +38,11 @@ export default function UserWritePage() {
     id: '',
     password: '',
     department: '',
-    position: '',
+    grade: '',
     isAdmin: false
   });
 
-  const [departments] = useState<Department[]>([
+  const [departments] = useState<DepartmentDTO[]>([
     { id: '1', name: '개발팀', code: 'DEV', description: '소프트웨어 개발' },
     { id: '2', name: '디자인팀', code: 'DES', description: 'UI/UX 디자인' },
     { id: '3', name: '마케팅팀', code: 'MKT', description: '마케팅 및 홍보' },
@@ -49,7 +51,7 @@ export default function UserWritePage() {
     { id: '6', name: '재무팀', code: 'FIN', description: '재무 및 회계' }
   ]);
 
-  const [positions] = useState<Position[]>([
+  const [grades] = useState<GradeDTO[]>([
     { id: '1', name: '팀장', code: 'TL', level: 5, description: '팀 관리 및 운영' },
     { id: '2', name: '대리', code: 'AL', level: 4, description: '업무 담당자' },
     { id: '3', name: '연구원', code: 'RS', level: 3, description: '연구 및 개발' },
@@ -58,10 +60,11 @@ export default function UserWritePage() {
     { id: '6', name: '부장', code: 'GM', level: 7, description: '고급 관리자' }
   ]);
 
-  const [filteredDepartments, setFilteredDepartments] = useState<Department[]>(departments);
-  const [filteredPositions, setFilteredPositions] = useState<Position[]>(positions);
+  const [filteredDepartments, setFilteredDepartments] = useState<DepartmentDTO[]>(departments);
+  const [filteredGrades, setFilteredGrades] = useState<GradeDTO[]>(grades);
 
   useEffect(() => {
+	//로그인 여부 확인 로직
     /*const loginStatus = localStorage.getItem('isLoggedIn');
     if (loginStatus !== 'true') {
       router.push('/login');
@@ -88,20 +91,20 @@ export default function UserWritePage() {
   }, [departmentSearchQuery, departments]);
 
   useEffect(() => {
-    if (positionSearchQuery.trim() === '') {
-      setFilteredPositions(positions);
+    if (gradeSearchQuery.trim() === '') {
+      setFilteredGrades(grades);
     } else {
-      const lower = positionSearchQuery.toLowerCase();
-      setFilteredPositions(
-        positions.filter(
-          position =>
-            position.name.toLowerCase().includes(lower) ||
-            position.code.toLowerCase().includes(lower) ||
-            position.description.toLowerCase().includes(lower)
+      const lower = gradeSearchQuery.toLowerCase();
+      setFilteredGrades(
+        grades.filter(
+          grade =>
+            grade.name.toLowerCase().includes(lower) ||
+            grade.code.toLowerCase().includes(lower) ||
+            grade.description.toLowerCase().includes(lower)
         )
       );
     }
-  }, [positionSearchQuery, positions]);
+  }, [gradeSearchQuery, grades]);
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -123,22 +126,22 @@ export default function UserWritePage() {
     router.push('/admin/user/userList');
   };
 
-  const handleSelectDepartment = (department: Department) => {
+  const handleSelectDepartment = (department: DepartmentDTO) => {
     setFormData(prev => ({ ...prev, department: department.name }));
     setIsDepartmentSearchModalOpen(false);
   };
 
-  const handleSelectPosition = (position: Position) => {
-    setFormData(prev => ({ ...prev, position: position.name }));
-    setIsPositionSearchModalOpen(false);
+  const handleSelectGrade = (grade: GradeDTO) => {
+    setFormData(prev => ({ ...prev, grade: grade.name }));
+    setIsGradeSearchModalOpen(false);
   };
 
   const handleDepartmentSearch = () => {
     console.log('Searching departments:', departmentSearchQuery);
   };
 
-  const handlePositionSearch = () => {
-    console.log('Searching positions:', positionSearchQuery);
+  const handleGradeSearch = () => {
+    console.log('Searching grades:', gradeSearchQuery);
   };
 
   if (isLoading) {
@@ -264,13 +267,20 @@ export default function UserWritePage() {
                   <div className="flex items-center space-x-4">
                     <input
                       type="text"
-                      value={formData.position}
-                      onChange={(e) => handleInputChange('position', e.target.value)}
+                      value={formData.grade}
+                      onChange={(e) => handleInputChange('grade', e.target.value)}
                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                       placeholder="직급명"
                     />
+					<input
+					  type="text"
+					  value={formData.gradeLevel}
+					  onChange={(e) => handleInputChange('gradeLevel', e.target.value)}
+					  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+					  placeholder="직급레벨"
+					/>
                     <button
-                      onClick={() => setIsPositionSearchModalOpen(true)}
+                      onClick={() => setIsGradeSearchModalOpen(true)}
                       className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors cursor-pointer whitespace-nowrap text-sm"
                     >
                       직급 검색
@@ -279,17 +289,19 @@ export default function UserWritePage() {
                 </div>
 
                 <div>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={formData.isAdmin}
-                      onChange={(e) => handleInputChange('isAdmin', e.target.checked)}
-                      className="mr-2"
-                    />
-                    <span className="text-sm text-gray-700">관리자 여부</span>
+                  <label className="flex items-center space-x-4">
+				  <span className="block text-sm font-medium text-gray-700 mb-2">관리자 여부  </span>
+                    
+				  <input
+				     type="checkbox"
+				     checked={formData.isAdmin}
+				     onChange={(e) => handleInputChange('isAdmin', e.target.checked)}
+				     className="mr-2"
+				  />
                   </label>
+				  
                 </div>
-
+				<hr/>
                 <div className="flex justify-end mt-8">
                   <button
                     onClick={handleSubmit}
@@ -303,154 +315,178 @@ export default function UserWritePage() {
           </div>
         </div>
       </div>
-
-      {/* 부서 검색 모달 */}
-      {isDepartmentSearchModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg w-[600px] max-h-[500px] overflow-hidden flex flex-col">
-            <div className="p-4 border-b border-gray-200">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">부서 검색</h3>
-                <button
-                  onClick={() => setIsDepartmentSearchModalOpen(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
-                >
-                  <i className="ri-close-line w-5 h-5 flex items-center justify-center"></i>
-                </button>
-              </div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="text"
-                  placeholder="부서명 검색"
-                  value={departmentSearchQuery}
-                  onChange={(e) => setDepartmentSearchQuery(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm"
-                />
-                <button
-                  onClick={handleDepartmentSearch}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors cursor-pointer"
-                >
-                  검색
-                </button>
-              </div>
-            </div>
-
-            <div className="overflow-y-auto flex-1">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      부서명
-                    </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      코드
-                    </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      선택
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {filteredDepartments.map((dept) => (
-                    <tr key={dept.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-2 text-gray-900">{dept.name}</td>
-                      <td className="px-4 py-2 text-gray-600">{dept.code}</td>
-                      <td className="px-4 py-2">
-                        <button
-                          onClick={() => handleSelectDepartment(dept)}
-                          className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200 transition-colors cursor-pointer"
-                        >
-                          선택
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="p-4 border-t border-gray-200 text-center">
-              <div className="text-sm text-gray-600">총 {filteredDepartments.length}개</div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 직급 검색 모달 */}
-      {isPositionSearchModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg w-[600px] max-h-[500px] overflow-hidden flex flex-col">
-            <div className="p-4 border-b border-gray-200">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">직급 검색</h3>
-                <button
-                  onClick={() => setIsPositionSearchModalOpen(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
-                >
-                  <i className="ri-close-line w-5 h-5 flex items-center justify-center"></i>
-                </button>
-              </div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="text"
-                  placeholder="직급명 검색"
-                  value={positionSearchQuery}
-                  onChange={(e) => setPositionSearchQuery(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm"
-                />
-                <button
-                  onClick={handlePositionSearch}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors cursor-pointer"
-                >
-                  검색
-                </button>
-              </div>
-            </div>
-
-            <div className="overflow-y-auto flex-1">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      직급명
-                    </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      코드
-                    </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      레벨
-                    </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      선택
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {filteredPositions.map((position) => (
-                    <tr key={position.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-2 text-gray-900">{position.name}</td>
-                      <td className="px-4 py-2 text-gray-600">{position.code}</td>
-                      <td className="px-4 py-2 text-gray-600">{position.level}</td>
-                      <td className="px-4 py-2">
-                        <button
-                          onClick={() => handleSelectPosition(position)}
-                          className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200 transition-colors cursor-pointer"
-                        >
-                          선택
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="p-4 border-t border-gray-200 text-center">
-              <div className="text-sm text-gray-600">총 {filteredPositions.length}개</div>
-            </div>
-          </div>
-        </div>
-      )}
+	  
+	  {/*분리된 부서검색 모달 사용*/}
+	  <DepartmentSearchModal
+	  	isOpen={isDepartmentSearchModalOpen}
+		onClose={() => setIsDepartmentSearchModalOpen(false)}
+		searchQuery={departmentSearchQuery}
+		setSearchQuery={setDepartmentSearchQuery}
+		filteredDepartments={filteredDepartments}
+		onSelectedDepartment={handleSelectDepartment}
+		onSearch={handleDepartmentSearch}
+	  />
+	
+	  {/*직급검색 모달 */}
+	  <GradeSearchModal
+	  	isOpen={isGradeSearchModalOpen}
+		onClose={() => setIsGradeSearchModalOpen(false)}
+		searchQuery={gradeSearchQuery}
+		setSearchQuery={setGradeSearchQuery}
+		filteredGrades={filteredGrades}
+		onSelectGrade={handleSelectGrade}
+		onSearch={handleGradeSearch}
+	  />
     </div>
   );
 }
+
+/*
+{ 부서 검색 모달 }
+{isDepartmentSearchModalOpen && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white rounded-lg shadow-lg w-[600px] max-h-[500px] overflow-hidden flex flex-col">
+      <div className="p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">부서 검색</h3>
+          <button
+            onClick={() => setIsDepartmentSearchModalOpen(false)}
+            className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+          >
+            <i className="ri-close-line w-5 h-5 flex items-center justify-center"></i>
+          </button>
+        </div>
+        <div className="flex items-center space-x-2">
+          <input
+            type="text"
+            placeholder="부서명 검색"
+            value={departmentSearchQuery}
+            onChange={(e) => setDepartmentSearchQuery(e.target.value)}
+            className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm"
+          />
+          <button
+            onClick={handleDepartmentSearch}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors cursor-pointer"
+          >
+            검색
+          </button>
+        </div>
+      </div>
+
+      <div className="overflow-y-auto flex-1">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                부서명
+              </th>
+              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                코드
+              </th>
+              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                선택
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200">
+            {filteredDepartments.map((dept) => (
+              <tr key={dept.id} className="hover:bg-gray-50">
+                <td className="px-4 py-2 text-gray-900">{dept.name}</td>
+                <td className="px-4 py-2 text-gray-600">{dept.code}</td>
+                <td className="px-4 py-2">
+                  <button
+                    onClick={() => handleSelectDepartment(dept)}
+                    className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200 transition-colors cursor-pointer"
+                  >
+                    선택
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="p-4 border-t border-gray-200 text-center">
+        <div className="text-sm text-gray-600">총 {filteredDepartments.length}개</div>
+      </div>
+    </div>
+  </div>
+)}
+
+{ 직급 검색 모달 }
+{isGradeSearchModalOpen && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white rounded-lg shadow-lg w-[600px] max-h-[500px] overflow-hidden flex flex-col">
+      <div className="p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">직급 검색</h3>
+          <button
+            onClick={() => setIsGradeSearchModalOpen(false)}
+            className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+          >
+            <i className="ri-close-line w-5 h-5 flex items-center justify-center"></i>
+          </button>
+        </div>
+        <div className="flex items-center space-x-2">
+          <input
+            type="text"
+            placeholder="직급명 검색"
+            value={gradeSearchQuery}
+            onChange={(e) => setGradeSearchQuery(e.target.value)}
+            className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm"
+          />
+          <button
+            onClick={handleGradeSearch}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors cursor-pointer"
+          >
+            검색
+          </button>
+        </div>
+      </div>
+
+      <div className="overflow-y-auto flex-1">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                직급명
+              </th>
+              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                코드
+              </th>
+              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                레벨
+              </th>
+              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                선택
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200">
+            {filteredGrades.map((grade) => (
+              <tr key={grade.id} className="hover:bg-gray-50">
+                <td className="px-4 py-2 text-gray-900">{grade.name}</td>
+                <td className="px-4 py-2 text-gray-600">{grade.code}</td>
+                <td className="px-4 py-2 text-gray-600">{grade.level}</td>
+                <td className="px-4 py-2">
+                  <button
+                    onClick={() => handleSelectGrade(grade)}
+                    className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200 transition-colors cursor-pointer"
+                  >
+                    선택
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="p-4 border-t border-gray-200 text-center">
+        <div className="text-sm text-gray-600">총 {filteredGrades.length}개</div>
+      </div>
+    </div>
+  </div>
+)}
+ */

@@ -1,4 +1,4 @@
-//gradeWrite
+//  admin/grade/gradeWrite
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -10,6 +10,10 @@ export default function GradeWritePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [expandedSection, setExpandedSection] = useState<string | null>('user-management');
+  
+  const [gradeLevel, setGradeLevel] = useState<number>(1); //초기값 조정
+  const options = Array.from({ length: 20 }, (_,i) => i+1); //[1,2,...,20]
+  
   const router = useRouter();
 
   const [formData, setFormData] = useState({
@@ -125,18 +129,7 @@ export default function GradeWritePage() {
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      직급 코드 *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.gradeCode}
-                      onChange={(e) => handleInputChange('gradeCode', e.target.value)}
-                      placeholder="예: MGR, DEV, INT"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                    />
-                  </div>
+                  
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -145,78 +138,23 @@ export default function GradeWritePage() {
                       직급 레벨 *
                     </label>
                     <select
-                      value={formData.level}
-                      onChange={(e) => handleInputChange('level', e.target.value)}
+						value={gradeLevel}
+                      //value={formData.level}
+                      onChange={(e) => handleGradeLevel(Number(e.target.value))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm pr-8"
                     >
-                      <option value="">레벨을 선택하세요</option>
-                      <option value="1">1 (최고)</option>
-                      <option value="2">2</option>
-                      <option value="3">3</option>
-                      <option value="4">4</option>
-                      <option value="5">5 (최하)</option>
+                      {options.map((i) => (
+						<option key={i} value={i}>
+							{i}
+						</option>
+					  ))}
                     </select>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      기본 급여
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.salary}
-                      onChange={(e) => handleInputChange('salary', e.target.value)}
-                      placeholder="기본 급여 (원)"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                    />
-                  </div>
+                 
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    설명
-                  </label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => handleInputChange('description', e.target.value)}
-                    placeholder="직급에 대한 설명을 입력하세요"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm h-24 resize-none"
-                  />
-                </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
-                    기본 권한
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
-                      '파일 업로드',
-                      '파일 다운로드',
-                      '사용자 정보 조회',
-                      '프로젝트 생성',
-                      '보고서 작성',
-                      '시스템 설정',
-                      '사용자 관리',
-                      '부서 관리'
-                    ].map((permission) => (
-                      <label key={permission} className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={formData.permissions.includes(permission)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              handleInputChange('permissions', [...formData.permissions, permission]);
-                            } else {
-                              handleInputChange('permissions', formData.permissions.filter(p => p !== permission));
-                            }
-                          }}
-                          className="mr-2"
-                        />
-                        <span className="text-sm text-gray-700">{permission}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
               </div>
 
               <div className="flex justify-end mt-8">
@@ -234,3 +172,77 @@ export default function GradeWritePage() {
     </div>
   );
 }
+
+/* 
+<div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      직급 코드 *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.gradeCode}
+                      onChange={(e) => handleInputChange('gradeCode', e.target.value)}
+                      placeholder="예: MGR, DEV, INT"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                    />
+                  </div>
+				  
+				  <div>
+				                     <label className="block text-sm font-medium text-gray-700 mb-2">
+				                       기본 급여
+				                     </label>
+				                     <input
+				                       type="number"
+				                       value={formData.salary}
+				                       onChange={(e) => handleInputChange('salary', e.target.value)}
+				                       placeholder="기본 급여 (원)"
+				                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+				                     />
+				                   </div>
+								   
+								   <div>
+								     <label className="block text-sm font-medium text-gray-700 mb-2">
+								       설명
+								     </label>
+								     <textarea
+								       value={formData.description}
+								       onChange={(e) => handleInputChange('description', e.target.value)}
+								       placeholder="직급에 대한 설명을 입력하세요"
+								       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm h-24 resize-none"
+								     />
+								   </div>
+
+								   <div>
+								     <label className="block text-sm font-medium text-gray-700 mb-3">
+								       기본 권한
+								     </label>
+								     <div className="grid grid-cols-2 gap-2">
+								       {[
+								         '파일 업로드',
+								         '파일 다운로드',
+								         '사용자 정보 조회',
+								         '프로젝트 생성',
+								         '보고서 작성',
+								         '시스템 설정',
+								         '사용자 관리',
+								         '부서 관리'
+								       ].map((permission) => (
+								         <label key={permission} className="flex items-center">
+								           <input
+								             type="checkbox"
+								             checked={formData.permissions.includes(permission)}
+								             onChange={(e) => {
+								               if (e.target.checked) {
+								                 handleInputChange('permissions', [...formData.permissions, permission]);
+								               } else {
+								                 handleInputChange('permissions', formData.permissions.filter(p => p !== permission));
+								               }
+								             }}
+								             className="mr-2"
+								           />
+								           <span className="text-sm text-gray-700">{permission}</span>
+								         </label>
+								       ))}
+								     </div>
+								   </div>
+*/

@@ -1,11 +1,12 @@
-
+//  admin/accessRule/allowgWrite
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminSidebar from '../../../../components/AdminSidebar';
 import AdminHeader from '../../../../components/AdminHeader';
+import GradeSearchModal from '../../../../components/GradeSearchModal'; //분리된 모달 
 
-interface Position {
+interface grade {
   id: string;
   name: string;
   code: string;
@@ -18,18 +19,18 @@ export default function AllowgWritePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [expandedSection, setExpandedSection] = useState<string | null>('policies');
-  const [isPositionSearchModalOpen, setIsPositionSearchModalOpen] = useState(false);
+  const [isGradeSearchModalOpen, setIsGradeSearchModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
 
   const [formData, setFormData] = useState({
     targetName: '',
     ruleName: '',
-    positionName: '',
+    gradeName: '',
     isActive: true
   });
 
-  const [positions] = useState<Position[]>([
+  const [grades] = useState<grade[]>([
     { id: '1', name: '팀장', code: 'TL', level: 5, description: '팀 관리 및 운영' },
     { id: '2', name: '대리', code: 'AL', level: 4, description: '업무 담당자' },
     { id: '3', name: '연구원', code: 'RS', level: 3, description: '연구 및 개발' },
@@ -38,7 +39,7 @@ export default function AllowgWritePage() {
     { id: '6', name: '부장', code: 'GM', level: 7, description: '고급 관리자' }
   ]);
 
-  const [filteredPositions, setFilteredPositions] = useState<Position[]>(positions);
+  const [filteredGrades, setFilteredGrades] = useState<grade[]>(grades);
 
   useEffect(() => {
     /*const loginStatus = localStorage.getItem('isLoggedIn');
@@ -52,19 +53,19 @@ export default function AllowgWritePage() {
 
   useEffect(() => {
     if (searchQuery.trim() === '') {
-      setFilteredPositions(positions);
+      setFilteredGrades(grades);
     } else {
       const lower = searchQuery.toLowerCase();
-      setFilteredPositions(
-        positions.filter(
-          position =>
-            position.name.toLowerCase().includes(lower) ||
-            position.code.toLowerCase().includes(lower) ||
-            position.description.toLowerCase().includes(lower)
+      setFilteredGrades(
+        grades.filter(
+          grade =>
+            grade.name.toLowerCase().includes(lower) ||
+            grade.code.toLowerCase().includes(lower) ||
+            grade.description.toLowerCase().includes(lower)
         )
       );
     }
-  }, [searchQuery, positions]);
+  }, [searchQuery, grades]);
 
   const handleToggleSection = (section: string) => {
     if (expandedSection === section) {
@@ -82,7 +83,7 @@ export default function AllowgWritePage() {
   };
 
   const handleSubmit = () => {
-    console.log('Creating position policy:', formData);
+    console.log('Creating grade policy:', formData);
     router.push('/admin/accessRule/allowgList');
   };
 
@@ -90,16 +91,16 @@ export default function AllowgWritePage() {
     router.push('/admin/accessRule/allowgList');
   };
 
-  const handleSelectPosition = (position: Position) => {
+  const handleSelectGrade = (grade: grade) => {
     setFormData(prev => ({
       ...prev,
-      positionName: position.name
+      gradeName: grade.name
     }));
-    setIsPositionSearchModalOpen(false);
+    setIsGradeSearchModalOpen(false);
   };
 
   const handleSearch = () => {
-    console.log('Searching positions:', searchQuery);
+    console.log('Searching grades:', searchQuery);
   };
 
   if (isLoading) {
@@ -158,52 +159,49 @@ export default function AllowgWritePage() {
               <h2 className="text-lg font-semibold text-gray-900 mb-6">직급정책 생성</h2>
 
               <div className="space-y-6">
-                {/* 타겟명 */}
+                {/* 직급정책 */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    타겟명
+                    직급정책
                   </label>
                   <input
                     type="text"
+					placeholder="정책 이름"
                     value={formData.targetName}
                     onChange={e => handleInputChange('targetName', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                   />
                 </div>
 
-                {/* 규칙명 */}
+                {/* 허용 기준 직급 */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    규칙명
+                    허용기준 직급
                   </label>
                   <input
+				  onClick={() => setIsGradeSearchModalOpen(true)}
                     type="text"
-                    value={formData.ruleName}
-                    onChange={e => handleInputChange('ruleName', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+					placeholder="직급명"
+                    value={formData.gradeName}
+                    onChange={e => handleInputChange('gradeName', e.target.value)}
+                    className="flex-3 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                   />
+				  <input
+				  onClick={() => setIsGradeSearchModalOpen(true)}
+				    type="text"
+					placeholder="직급 레벨"
+				    value={formData.gradeLevel}
+				    onChange={e => handleInputChange('gradeLevel', e.target.value)}
+				    className="flex-3 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+				  />
+				  <button
+				     onClick={() => setIsGradeSearchModalOpen(true)}
+				     className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors cursor-pointer whitespace-nowrap text-sm"
+				  >
+				     직급 검색
+				  </button>				  
                 </div>
 
-                {/* 직급명 */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    직급명
-                  </label>
-                  <div className="flex space-x-2">
-                    <input
-                      type="text"
-                      value={formData.positionName}
-                      onChange={e => handleInputChange('positionName', e.target.value)}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                    />
-                    <button
-                      onClick={() => setIsPositionSearchModalOpen(true)}
-                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors cursor-pointer whitespace-nowrap text-sm"
-                    >
-                      직급 검색
-                    </button>
-                  </div>
-                </div>
 
                 {/* 활성화 */}
                 <div>
@@ -218,7 +216,7 @@ export default function AllowgWritePage() {
                   </label>
                 </div>
               </div>
-
+		
               <div className="flex justify-end mt-8">
                 <button
                   onClick={handleSubmit}
@@ -232,81 +230,16 @@ export default function AllowgWritePage() {
         </div>
       </div>
 
-      {/* 직급 검색 모달 */}
-      {isPositionSearchModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg w-[700px] max-h-[500px] overflow-hidden flex flex-col">
-            <div className="p-4 border-b border-gray-200">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">직급 검색</h3>
-                <button
-                  onClick={() => setIsPositionSearchModalOpen(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
-                >
-                  <i className="ri-close-line w-5 h-5 flex items-center justify-center"></i>
-                </button>
-              </div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="text"
-                  placeholder="직급명 검색"
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm"
-                />
-                <button
-                  onClick={handleSearch}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors cursor-pointer"
-                >
-                  검색
-                </button>
-              </div>
-            </div>
-
-            <div className="overflow-y-auto flex-1">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      직급명
-                    </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      코드
-                    </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      레벨
-                    </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      선택
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {filteredPositions.map(position => (
-                    <tr key={position.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-2 text-gray-900">{position.name}</td>
-                      <td className="px-4 py-2 text-gray-600">{position.code}</td>
-                      <td className="px-4 py-2 text-gray-600">{position.level}</td>
-                      <td className="px-4 py-2">
-                        <button
-                          onClick={() => handleSelectPosition(position)}
-                          className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200 transition-colors cursor-pointer"
-                        >
-                          선택
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="p-4 border-t border-gray-200 text-center">
-              <div className="text-sm text-gray-600">총 {filteredPositions.length}개</div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+	  {/*분리된 GradeSearchModal 사용: 필요한 상태/핸들러를 Props로 전달하는 형태 */}
+	  <GradeSearchModal
+	  	isOpen={isGradeSearchModalOpen}
+		onClose={() => setIsGradeSearchModalOpen(false)}
+		searchQuery={searchQuery}
+		setSearchQuery={setSearchQuery}
+		filteredGrades={filteredGrades}
+		onSelectGrade={handleSelectGrade}
+		onSearch={handleSearch}
+	  />
+	 </div>
   );
 }

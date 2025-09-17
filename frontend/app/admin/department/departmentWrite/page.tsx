@@ -1,4 +1,4 @@
-
+//  admin/department/departmentWrite
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -119,60 +119,6 @@ export default function DepartmentWritePage() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    부서 코드
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.code}
-                    onChange={(e) => handleInputChange('code', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                    placeholder="부서 코드를 입력하세요 (예: DEV, HR)"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    부서 설명
-                  </label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => handleInputChange('description', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm h-24 resize-none"
-                    placeholder="부서의 역할과 업무를 설명하세요"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    부서장
-                  </label>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="text"
-                      value={formData.manager}
-                      onChange={(e) => handleInputChange('manager', e.target.value)}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                      placeholder="부서장 이름"
-                    />
-                    <button className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors cursor-pointer whitespace-nowrap text-sm">
-                      사용자 검색
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={formData.isActive}
-                      onChange={(e) => handleInputChange('isActive', e.target.checked)}
-                      className="mr-2"
-                    />
-                    <span className="text-sm text-gray-700">활성 상태</span>
-                  </label>
-                </div>
               </div>
 
               <div className="flex justify-end mt-8">
@@ -190,3 +136,62 @@ export default function DepartmentWritePage() {
     </div>
   );
 }
+
+/*
+<div>
+                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                   부서 코드
+                 </label>
+                 <input
+                   type="text"
+                   value={formData.code}
+                   onChange={(e) => handleInputChange('code', e.target.value)}
+                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                   placeholder="부서 코드를 입력하세요 (예: DEV, HR)"
+                 />
+               </div>
+
+               <div>
+                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                   부서 설명
+                 </label>
+                 <textarea
+                   value={formData.description}
+                   onChange={(e) => handleInputChange('description', e.target.value)}
+                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm h-24 resize-none"
+                   placeholder="부서의 역할과 업무를 설명하세요"
+                 />
+               </div>
+
+               <div>
+                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                   부서장
+                 </label>
+                 <div className="flex items-center space-x-2">
+                   <input
+                     type="text"
+                     value={formData.manager}
+                     onChange={(e) => handleInputChange('manager', e.target.value)}
+                     className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                     placeholder="부서장 이름"
+                   />
+                   <button className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors cursor-pointer whitespace-nowrap text-sm">
+                     사용자 검색
+                   </button>
+                 </div>
+               </div>
+
+
+
+			    <div>
+			      <label className="flex items-center">
+			        <input
+			          type="checkbox"
+			          checked={formData.isActive}
+			          onChange={(e) => handleInputChange('isActive', e.target.checked)}
+			          className="mr-2"
+			        />
+			        <span className="text-sm text-gray-700">활성 상태</span>
+			      </label>
+			    </div>
+ */

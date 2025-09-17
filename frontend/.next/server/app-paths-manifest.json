@@ -1,7 +1,7 @@
 {
-  "/admin/training-data/page": "app/admin/training-data/page.js",
+  "/admin/accessRule/accessList/page": "app/admin/accessRule/accessList/page.js",
+  "/admin/file/addAccessRule/page": "app/admin/file/addAccessRule/page.js",
+  "/admin/basic-settings/page": "app/admin/basic-settings/page.js",
   "/admin/embedding-setting/page": "app/admin/embedding-setting/page.js",
-  "/admin/user/userList/page": "app/admin/user/userList/page.js",
-  "/admin/file/fileList/page": "app/admin/file/fileList/page.js",
-  "/admin/analytics/page": "app/admin/analytics/page.js"
+  "/admin/file/fileList/page": "app/admin/file/fileList/page.js"
 }

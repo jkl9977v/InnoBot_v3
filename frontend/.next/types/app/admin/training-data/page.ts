@@ -1,4 +1,4 @@
-// File: D:\TiumBot1\InnoBot_v3\frontend\app\admin\training-data\page.tsx
+// File: D:\InnoBot_v3\frontend\app\admin\training-data\page.tsx
 import * as entry from '../../../../../app/admin/training-data/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
