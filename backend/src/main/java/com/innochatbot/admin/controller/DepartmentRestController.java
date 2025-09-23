@@ -1,14 +1,16 @@
 package com.innochatbot.admin.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.innochatbot.admin.command.DepartmentCommand;
+import com.innochatbot.admin.dto.DepartmentDTO;
+import com.innochatbot.admin.dto.PageResponse;
 import com.innochatbot.admin.mapper.DepartmentMapper;
 import com.innochatbot.admin.service.AutoNumService;
 import com.innochatbot.admin.service.department.DepartmentDetailService;
@@ -16,10 +18,9 @@ import com.innochatbot.admin.service.department.DepartmentListService;
 import com.innochatbot.admin.service.department.DepartmentUpdateService;
 import com.innochatbot.admin.service.department.DepartmentWriteService;
 
-@Controller
+@RestController
 @RequestMapping("admin/department")
-public class DepartmentController {
-	/*
+public class DepartmentRestController {
 	@Autowired
 	AutoNumService autoNumService;
 	@Autowired
@@ -47,6 +48,7 @@ public class DepartmentController {
 		departmentWriteService.departmentWrite(departmentCommand);
 		return "redirect:/admin/department/departmentList";
 	}
+	/*
 	@GetMapping("departmentList")
 	public String departmentList(@RequestParam(defaultValue="1") int page
 			, @RequestParam(defaultValue = "10") int limitPage
@@ -55,6 +57,15 @@ public class DepartmentController {
 			, Model model) {
 		departmentListService.departmentList(page, limitPage, searchWord, kind, model);
 		return "thymeleaf/department/departmentList";
+	}
+	*/
+	@GetMapping("departmentList")
+	public PageResponse<DepartmentDTO> departmentList(@RequestParam(defaultValue="1") int page
+			, @RequestParam(defaultValue = "10") int limitPage
+			, @RequestParam(required = false) String searchWord
+			, @RequestParam(required = false) String kind
+			) {
+		return departmentListService.departmentList2(page, limitPage, searchWord, kind);
 	}
 	@GetMapping("departmentSearch")
 	public String departmentSearch(@RequestParam(defaultValue="1") int page
@@ -96,5 +107,5 @@ public class DepartmentController {
 		departmentMapper.departmentDelete(departmentId);
 		return "redirect:/admin/department/departmentList";
 	}
-	*/
+
 }

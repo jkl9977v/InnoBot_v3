@@ -4,52 +4,65 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AdminSidebar from '../../../../components/AdminSidebar';
-import { apiUrl } from '@/lib/api'; 
 
-interface AccessRuleDTO {
-  accessId: String;
-  accessName: String;
-  accessType: String;
-  /*type: 'allow' | 'deny';
+interface AccessRule {
+  id: string;
+  name: string;
+  type: 'allow' | 'deny';
   target: string;
   description: string;
   createdDate: Date;
-  status: 'active' | 'inactive';*/
-}
-
-interface PageResponse<T> {
-	page: number;
-	limitRow: number;
-	startPageNum: number;
-	endPageNum: number;
-	maxPageNum: number;
-	count: number;
-	searchWord: string | null;
-	kind: string | null;
-	//kind2: string | null; //kind2를 사용하는 리스트 페이지에서만 사용
-	list: T[];
+  status: 'active' | 'inactive';
 }
 
 export default function AccessListPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [expandedSection, setExpandedSection] = useState<string | null>('section');
+  const [expandedSection, setExpandedSection] = useState<string | null>('policies');
+  const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
-	
-  // 서버 데이터
-  const [accessRules, setAccessRules] = useState<AccessRuleDTO[]>([]);
-  const [page, setPage] = useState(1);
-  const [limitRow, setLimitRow] = useState(10);
-  const [kind, setKind] = useState('');		//허용 타입 필터
-  const [searchWord, setSearchWord] = useState('');
-  const [maxPageNum, setMaxPageNum] = useState(1);
-  const [count, setCount] = useState(0);
-  const [startPageNum, setStartPageNum] = useState(1);
-  const [endPageNum, setEndPageNum] = useState(1);
-  
 
-  useEffect(() => { //로그인 여부 확인
+  const [accessRules] = useState<AccessRule[]>([
+    {
+      id: '1',
+      name: '관리자 전체 접근',
+      type: 'allow',
+      target: 'admin/*',
+      description: '관리자 전체 권한',
+      createdDate: new Date('2024-01-15'),
+      status: 'active',
+    },
+    {
+      id: '2',
+      name: '게스트 제한',
+      type: 'deny',
+      target: 'guest',
+      description: '게스트 사용자 제한',
+      createdDate: new Date('2024-01-16'),
+      status: 'active',
+    },
+    {
+      id: '3',
+      name: '파일 업로드 허용',
+      type: 'allow',
+      target: 'file/upload',
+      description: '파일 업로드 권한',
+      createdDate: new Date('2024-01-17'),
+      status: 'active',
+    },
+    {
+      id: '4',
+      name: '시스템 설정 제한',
+      type: 'deny',
+      target: 'system/config',
+      description: '시스템 설정 제한',
+      createdDate: new Date('2024-01-18'),
+      status: 'inactive',
+    },
+  ]);
+
+  useEffect(() => {
     try {
 		/*
       const loginStatus = localStorage.getItem('isLoggedIn');
@@ -67,39 +80,6 @@ export default function AccessListPage() {
       setIsLoading(false);
     }
   }, [router]);
-  
-  useEffect(() => {
-  	if(isLoggedIn) fetchList();
-  }, [isLoggedIn, page, limitRow, searchWord, kind]);
-  
-  const fetchList = async () => { // 목록 가져오기 함수
-  	try {
-  		const params = new URLSearchParams({
-  			page: String(page),
-  			limitRow: String(limitRow),
-  			searchWord: searchWord,
-  			kind: kind,
-  		});
-  		const url = apiUrl(`/admin/accessRule/accessList?${params.toString()}`);
-  		const res = await fetch(url, {
-  			method: 'GET',
-  			headers: { Accept: 'application/json' },
-  			credentials: 'include',
-  		});
-  		if(!res.ok) throw new Error('Server error ' + res.status);
-  		const data: PageResponse<AccessRuleDTO> = await res.json();
-  		
-  		setAccessRules(data.list);
-  		setMaxPageNum(data.maxPageNum);
-  		setCount(data.count);
-  		setStartPageNum(data.startPageNum);
-  		setEndPageNum(data.endPageNum);
-  	} catch (e) {
-  		console.error('list fetch error', e);
-  	} finally {
-  		setIsLoading(false);
-  	}
-  };
 
   const handleToggleSection = (section: string) => {
     if (expandedSection === section) {
@@ -114,32 +94,9 @@ export default function AccessListPage() {
   };
 
   const handleSearch = () => {
-    console.log('Searching access rules:', searchWord);
+    console.log('Searching access rules:', searchQuery);
   };
 
-  // 정책 삭제 기능
-  const handleDelete = async (accessId: number) => {
-    if (!confirm('정말 삭제하시겠습니까?')) return;
-
-    try {
-      // 1) URL 생성 (accessId 파라미터 사용)
-      const url = apiUrl(`/admin/accessRule/accessDelete?accessId=${accessId}`);
-
-      // 2) 요청—백엔드가 GET 방식 삭제를 받을 때
-      await fetch(url, {
-        method: 'GET',
-        credentials: 'include',
-      });
-
-      // 3) 성공 → 1페이지로 리셋하여 목록 재호출
-      //setPage(1);]
-	  fetchList();
-    } catch (e) {
-      alert('삭제 실패');
-      console.error('delete error', e);
-    }
-  };
-   
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-50">
@@ -149,12 +106,8 @@ export default function AccessListPage() {
   }
 
   if (!isLoggedIn) {
-  	  return null;
+    return null;
   }
-  
-  
-
-
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -205,24 +158,18 @@ export default function AccessListPage() {
               <div className="flex items-center justify-between text-sm text-gray-600">
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-2">
-                    <label>허용 타입: </label>
-                    <select name="kind" 
-					className="px-2 py-1 border border-gray-300 rounded text-sm pr-8"
-					value={kind} //선택값 제어
-					onChange={(e) => { //선택 변경 핸들러
-						setKind(e.target.value);
-						setPage(1);		// 검색*페이징 초기화 등 필요하면
-					}}>
-                      <option value="">전체</option>
-                      <option value="허용 안함">허용 안함</option>
-                      <option value="모두 허용">모두 허용</option>
-					  <option value="내부 전체 허용">내부 전체 허용</option>
-					  <option value="일부 부서 허용">일부 부서 허용</option>
-					  <option value="특정 직급 이상 허용">특정 직급 이상 허용</option>
-					  <option value="일부 부서의 특정 직급 이상 허용">일부 부서의 특정 직급 이상 허용</option>
-                    </select>
-                    {/*<label>상태:</label>
+                    <label>허용 타입:</label>
                     <select className="px-2 py-1 border border-gray-300 rounded text-sm pr-8">
+                      <option>전체</option>
+                      <option>허용 안함</option>
+                      <option>모두 허용</option>
+					  <option>내부 전체 허용</option>
+					  <option>일부 부서 허용</option>
+					  <option>특정 직급 이상 허용</option>
+					  <option>일부 부서의 특정 직급 이상 허용</option>
+                    </select>
+                    <label>상태:</label>
+                    {/*<select className="px-2 py-1 border border-gray-300 rounded text-sm pr-8">
                       <option>전체</option>
                       <option>활성</option>
                       <option>비활성</option>
@@ -231,14 +178,10 @@ export default function AccessListPage() {
                   <div className="flex items-center space-x-2">
                     <label>검색:</label>
                     <input
-					  name="searchWord"
                       type="text"
                       placeholder="정책명 검색"
-                      value={searchWord}
-                      onChange={(e) => {
-						setSearchWord(e.target.value);
-						setPage(1);
-					  }}
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
                       className="px-2 py-1 border border-gray-300 rounded text-sm w-48"
                     />
                     <button
@@ -251,16 +194,12 @@ export default function AccessListPage() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <label>보기:</label>
-                  <select 
-				  name="limitRow"
-				  value={limitRow}
-				  onChange={(e) => {setLimitRow(Number(e.target.value)); setPage(1); }}
-				  className="px-2 py-1 border border-gray-300 rounded text-sm pr-8">
-                    <option value={10}>10</option>
-					<option value={15}>15</option>
-					<option value={20}>20</option>
-                    <option value={25}>25</option>
-                    <option value={50}>50</option>
+                  <select className="px-2 py-1 border border-gray-300 rounded text-sm pr-8">
+                    <option>10</option>
+					<option>15</option>
+					<option>20</option>
+                    <option>25</option>
+                    <option>50</option>
                   </select>
                 </div>
               </div>
@@ -285,18 +224,17 @@ export default function AccessListPage() {
                     {/*<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       상태
                     </th>*/ }
-                    {/*<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       생성일
-                    </th>*/}
+                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       작업
                     </th>
                   </tr>
                 </thead>
-				{/* 표 내용 */}
                 <tbody className="divide-y divide-gray-200">
                   {accessRules.map((rule) => (
-                    <tr key={rule.accessId} className="hover:bg-gray-50 transition-colors">
+                    <tr key={rule.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-3">
                           {/*<div
@@ -310,7 +248,7 @@ export default function AccessListPage() {
                               }`}
                             ></i>
                           </div>*/}
-                          <span className="text-sm font-medium text-gray-900">{rule.accessName}</span>
+                          <span className="text-sm font-medium text-gray-900">{rule.name}</span>
                         </div>
                       </td>
 					  
@@ -328,7 +266,7 @@ export default function AccessListPage() {
                         <code className="bg-gray-100 px-2 py-1 rounded text-xs">{rule.target}</code>
                       </td> */}
 					  
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{rule.accessType}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{rule.description}</td>
                       {/*<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -338,34 +276,21 @@ export default function AccessListPage() {
                           {rule.status === 'active' ? '활성' : '비활성'}
                         </span>
                       </td>*/}
-                      {/*<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                         {formatDate(rule.createdDate)}
-                      </td>*/}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div className="flex items-center space-x-2">
-                          <button 
-						  href={apiUrl(`/admin/accessRule/accessUpdate?accessId=${rule.accessId}`)}
-						  className="text-indigo-600 hover:text-indigo-900 transition-colors cursor-pointer">
+                          <button className="text-indigo-600 hover:text-indigo-900 transition-colors cursor-pointer">
                             수정
                           </button>
-                          <button 
-						  onClick={() => handleDelete(rule.accessId)}
-						  className="text-red-600 hover:text-red-900 transition-colors cursor-pointer">
+                          <button className="text-red-600 hover:text-red-900 transition-colors cursor-pointer">
                             삭제
                           </button>
                         </div>
                       </td>
                     </tr>
                   ))}
-				  
-				  {/* 데이터가 하나도 없을 때 */}
-				  {(!accessRules || accessRules.length === 0) && (
-				  	<tr>
-				  		<td colSpan={8} className="text-center py-6 text-sm text-gray-500">
-				  			검색 결과가 없습니다.
-				  		</td>
-				  	</tr>
-				  )}
                 </tbody>
               </table>
             </div>
@@ -373,8 +298,7 @@ export default function AccessListPage() {
             <div className="px-6 py-3 border-t border-gray-200 bg-gray-50">
               <div className="flex items-center justify-between text-sm text-gray-600">
                 <span>총 {accessRules.length}개 정책</span>
-				
-                {/*<div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2">
                   <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 transition-colors cursor-pointer">
                     이전
                   </button>
@@ -382,48 +306,7 @@ export default function AccessListPage() {
                   <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 transition-colors cursor-pointer">
                     다음
                   </button>
-                </div> */}
-				
-				<ul className="inline-flex items-center space-x-1">
-				     {/* 이전 */}
-				     <li>
-				       <button
-				         onClick={() => setPage((p) => Math.max(1, p - 1))}
-				         disabled={page <= 1}
-				         className="px-3 py-1 border rounded disabled:opacity-40"
-				       >
-				         이전
-				       </button>
-				     </li>
-
-				     {/* 페이지 번호 */}
-				     {Array.from(
-				       { length: endPageNum - startPageNum + 1 },
-				       (_, idx) => startPageNum + idx
-				     ).map((i) => (
-				       <li key={i}>
-				         <button
-				           onClick={() => setPage(i)}
-				           className={`px-3 py-1 border rounded ${
-				             i === page ? 'bg-indigo-600 text-white' : 'hover:bg-gray-50'
-				           }`}
-				         >
-				           {i}
-				         </button>
-				       </li>
-				     ))}
-
-				     {/* 다음 */}
-				     <li>
-				       <button
-				         onClick={() => setPage((p) => Math.min(maxPageNum, p + 1))}
-				         disabled={page >= maxPageNum}
-				         className="px-3 py-1 border rounded disabled:opacity-40"
-				       >
-				         다음
-				       </button>
-				     </li>
-				   </ul>
+                </div>
               </div>
             </div>
           </div>
@@ -431,5 +314,4 @@ export default function AccessListPage() {
       </div>
     </div>
   );
- 
 }

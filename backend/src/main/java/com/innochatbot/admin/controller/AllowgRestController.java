@@ -1,14 +1,16 @@
 package com.innochatbot.admin.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.innochatbot.admin.command.GradeCommand;
+import com.innochatbot.admin.dto.GradeDTO;
+import com.innochatbot.admin.dto.PageResponse;
 import com.innochatbot.admin.mapper.AllowgMapper;
 import com.innochatbot.admin.service.AutoNumService;
 import com.innochatbot.admin.service.allowg.AllowgDetailService;
@@ -17,9 +19,8 @@ import com.innochatbot.admin.service.allowg.AllowgUpdateService;
 import com.innochatbot.admin.service.allowg.AllowgWriteService;
 
 @RequestMapping("admin/accessRule")
-@Controller
-public class AllowgController {
-	/*
+@RestController
+public class AllowgRestController {
 	@Autowired
 	AutoNumService autoNumService;
 	
@@ -48,6 +49,7 @@ public class AllowgController {
     	allowgWriteService.allowgWrite(gradeCommand);
     	return "redirect:/admin/accessRule/allowgList";
     }
+    /*
     @GetMapping("allowgList")
     public String allowgList(@RequestParam (defaultValue="1") int page
     		, @RequestParam (defaultValue="10") int limitRow
@@ -56,6 +58,15 @@ public class AllowgController {
     		, Model model) {
     	allowgListService.allowgList(page, limitRow, searchWord, kind, model);
     	return "thymeleaf/allowGrade/allowgList";
+    }
+    */
+    @GetMapping("allowgList")
+    public PageResponse<GradeDTO> allowgList(@RequestParam (defaultValue="1") int page
+    		, @RequestParam (defaultValue="10") int limitRow
+    		, @RequestParam (required=false) String searchWord
+    		, @RequestParam (required=false) String kind
+    		) {
+    	return allowgListService.allowgList2(page, limitRow, searchWord, kind);
     }
     @GetMapping("allowgSearch")
     public String allowgSearch(@RequestParam (defaultValue="1") int page
@@ -89,5 +100,4 @@ public class AllowgController {
     	allowgMapper.allowgDelete(allowgId);
     	return "redirect:/admin/accessRule/allowgList";
     }
-    */
 }

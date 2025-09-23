@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 
 import com.innochatbot.admin.dto.GradeDTO;
+import com.innochatbot.admin.dto.PageBlockDTO;
+import com.innochatbot.admin.dto.PageResponse;
 import com.innochatbot.admin.dto.StartEndPageDTO;
 import com.innochatbot.admin.mapper.AllowgMapper;
 import com.innochatbot.admin.service.ListPageService;
@@ -33,6 +35,32 @@ public class AllowgListService {
 		//4. 파라미터로 받아온 값, count, list를 listPageService에 넘겨서 화면에 출력한다.
 		listPageService.ShowList(page, limitRow, count, searchWord, list, model, null, kind);
 		
+	}
+
+	public PageResponse<GradeDTO> allowgList2(int page, int limitRow, String searchWord, String kind) {
+		StartEndPageDTO startEndPageDTO = listPageService.StartEndRow(page, limitRow, null, searchWord, kind, null);
+		
+		Integer count = allowgMapper.allowgCount();
+		
+		List<GradeDTO> list = allowgMapper.allowgList(startEndPageDTO);
+		
+		//페이지 블록 계산
+		PageBlockDTO pageDTO = listPageService.PageBlock(page, limitRow, count);
+		
+		//PageResponse 반환
+		PageResponse<GradeDTO> dto = new PageResponse<>();
+		dto.setPage(page);
+		dto.setLimitRow(limitRow);
+		dto.setStartPageNum(pageDTO.getStartPageNum());
+		dto.setEndPageNum(pageDTO.getEndPageNum());
+		dto.setMaxPageNum(pageDTO.getMaxPageNum());
+		dto.setCount(count);
+		dto.setSearchWord(searchWord);
+		dto.setKind(kind);
+		//dto.setKind2(kind2);	//kind2 있는 부분에서만 사용
+		dto.setList(list);
+		
+		return dto;
 	}
 
 }

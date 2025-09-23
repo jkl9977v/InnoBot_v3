@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 
+import com.innochatbot.admin.dto.PageBlockDTO;
 import com.innochatbot.admin.dto.StartEndPageDTO;
 
 @Service
@@ -29,9 +30,30 @@ public class ListPageService {
 		return dto;
 		
 	}
+	
+	public PageBlockDTO PageBlock(int page, int limitRow, Integer count) {
+		PageBlockDTO dto = new PageBlockDTO();
+		
+		if (page != 0 && limitRow !=0) {
+			Integer limitPage=10;
+			Integer startPageNum=(int)((double)page/limitPage-0.05)*limitPage+1;
+			Integer endPageNum=startPageNum+limitPage-1;
+			Integer maxPageNum=(int)Math.ceil((double)count/limitRow);
+			if(endPageNum>maxPageNum) endPageNum=maxPageNum;
+			
+			dto.setStartPageNum(startPageNum);
+			dto.setEndPageNum(endPageNum);
+			dto.setMaxPageNum(maxPageNum);
+			
+			System.out.println("최대 페이지: "+maxPageNum);
+			
+		}
+		return dto;
+	}
 
 	public void ShowList(int page, int limitRow, Integer count, String searchWord, List list,
 			Model model, String pathId, String kind) {
+		//page, limitRow, count 사용해서 startPageNum, endPageNum, maxPageNum 만들어 냄
 		Integer startPageNum=0;
 		Integer endPageNum=0;
 		Integer maxPageNum=0;

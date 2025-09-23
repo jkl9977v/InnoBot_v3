@@ -129,7 +129,7 @@ export default function AdminSidebar({ isSidebarOpen, expandedSection, onToggleS
       <div className="p-4 border-t border-gray-700 space-y-2">
         <Link href="/chat" className="flex items-center space-x-3 p-3 hover:bg-gray-800 rounded-lg transition-colors cursor-pointer">
           <i className="ri-chat-3-line w-5 h-5 flex items-center justify-center text-gray-400"></i>
-          <span className="text-sm text-gray-300">챗봇 테스트</span>
+          <span className="text-sm text-gray-300">챗봇과 대화하기</span>
         </Link>
         <button
           onClick={handleLogout}

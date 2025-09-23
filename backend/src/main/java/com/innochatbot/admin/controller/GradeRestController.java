@@ -1,14 +1,16 @@
 package com.innochatbot.admin.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.innochatbot.admin.command.GradeCommand;
+import com.innochatbot.admin.dto.GradeDTO;
+import com.innochatbot.admin.dto.PageResponse;
 import com.innochatbot.admin.mapper.GradeMapper;
 import com.innochatbot.admin.service.AutoNumService;
 import com.innochatbot.admin.service.grade.GradeDetailService;
@@ -16,9 +18,9 @@ import com.innochatbot.admin.service.grade.GradeListService;
 import com.innochatbot.admin.service.grade.GradeUpdateService;
 import com.innochatbot.admin.service.grade.GradeWriteService;
 
-//@Controller
+@RestController
 @RequestMapping("admin/grade")
-public class GradeController {
+public class GradeRestController {
 	
 	@Autowired
 	AutoNumService autoNumService;
@@ -47,6 +49,7 @@ public class GradeController {
 		gradeWriteService.gradeWrite(gradeCommand);
 		return "redirect:/admin/grade/gradeList";
 	}
+	/*
 	@GetMapping("gradeList")
 	public String gradeList(@RequestParam (defaultValue = "1") int page
 			, @RequestParam (defaultValue = "10") int limitRow
@@ -55,6 +58,15 @@ public class GradeController {
 			, Model model) {
 		gradeListService.gradeList(page, limitRow, searchWord, kind, model);
 		return "thymeleaf/grade/gradeList";
+	}
+	*/
+	@GetMapping("gradeList")
+	public PageResponse<GradeDTO> gradeList(@RequestParam (defaultValue = "1") int page
+			, @RequestParam (defaultValue = "10") int limitRow
+			, @RequestParam (required = false) String searchWord
+			, @RequestParam (required = false) String kind
+			) {
+		return gradeListService.gradeList2(page, limitRow, searchWord, kind);
 	}
 	@GetMapping("gradeSearch")
 	public String gradeSearch(@RequestParam (defaultValue = "1") int page

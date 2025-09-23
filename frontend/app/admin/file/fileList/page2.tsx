@@ -413,17 +413,11 @@ export default function FileListPage() {
                   </div>
                   <div className="flex items-center space-x-2">
                     <label>보기:</label>
-					<select 
-									  name="limitRow"
-									  value={limitRow}
-									  onChange={(e) => {setLimitRow(Number(e.target.value)); setPage(1); }}
-									  className="px-2 py-1 border border-gray-300 rounded text-sm pr-8">
-					                    <option value={10}>10</option>
-										<option value={15}>15</option>
-										<option value={20}>20</option>
-					                    <option value={25}>25</option>
-					                    <option value={50}>50</option>
-					                  </select>
+                    <select className="px-2 py-1 border border-gray-300 rounded text-sm pr-8">
+                      <option>10</option>
+                      <option>25</option>
+                      <option>50</option>
+                    </select>
                     <div className="flex items-center space-x-1 ml-4">
                       <button
                         onClick={() => setViewMode('table')}
@@ -662,51 +656,11 @@ export default function FileListPage() {
               <div className="px-6 py-3 border-t border-gray-200 bg-gray-50">
                 <div className="flex items-center justify-between text-sm text-gray-600">
                   <span>총 {fileLists.length}개 항목</span>
-                  {/*<div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2">
                     <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 transition-colors cursor-pointer">이전</button>
                     <span>1 / 1</span>
                     <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 transition-colors cursor-pointer">다음</button>
-                  </div>*/}
-				  <ul className="inline-flex items-center space-x-1">
-				  				     {/* 이전 */}
-				  				     <li>
-				  				       <button
-				  				         onClick={() => setPage((p) => Math.max(1, p - 1))}
-				  				         disabled={page <= 1}
-				  				         className="px-3 py-1 border rounded disabled:opacity-40"
-				  				       >
-				  				         이전
-				  				       </button>
-				  				     </li>
-
-				  				     {/* 페이지 번호 */}
-				  				     {Array.from(
-				  				       { length: endPageNum - startPageNum + 1 },
-				  				       (_, idx) => startPageNum + idx
-				  				     ).map((i) => (
-				  				       <li key={i}>
-				  				         <button
-				  				           onClick={() => setPage(i)}
-				  				           className={`px-3 py-1 border rounded ${
-				  				             i === page ? 'bg-indigo-600 text-white' : 'hover:bg-gray-50'
-				  				           }`}
-				  				         >
-				  				           {i}
-				  				         </button>
-				  				       </li>
-				  				     ))}
-
-				  				     {/* 다음 */}
-				  				     <li>
-				  				       <button
-				  				         onClick={() => setPage((p) => Math.min(maxPageNum, p + 1))}
-				  				         disabled={page >= maxPageNum}
-				  				         className="px-3 py-1 border rounded disabled:opacity-40"
-				  				       >
-				  				         다음
-				  				       </button>
-				  				     </li>
-				  				   </ul>
+                  </div>
                 </div>
               </div>
             </div>

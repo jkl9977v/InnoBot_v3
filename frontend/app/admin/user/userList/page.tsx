@@ -5,16 +5,48 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AdminSidebar from '../../../../components/AdminSidebar';
 import AdminHeader from '../../../../components/AdminHeader';
+import { apiUrl } from '@/lib/api';
 
-interface User {
-  id: string;
-  name: string;
-  username: string;
-  department: string;
-  position: string;
-  isAdmin: boolean;
-  isActive: boolean;
-  lastAccess: Date;
+interface UserListResponse {
+	users: PageResponse<UserDTO>;
+	departments: DepartmentDTO[];
+	grades: GradeDTO[];
+}
+
+interface UserDTO {
+  userNum: string;
+  userName: string;
+  userId: string;
+  gradeId: string;
+  gradeDTO: string;
+  departmentId: string;
+  departmentDTO: string;
+  manager: string;
+/*  isActive: boolean;
+  lastAccess: Date;*/
+}
+
+interface DepartmentDTO {
+	departmentId: string;
+	departmentName: string;
+}
+
+interface GradeDTO {
+	gradeId: string;
+	gradeName: string;
+}
+
+interface PageResponse<T> {
+	page: number;
+	limitRow: number;
+	startPageNum: number;
+	endPageNum: number;
+	maxPageNum: number;
+	count: number;
+	searchWord: string | null;
+	kind: string | null;
+	kind2: string | null;
+	list: T[];
 }
 
 export default function UserListPage() {
@@ -22,19 +54,31 @@ export default function UserListPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [expandedSection, setExpandedSection] = useState<string | null>('user-management');
-  const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
 
-  const [users] = useState<User[]>([
-    { id: '1', name: '김민수', username: 'kim123', department: '개발팀', position: '대리', isAdmin: false, isActive: true, lastAccess: new Date('2025-01-08') },
+  // 서버 데이터
+  const [users, setUsers] = useState<UserDTO[]>([
+    /*{ id: '1', name: '김민수', username: 'kim123', department: '개발팀', position: '대리', isAdmin: false, isActive: true, lastAccess: new Date('2025-01-08') },
     { id: '2', name: '이수진', username: 'lee456', department: '기획팀', position: '주임', isAdmin: false, isActive: true, lastAccess: new Date('2025-01-07') },
     { id: '3', name: '박준호', username: 'park789', department: '마케팅팀', position: '팀장', isAdmin: true, isActive: true, lastAccess: new Date('2025-01-06') },
     { id: '4', name: '최영희', username: 'choi111', department: '인사팀', position: '과장', isAdmin: false, isActive: false, lastAccess: new Date('2025-01-03') },
     { id: '5', name: '정철수', username: 'jung222', department: '개발팀', position: '선임', isAdmin: false, isActive: true, lastAccess: new Date('2025-01-05') },
-    { id: '6', name: '한미래', username: 'han333', department: '디자인팀', position: '사원', isAdmin: false, isActive: true, lastAccess: new Date('2025-01-04') }
+    { id: '6', name: '한미래', username: 'han333', department: '디자인팀', position: '사원', isAdmin: false, isActive: true, lastAccess: new Date('2025-01-04') }*/
   ]);
+  const [departments, setDepartments] = useState<DepartmentDTO[]>([]);
+  const [grades, setGrades] = useState<GradeDTO[]>([]);
+  const [page, setPage] = useState(1);
+  const [limitRow, setLimitRow] = useState(10);
+  const [kind, setKind] = useState(''); // 허용 타입 필터
+  const [kind2, setKind2] = useState('');
+  const [searchWord, setSearchWord] = useState('');
+  const [maxPageNum, setMaxPageNum] = useState(1);
+  const [count, setCount] = useState(0);
+  const [startPageNum, setStartPageNum] = useState(1);
+  const [endPageNum, setEndPageNum] = useState(1);
+  
 
-  useEffect(() => {
+  useEffect(() => { //로그인 여부 확인
     /*const loginStatus = localStorage.getItem('isLoggedIn');
     if (loginStatus !== 'true') {
       router.push('/login');
@@ -43,6 +87,45 @@ export default function UserListPage() {
     setIsLoggedIn(true);
     setIsLoading(false);
   }, [router]);
+  
+  useEffect(() => {
+	if(isLoggedIn) fetchList();
+  }, [isLoggedIn, page, limitRow, searchWord, kind, kind2]);
+  
+  const fetchList = async () => { //목록 가져오기 함수
+	try {
+		const params = new URLSearchParams({
+			page: String(page),
+			limitRow: String(limitRow),
+			searchWord: searchWord,
+			//kind: kind,
+			//kind2: kind2,
+		});
+		const url = apiUrl(`/admin/user/userList?${params.toString()}`);
+		const res = await fetch(url, {
+			method: 'GET',
+			headers: { Accept: 'application/json' },
+			credentials: 'include',
+		});
+		if(!res.ok) throw new Error('Server error ' + res.status );
+		const data: UserListResponse = await res.json();
+		
+		setUsers(data.users.list);
+		setMaxPageNum(data.users.maxPageNum);
+		setCount(data.users.count);
+		setStartPageNum(data.users.startPageNum);
+		setEndPageNum(data.users.endPageNum);
+		
+		//옵션
+		setDepartments(data.departments);
+		setGrades(data.grades);
+	} catch (e) {
+		console.error('list fetch error', e);
+	} finally {
+		setIsLoading(false);
+	}
+  };
+  
 
   const handleToggleSection = (section: string) => {
     if (expandedSection === section) {
@@ -53,8 +136,30 @@ export default function UserListPage() {
   };
 
   const handleSearch = () => {
-    console.log('Searching users:', searchQuery);
+    console.log('Searching users:', searchWord);
   };
+  
+  // 정책 삭제 기능
+  const handleDelete = async (userNum: string) => {
+	if(!confirm('정말 삭제하시겠습니까?')) return;
+	
+	try {
+		//1. URL 생성
+		const url = apiUrl(`/admin/user/userList?userNum=${userNum}`);
+		
+		//2. 요청 - 백엔드가 GET 방식 삭제를 받을 때
+		await fetch(url, {
+			method: 'GET',
+			credentials: 'include',
+		});
+		
+		//3. 성공 -> 1페이지로 리셋하여 목록 재호출
+		fetchList();
+	} catch (e) {
+		alert('삭제 실패');
+		console.error('delete error', e);
+	}
+  }
 
   if (isLoading) {
     return (
@@ -97,32 +202,45 @@ export default function UserListPage() {
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-2">
                     <label>부서:</label>
-                    <select className="px-2 py-1 border border-gray-300 rounded text-sm pr-8">
-                      <option>전체</option>
-                      <option>개발팀</option>
-                      <option>기획팀</option>
-                      <option>마케팅팀</option>
-                      <option>인사팀</option>
-                      <option>디자인팀</option>
+                    <select name="kind"
+					value={kind}
+					onChange={(e) => { //선택 변경 핸들러
+						setKind(e.target.value);
+						setPage(1);
+					}} 
+					className="px-2 py-1 border border-gray-300 rounded text-sm pr-8">
+                      <option value="" >전체</option>
+					  {departments.map((dept) => (
+                      <option key={dept.departmentId} value="${dept.departmentId}"> {dept.departmentName}</option>
+                      ))}
                     </select>
                     <label>직급:</label>
-                    <select className="px-2 py-1 border border-gray-300 rounded text-sm pr-8">
-                      <option>전체</option>
-                      <option>사원</option>
-                      <option>주임</option>
+                    <select name="kind2" 
+					value={kind2}
+					onChange={(e) => { //선택 변경 핸들러
+						setKind(e.target.value);
+						setPage(1);
+					}}
+					className="px-2 py-1 border border-gray-300 rounded text-sm pr-8">
+                      <option value="" >전체</option>
+					  {grades.map((grade) => (
+						<option key={grade.gradeId} value="${grade.gradeId}">{grade.gradeName}</option>
+					  ))}
+                     
+                      {/*<option>주임</option>
                       <option>대리</option>
                       <option>과장</option>
                       <option>선임</option>
-                      <option>팀장</option>
+                      <option>팀장</option>*/}
                     </select>
                   </div>
                   <div className="flex items-center space-x-2">
                     <label>검색:</label>
                     <input
                       type="text"
-                      placeholder=""
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="이름, 아이디 검색"
+                      value={searchWord}
+                      onChange={(e) => setSearchWord(e.target.value)}
                       className="px-2 py-1 border border-gray-300 rounded text-sm w-48"
                     />
                     <button
@@ -135,11 +253,17 @@ export default function UserListPage() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <label>보기:</label>
-                  <select className="px-2 py-1 border border-gray-300 rounded text-sm pr-8">
-                    <option>10</option>
-                    <option>25</option>
-                    <option>50</option>
-                  </select>
+				  <select 
+				  				  name="limitRow"
+				  				  value={limitRow}
+				  				  onChange={(e) => {setLimitRow(Number(e.target.value)); setPage(1); }}
+				  				  className="px-2 py-1 border border-gray-300 rounded text-sm pr-8">
+				                      <option value={10}>10</option>
+				  					<option value={15}>15</option>
+				  					<option value={20}>20</option>
+				                      <option value={25}>25</option>
+				                      <option value={50}>50</option>
+				                    </select>
                 </div>
               </div>
             </div>
@@ -163,9 +287,9 @@ export default function UserListPage() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       관리자 여부
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {/*<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       사용여부
-                    </th>
+                    </th>*/}
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       작업
                     </th>
@@ -173,40 +297,53 @@ export default function UserListPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {users.map((user) => (
-                    <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={user.userNum} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {user.name}
+                        {user.userName}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {user.username}
+                        {user.userId}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {user.department}
+                        {user.departmentDTO.departmentName}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {user.position}
+                        {user.gradeDTO.gradeName}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {user.isAdmin ? 'O' : 'X'}
+                        {user.manager === 'y' ? 'O' : 'X'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      {/*<td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                           }`}>
                           {user.isActive ? '활성' : '비활성'}
                         </span>
-                      </td>
+                      </td>*/}
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div className="flex items-center space-x-2">
-                          <button className="text-indigo-600 hover:text-indigo-900 transition-colors cursor-pointer">
-                            수정하기
-                          </button>
-                          <button className="text-red-600 hover:text-red-900 transition-colors cursor-pointer">
-                            삭제
-                          </button>
+						<button 
+												  href={apiUrl(`/admin/user/userUpdate?userNum=${user.userNum}`)}
+												  className="text-indigo-600 hover:text-indigo-900 transition-colors cursor-pointer">
+						                            수정
+						                          </button>
+						                          <button 
+												  onClick={() => handleDelete(user.userNum)}
+												  className="text-red-600 hover:text-red-900 transition-colors cursor-pointer">
+						                            삭제
+						                          </button>
                         </div>
                       </td>
                     </tr>
                   ))}
+				  
+				  {/* 데이터가 하나도 없을 때 */}
+				  {(!users || users.length === 0) && (
+				  	<tr>
+				  		<td colSpan={8} className="text-center py-6 text-sm text-gray-500">
+				  			검색 결과가 없습니다.
+				  		</td>
+				  	</tr>
+				  )}
                 </tbody>
               </table>
             </div>
@@ -214,11 +351,51 @@ export default function UserListPage() {
             <div className="px-6 py-3 border-t border-gray-200 bg-gray-50">
               <div className="flex items-center justify-between text-sm text-gray-600">
                 <span>총 {users.length}개 항목</span>
-                <div className="flex items-center space-x-2">
+                {/*<div className="flex items-center space-x-2">
                   <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 transition-colors cursor-pointer">이전</button>
                   <span>1 / 1</span>
                   <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 transition-colors cursor-pointer">다음</button>
-                </div>
+                </div>*/}
+				<ul className="inline-flex items-center space-x-1">
+								     {/* 이전 */}
+								     <li>
+								       <button
+								         onClick={() => setPage((p) => Math.max(1, p - 1))}
+								         disabled={page <= 1}
+								         className="px-3 py-1 border rounded disabled:opacity-40"
+								       >
+								         이전
+								       </button>
+								     </li>
+
+								     {/* 페이지 번호 */}
+								     {Array.from(
+								       { length: endPageNum - startPageNum + 1 },
+								       (_, idx) => startPageNum + idx
+								     ).map((i) => (
+								       <li key={i}>
+								         <button
+								           onClick={() => setPage(i)}
+								           className={`px-3 py-1 border rounded ${
+								             i === page ? 'bg-indigo-600 text-white' : 'hover:bg-gray-50'
+								           }`}
+								         >
+								           {i}
+								         </button>
+								       </li>
+								     ))}
+
+								     {/* 다음 */}
+								     <li>
+								       <button
+								         onClick={() => setPage((p) => Math.min(maxPageNum, p + 1))}
+								         disabled={page >= maxPageNum}
+								         className="px-3 py-1 border rounded disabled:opacity-40"
+								       >
+								         다음
+								       </button>
+								     </li>
+								   </ul>
               </div>
             </div>
           </div>

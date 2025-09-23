@@ -5,28 +5,14 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AdminSidebar from '../../../../components/AdminSidebar';
 import AdminHeader from '../../../../components/AdminHeader';
-import { apiUrl } from '@/lib/api';
 
-interface GradeDTO {
-  gradeId: string;
-  gradeName: string;
-  gradeLevel: number;
-/*  description: string;
+interface Grade {
+  id: string;
+  name: string;
+  level: number;
+  description: string;
   userCount: number;
-  createdDate: Date;*/
-}
-
-interface PageResponse<T> {
-	page: number;
-	limitRow: number;
-	startPageNum: number;
-	endPageNum: number;
-	maxPageNum: number;
-	count: number;
-	searchWord: string | null;
-	kind: string | null;
-	//kind2: string | null;
-	list: T[];
+  createdDate: Date;
 }
 
 export default function GradeListPage() {
@@ -34,22 +20,20 @@ export default function GradeListPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [expandedSection, setExpandedSection] = useState<string | null>('user-management');
-  //const [searchWord, setsearchWord] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
-  
-  //서버 데이터
-  const [grades, setGrades] = useState<GradeDTO[]>([]);
-  const [page,setPage] = useState(1);
-  const [limitRow, setLimitRow] = useState(10);
-  //const [kind, setKind] = useState(''); //허용 타입 필터
-  const [searchWord, setSearchWord] = useState('');
-  const [maxPageNum, setMaxPageNum] = useState(1);
-  const [count, setCount] = useState(0);
-  const [startPageNum, setStartPageNum] = useState(1);
-  const [endPageNum, setEndPageNum] = useState(1);
-  
 
-  useEffect(() => { //로그인 여부 확인
+  const [grades] = useState<Grade[]>([
+    { id: '1', name: '인턴', level: 1, description: '신입 인턴', userCount: 5, createdDate: new Date('2024-01-15') },
+    { id: '2', name: '사원', level: 2, description: '일반 사원', userCount: 12, createdDate: new Date('2024-01-15') },
+    { id: '3', name: '대리', level: 3, description: '대리급', userCount: 8, createdDate: new Date('2024-01-15') },
+    { id: '4', name: '과장', level: 4, description: '과장급', userCount: 6, createdDate: new Date('2024-01-15') },
+    { id: '5', name: '차장', level: 5, description: '차장급', userCount: 4, createdDate: new Date('2024-01-15') },
+    { id: '6', name: '부장', level: 6, description: '부장급', userCount: 3, createdDate: new Date('2024-01-15') },
+    { id: '7', name: '이사', level: 7, description: '이사급', userCount: 2, createdDate: new Date('2024-01-15') }
+  ]);
+
+  useEffect(() => {
     /*const loginStatus = localStorage.getItem('isLoggedIn');
     if (loginStatus !== 'true') {
       router.push('/login');
@@ -58,39 +42,6 @@ export default function GradeListPage() {
     setIsLoggedIn(true);
     setIsLoading(false);
   }, [router]);
-  
-  useEffect(() => {
-	if(isLoggedIn) fetchList();
-  }, [isLoggedIn, page, limitRow, searchWord]);
-  
-  const fetchList = async () => { // 목록 가져오기 함수
-	try{
-		const params = new URLSearchParams({
-			page: String(page),
-			limit: String(limitRow),
-			searchWord: searchWord,
-			//kind: kind,
-		});
-		const url = apiUrl(`/admin/grade/gradeList?${params.toString()}`);
-		const res = await fetch(url, {
-			method: 'GET',
-			headers: { Accept: 'application/json' },
-			credentials: 'include',
-		});
-		if(!res.ok) throw new Error('Server error' + res.status);
-		const data: PageResponse<GradeDTO> = await res.json();
-		
-		setGrades(data.list);
-		setMaxPageNum(data.maxPageNum);
-		setCount(data.count);
-		setStartPageNum(data.startPageNum);
-		setEndPageNum(data.endPageNum);
-	} catch (e) {
-		console.error('list fetch error', e);
-	} finally {
-		setIsLoading(false);
-	}
-  }
 
   const handleToggleSection = (section: string) => {
     if (expandedSection === section) {
@@ -105,29 +56,7 @@ export default function GradeListPage() {
   };
 
   const handleSearch = () => {
-    console.log('Searching grades:', searchWord);
-  };
-  
-  //정책 삭제 기능
-  const handleDelete = async(gradeId: string) => {
-	if(!confirm('정말 삭제하시겠습니까?')) return;
-	
-	try{
-		//1. URL 생성
-		const url = apiUrl(`/admin/grade/gradeList?gradeId=${gradeId}`);
-		
-		//2. 요청 - 백엔드가 GET 방식 삭제를 받을 때
-		await fetch(url, {
-			method: 'GET',
-			credentials: 'include',
-		});
-		
-		//3. 성공 -> 1페이지로 리셋하여 목록 재호출
-		fetchList();
-	} catch (e) {
-		alert('삭제 실패');
-		console.error('delete error', e);
-	}
+    console.log('Searching grades:', searchQuery);
   };
 
   if (isLoading) {
@@ -169,21 +98,21 @@ export default function GradeListPage() {
 
               <div className="flex items-center justify-between text-sm text-gray-600">
                 <div className="flex items-center space-x-4">
-                  {/*<div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2">
                     <label>정렬:</label>
                     <select className="px-2 py-1 border border-gray-300 rounded text-sm pr-8">
                       <option>레벨순</option>
                       <option>이름순</option>
                       <option>생성일순</option>
                     </select>
-                  </div>*/}
+                  </div>
                   <div className="flex items-center space-x-2">
                     <label>검색:</label>
                     <input
                       type="text"
                       placeholder="직급명 검색"
-                      value={searchWord}
-                      onChange={(e) => setSearchWord(e.target.value)}
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
                       className="px-2 py-1 border border-gray-300 rounded text-sm w-48"
                     />
                     <button
@@ -196,17 +125,11 @@ export default function GradeListPage() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <label>보기:</label>
-				  <select 
-				  	name="limitRow"
-				  	value={limitRow}
-				  	onChange={(e) => {setLimitRow(Number(e.target.value)); setPage(1); }}
-				  	className="px-2 py-1 border border-gray-300 rounded text-sm pr-8">
-				  	<option value={10}>10</option>
-				  	<option value={15}>15</option>
-				  	<option value={20}>20</option>
-				  	<option value={25}>25</option>
-					<option value={50}>50</option>
-				  </select>
+                  <select className="px-2 py-1 border border-gray-300 rounded text-sm pr-8">
+                    <option>10</option>
+                    <option>25</option>
+                    <option>50</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -221,7 +144,7 @@ export default function GradeListPage() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       레벨
                     </th>
-                   {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       설명
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -229,7 +152,7 @@ export default function GradeListPage() {
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       생성일
-                    </th>*/ }
+                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       작업
                     </th>
@@ -237,21 +160,21 @@ export default function GradeListPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {grades.map((grade) => (
-                    <tr key={grade.gradeId} className="hover:bg-gray-50 transition-colors">
+                    <tr key={grade.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
                             <i className="ri-vip-crown-line text-purple-600"></i>
                           </div>
-                          <span className="text-sm font-medium text-gray-900">{grade.gradeName}</span>
+                          <span className="text-sm font-medium text-gray-900">{grade.name}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          Level {grade.gradeLevel}
+                          Level {grade.level}
                         </span>
                       </td>
-                      {/*<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                         {grade.description}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
@@ -259,7 +182,7 @@ export default function GradeListPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                         {formatDate(grade.createdDate)}
-                      </td>*/}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div className="flex items-center space-x-2">
                           <button className="text-indigo-600 hover:text-indigo-900 transition-colors cursor-pointer">
@@ -272,14 +195,6 @@ export default function GradeListPage() {
                       </td>
                     </tr>
                   ))}
-				  {/* 데이터가 하나도 없을 때 */}
-				  {(!grades || grades.length === 0) && (
-				  	<tr>
-				  		<td colSpan={8} className="text-center py-6 text-sm text-gray-500">
-				  			검색 결과가 없습니다.
-				  		</td>
-				  	</tr>
-				  )}
                 </tbody>
               </table>
             </div>
@@ -287,51 +202,11 @@ export default function GradeListPage() {
             <div className="px-6 py-3 border-t border-gray-200 bg-gray-50">
               <div className="flex items-center justify-between text-sm text-gray-600">
                 <span>총 {grades.length}개 직급</span>
-                {/*<div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2">
                   <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 transition-colors cursor-pointer">이전</button>
                   <span>1 / 1</span>
                   <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 transition-colors cursor-pointer">다음</button>
-                </div>*/}
-				<ul className="inline-flex items-center space-x-1">
-								  				     {/* 이전 */}
-								  				     <li>
-								  				       <button
-								  				         onClick={() => setPage((p) => Math.max(1, p - 1))}
-								  				         disabled={page <= 1}
-								  				         className="px-3 py-1 border rounded disabled:opacity-40"
-								  				       >
-								  				         이전
-								  				       </button>
-								  				     </li>
-
-								  				     {/* 페이지 번호 */}
-								  				     {Array.from(
-								  				       { length: endPageNum - startPageNum + 1 },
-								  				       (_, idx) => startPageNum + idx
-								  				     ).map((i) => (
-								  				       <li key={i}>
-								  				         <button
-								  				           onClick={() => setPage(i)}
-								  				           className={`px-3 py-1 border rounded ${
-								  				             i === page ? 'bg-indigo-600 text-white' : 'hover:bg-gray-50'
-								  				           }`}
-								  				         >
-								  				           {i}
-								  				         </button>
-								  				       </li>
-								  				     ))}
-
-								  				     {/* 다음 */}
-								  				     <li>
-								  				       <button
-								  				         onClick={() => setPage((p) => Math.min(maxPageNum, p + 1))}
-								  				         disabled={page >= maxPageNum}
-								  				         className="px-3 py-1 border rounded disabled:opacity-40"
-								  				       >
-								  				         다음
-								  				       </button>
-								  				     </li>
-								  				   </ul>
+                </div>
               </div>
             </div>
           </div>

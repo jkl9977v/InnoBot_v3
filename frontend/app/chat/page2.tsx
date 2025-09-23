@@ -29,7 +29,7 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [showChatSettings, setShowChatSettings] = useState(false);
-  const [chatSettings2, setChatSettings2] = useState<ChatSettings>({
+  const [chatSettings, setChatSettings] = useState<ChatSettings>({
     responseModel: 'gpt-4',
     searchOption: 'content-only',
     minSimilarityScore: 0.7
@@ -48,27 +48,7 @@ export default function ChatPage() {
   const [isMessageLoading, setIsMessageLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  //const messagesEndRef = useRef(null);
-  
-  // 설정 상태 (localStorage에 저장), 기존 코드
-  const [settings, setSettings] = useState(() => {
-    try {
-      const raw = localStorage.getItem('tium_settings');
-      return raw ? JSON.parse(raw) : { apiUrl: 'http://192.168.11.146:8080/chat', autoScroll: true };
-    } catch {
-      return { apiUrl: 'http://192.168.11.146:8080/chat', autoScroll: true };
-    }
-  });
-  const [showSettings, setShowSettings] = useState(false);
-  
-  //대화
-  const [question, setQuestion] = useState('');
-  //const [chatHistory, setChatHistory] = useState([]);
-  const [chatHistory, setChatHistory] = useState<
-    { role: 'user' | 'bot'; message: string; pending?: boolean; id?: string }[]
-  >([]);
-  const [loading, setLoading] = useState(false);
-  
+
   const [chatSessions] = useState<ChatSession[]>([
     {
       id: '1',
@@ -142,41 +122,12 @@ export default function ChatPage() {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
-  
-  // 초기 환영 메시지 (한 번만)
-  useEffect(() => {
-    if (chatHistory.length === 0) {
-      setChatHistory([
-        {
-          role: 'bot',
-          message:
-            '안녕하세요. 티움봇입니다. 무엇을 도와드릴까요? \n' +
-            '1. 이노 스마트 플랫폼 \n' +
-            '2. 리자드백업 \n' +
-            '3. 엔파우치 \n' +
-            '4. 랜섬크런처 \n' +
-            '5. 이노마크 \n' +
-            '6. 시큐어존 \n' +
-            '7. innoECM',
-        },
-      ]);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-	
-  // 스크롤 유지 (설정에 따라)
-  useEffect(() => {
-	if (settings.autoScroll) {
-	  messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-	}
-  }, [chatHistory, settings.autoScroll]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  //제출함수 주석
-/*  const handleSendMessage = async () => {
+  const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
 
     const userMessage: Message = {
@@ -201,107 +152,14 @@ export default function ChatPage() {
       setMessages(prev => [...prev, botMessage]);
       setIsMessageLoading(false);
     }, 1000);
-  };*/
-  
-  // 제출 함수
-  const handleSubmit = async (e) => {
-    if (e && e.preventDefault) e.preventDefault();
-    if (!question.trim()) return;
-
-    const userMessage = { role: 'user', message: question };
-    setChatHistory((prev) => [...prev, userMessage]);
-
-    const pendingId = 'pending-' + Date.now();
-    const pendingBotMsg = { role: 'bot', message: '답변 중...', pending: true, id: pendingId };
-    setChatHistory((prev) => [...prev, pendingBotMsg]);
-
-    setQuestion('');
-    setLoading(true);
-
-    try {
-      const res = await fetch(settings.apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: userMessage.message }),
-      });
-
-      const data = await res.json();
-      const answerText = data.answer ?? '응답이 없습니다.';
-
-      setChatHistory((prev) =>
-        prev.map((m) => (m.id === pendingId ? { ...m, message: answerText, pending: false, id: undefined } : m))
-      );
-    } catch (err) {
-      console.error(err);
-      setChatHistory((prev) =>
-        prev.map((m) =>
-          m.id === pendingId
-            ? { ...m, message: '오류가 발생했습니다. 잠시 후 다시 시도하세요.', pending: false, id: undefined }
-            : m
-        )
-      );
-    } finally {
-      setLoading(false);
-    }
   };
-  
-  // 엔터 제출 (Shift+Enter 줄바꿈)
-  /*const handleKeyPress = (e: React.KeyboardEvent) => {
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
-  };*/
-  const handleKeyPress /*handleKeyDown*/ = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      if (!loading && question.trim()) handleSubmit();
-    }
   };
-  
-  // 설정 모달 토글
-  //const openSettings = () => setShowSettings(true);
-  //const closeSettings = () => setShowSettings(false);
-  
-  // 설정 변경 핸들러
-/*  const handleSettingsChange = (patch) => {
-    setSettings((prev) => {
-      const updated = { ...prev, ...patch };
-      localStorage.setItem('tium_settings', JSON.stringify(updated));
-      return updated;
-    });
-  };*/
-  
-  // 채팅 초기화 (설정에서 제공)
-/*  const clearChat = () => {
-    setChatHistory([]);
-    // 다시 초기 인사 메시지
-    setTimeout(() => {
-      setChatHistory([
-        {
-          role: 'bot',
-          message:
-            '안녕하세요. 티움봇입니다. 무엇을 도와드릴까요? \n' +
-            '1. 이노 스마트 플랫폼 \n' +
-            '2. 리자드백업 \n' +
-            '3. 엔파우치 \n' +
-            '4. 랜섬크런처 \n' +
-            '5. 이노마크 \n' +
-            '6. 시큐어존 \n' +
-            '7. innoECM',
-        },
-      ]);
-    }, 50);
-  };*/
-  
-  // ESC로 모달 닫기
-/*  useEffect(() => {
-    const onKey = (e) => {
-      if (e.key === 'Escape') setShowSettings(false);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);*/
 
   const handleLogout = () => {
     localStorage.removeItem('isLoggedIn');
@@ -309,14 +167,14 @@ export default function ChatPage() {
   };
 
   const handleSettingChange = (field: keyof ChatSettings, value: string | number) => {
-    setChatSettings2(prev => ({
+    setChatSettings(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
   const handleSaveSettings = () => {
-    console.log('챗봇 설정 저장:', chatSettings2);
+    console.log('챗봇 설정 저장:', chatSettings);
     setShowChatSettings(false);
     alert('설정이 저장되었습니다.');
   };
@@ -421,8 +279,8 @@ export default function ChatPage() {
               <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                 <div className="p-4 border-b border-gray-200">
                   <div className="text-sm text-gray-600 space-y-1">
-                    <div><strong>ID:</strong> 1234</div>
-                    <div><strong>이름:</strong> 테스트 계정</div>
+                    <div><strong>서울Tip:</strong> 1234</div>
+                    <div><strong>이름:</strong> 천지</div>
                     <div><strong>부서:</strong> DevOps</div>
                     <div><strong>직급:</strong> 연구원</div>
                   </div>
@@ -465,7 +323,7 @@ export default function ChatPage() {
                 <div className="absolute right-0 top-10 bg-white rounded-lg border border-gray-200 shadow-lg w-80 z-50">
                   <div className="p-4 border-b border-gray-200">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-medium text-gray-900">챗봇 대화 설정 (개발예정 기능)</h3>
+                      <h3 className="text-lg font-medium text-gray-900">챗봇 대화 설정</h3>
                       <button
                         onClick={() => setShowChatSettings(false)}
                         className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600"
@@ -478,10 +336,10 @@ export default function ChatPage() {
                   <div className="p-4 space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        답변 모델 선택 
+                        답변 모델 선택
                       </label>
                       <select
-                        value={chatSettings2.responseModel}
+                        value={chatSettings.responseModel}
                         onChange={(e) => handleSettingChange('responseModel', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm pr-8"
                       >
@@ -497,7 +355,7 @@ export default function ChatPage() {
                         답변 옵션 선택
                       </label>
                       <select
-                        value={chatSettings2.searchOption}
+                        value={chatSettings.searchOption}
                         onChange={(e) => handleSettingChange('searchOption', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm pr-8"
                       >
@@ -509,14 +367,14 @@ export default function ChatPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        챗봇 유사도 최소 점수: {chatSettings2.minSimilarityScore}
+                        챗봇 유사도 최소 점수: {chatSettings.minSimilarityScore}
                       </label>
                       <input
                         type="range"
                         min="0"
                         max="1"
                         step="0.1"
-                        value={chatSettings2.minSimilarityScore}
+                        value={chatSettings.minSimilarityScore}
                         onChange={(e) => handleSettingChange('minSimilarityScore', parseFloat(e.target.value))}
                         className="w-full"
                       />
@@ -552,59 +410,8 @@ export default function ChatPage() {
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {chatHistory.map((m, idx) => {
-			const isUser = m.role === 'user';
-			return (
-				<div key={idx} className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
-				<div
-				          className={`flex max-w-[80%] ${
-				            isUser ? 'flex-row-reverse' : 'flex-row'
-				          } items-start space-x-2`}
-				        >
-				          {/* 아바타 */}
-				          <div
-				            className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-				              isUser ? 'bg-indigo-600 ml-2' : 'bg-gray-200 mr-2'
-				            }`}
-				          >
-				            <i
-				              className={`${
-				                isUser ? 'ri-user-line text-white' : 'ri-robot-line text-gray-600'
-				              } text-sm`}
-				            />
-				          </div>
-
-				          {/* 말풍선 */}
-				          <div
-				            className={`rounded-2xl px-4 py-3 ${
-				              isUser
-				                ? 'bg-indigo-600 text-white'
-				                : 'bg-white border border-gray-200 text-gray-900'
-				            }`}
-				          >
-				            <p className="text-sm leading-relaxed whitespace-pre-wrap">
-				              {m.message}
-				            </p>
-
-				            {/* pending 이면 타이핑 애니메이션 */}
-				            {m.pending && (
-				              <div className="flex space-x-1 mt-1">
-				                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-				                <div
-				                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-				                  style={{ animationDelay: '0.15s' }}
-				                />
-				                <div
-				                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-				                  style={{ animationDelay: '0.3s' }}
-				                />
-				              </div>
-				            )}
-				          </div>
-				        </div>
-				      </div> 
-			);
-            /*<div
+          {messages.map((message) => (
+            <div
               key={message.id}
               className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
             >
@@ -623,10 +430,10 @@ export default function ChatPage() {
                   </p>
                 </div>
               </div>
-            </div>*/
-          })}
+            </div>
+          ))}
           
-          {isLoading && (
+          {isMessageLoading && (
             <div className="flex justify-start">
               <div className="flex items-start space-x-2 max-w-[80%]">
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mr-2">
@@ -651,8 +458,8 @@ export default function ChatPage() {
             <div className="flex items-end space-x-3">
               <div className="flex-1 relative">
                 <textarea
-                  value={question}
-                  onChange={(e) => setQuestion(e.target.value)}
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="메시지를 입력하세요..."
                   className="w-full resize-none border border-gray-300 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent max-h-32 text-sm"
@@ -660,17 +467,17 @@ export default function ChatPage() {
                   style={{ minHeight: '44px' }}
                 />
                 <button
-                  onClick={handleSubmit}
-                  disabled={!question.trim() || isLoading}
+                  onClick={handleSendMessage}
+                  disabled={!inputValue.trim() || isMessageLoading}
                   className="absolute right-2 bottom-2 p-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 rounded-lg transition-colors cursor-pointer"
                 >
                   <i className="ri-send-plane-line w-4 h-4 flex items-center justify-center text-white"></i>
                 </button>
               </div>
             </div>
-            {/*<p className="text-xs text-gray-500 text-center mt-2">
+            <p className="text-xs text-gray-500 text-center mt-2">
               Enter로 전송, Shift+Enter로 줄바꿈
-            </p>*/}
+            </p>
           </div>
         </div>
       </div>

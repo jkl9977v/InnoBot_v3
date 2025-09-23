@@ -1,14 +1,15 @@
 package com.innochatbot.admin.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.innochatbot.admin.command.UserCommand;
+import com.innochatbot.admin.dto.UserListResponse;
 import com.innochatbot.admin.mapper.UserMapper;
 import com.innochatbot.admin.service.AutoNumService;
 import com.innochatbot.admin.service.user.UserDetailService;
@@ -16,9 +17,9 @@ import com.innochatbot.admin.service.user.UserListService;
 import com.innochatbot.admin.service.user.UserUpdateService;
 import com.innochatbot.admin.service.user.UserWriteService;
 
-//@Controller
+@RestController
 @RequestMapping("admin/user")
-public class UserController {
+public class UserRestController {
 	@Autowired
 	AutoNumService autoNumService;
 	@Autowired
@@ -46,6 +47,7 @@ public class UserController {
 		userWriteService.userWrite(userCommand);
 		return "redirect:/admin/user/userList";
 	}
+	/*
 	@GetMapping("userList")
 	public String userList(@RequestParam (defaultValue = "1") int page
 			, @RequestParam (defaultValue = "10") int limitRow
@@ -55,6 +57,16 @@ public class UserController {
 			, Model model) {
 		userListService.userList(page, limitRow, searchWord, kind, model, kind2);
 		return "thymeleaf/user/userList";
+	}
+	*/
+	@GetMapping("userList")
+	public UserListResponse userList(@RequestParam (defaultValue = "1") int page
+			, @RequestParam (defaultValue = "10") int limitRow
+			, @RequestParam (required = false) String searchWord
+			, @RequestParam (required = false) String kind
+			, @RequestParam (required = false) String kind2
+			, Model model) {
+		return userListService.userList2(page, limitRow, searchWord, kind, kind2);
 	}
 	@GetMapping("userDetail")
 	public String userDetail(@RequestParam String userNum, Model model) {

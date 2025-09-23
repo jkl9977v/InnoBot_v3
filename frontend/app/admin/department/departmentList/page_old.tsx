@@ -5,30 +5,16 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AdminSidebar from '../../../../components/AdminSidebar';
 import AdminHeader from '../../../../components/AdminHeader';
-import { apiUrl } from '@/lib/api';
 
-interface DepartmentDTO {
-  departmentId: string;
-  departmentName: string;
-/*  code: string;
+interface Department {
+  id: string;
+  name: string;
+  code: string;
   description: string;
   manager: string;
   memberCount: number;
   isActive: boolean;
-  createdDate: Date;*/
-}
-
-interface PageResponse<T> {
-	page: number;
-	limitRow: number;
-	startPageNum: number;
-	endPageNum: number;
-	maxPageNum: number;
-	count: number;
-	searchWord: string | null;
-	kind: string | null;
-	//kind2: string | null; //kind2를 사용하는 리스트 페이지에서만 사용
-	list: T[];
+  createdDate: Date;
 }
 
 export default function DepartmentListPage() {
@@ -36,21 +22,19 @@ export default function DepartmentListPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [expandedSection, setExpandedSection] = useState<string | null>('user-management');
+  const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
-	
-  //서버 데이터
-  const [departments, setDepartments] = useState<DepartmentDTO[]>([]);
-  const [page, setPage] = useState(1);
-  const [limitRow, setLimitRow] = useState(10);
-  //const [kind, setKind] = useState('');
-  const [searchWord, setSearchWord] = useState('');
-  const [maxPageNum, setMaxPageNum] = useState(1);
-  const [count, setCount] = useState(0);
-  const [startPageNum, setStartPageNum] = useState(1);
-  const [endPageNum, setEndPageNum] = useState(1);
-  //const [kind2, setKind2] = useState('');
 
-  useEffect(() => { //로그인 여부 확인
+  const [departments] = useState<Department[]>([
+    { id: '1', name: '개발팀', code: 'DEV', description: '소프트웨어 개발 및 유지보수', manager: '박준호', memberCount: 12, isActive: true, createdDate: new Date('2023-03-15') },
+    { id: '2', name: '기획팀', code: 'PLAN', description: '제품 기획 및 전략 수립', manager: '이수진', memberCount: 8, isActive: true, createdDate: new Date('2023-03-20') },
+    { id: '3', name: '마케팅팀', code: 'MKT', description: '마케팅 및 홍보 업무', manager: '김민수', memberCount: 6, isActive: true, createdDate: new Date('2023-04-01') },
+    { id: '4', name: '인사팀', code: 'HR', description: '인사 관리 및 채용', manager: '최영희', memberCount: 4, isActive: true, createdDate: new Date('2023-02-10') },
+    { id: '5', name: '디자인팀', code: 'DESIGN', description: 'UI/UX 디자인', manager: '한미래', memberCount: 5, isActive: true, createdDate: new Date('2023-03-25') },
+    { id: '6', name: '영업팀', code: 'SALES', description: '영업 및 고객 관리', manager: '정철수', memberCount: 7, isActive: false, createdDate: new Date('2023-05-01') },
+  ]);
+
+  useEffect(() => {
     /*const loginStatus = localStorage.getItem('isLoggedIn');
     if (loginStatus !== 'true') {
       router.push('/login');
@@ -59,39 +43,6 @@ export default function DepartmentListPage() {
     setIsLoggedIn(true);
     setIsLoading(false);
   }, [router]);
-  
-  useEffect(() => {
-	if(isLoggedIn) fetchList();
-  }, [isLoggedIn, page, limitRow, searchWord])
-  
-  const fetchList = async () => {
-	try {
-		const params = new URLSearchParams({
-			page: String(page),
-			limitRow: String(limitRow),
-			searchWord: searchWord,
-			//kind: kind,
-		});
-		const url = apiUrl(`/admin/department/departmentList?${params.toString()}`);
-		const res = await fetch(url , {
-			method: 'GET',
-			headers: { Accept: 'application/json' },
-			credentials: 'include',
-		});
-		if(!res.ok) throw new Error('Server error ' + res.status);
-		const data: PageResponse<DepartmentDTO> = await res.json();
-		
-		setDepartments(data.list);
-		setMaxPageNum(data.maxPageNum);
-		setCount(data.count);
-		setStartPageNum(data.startPageNum);
-		setEndPageNum(data.endPageNum);
-	} catch (e) {
-		console.error('list fetch error', e);
-	} finally {
-		setIsLoading(false);
-	}
-  };
 
   const handleToggleSection = (section: string) => {
     if (expandedSection === section) {
@@ -100,36 +51,10 @@ export default function DepartmentListPage() {
       setExpandedSection(section);
     }
   };
-  
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('ko-KR');
-  };
 
   const handleSearch = () => {
-    console.log('Searching departments:', searchWord);
+    console.log('Searching departments:', searchQuery);
   };
-  
-  //부서 삭제 기능
-  const handleDelete = async (departmentId: string) => {
-	if (!confirm('정말 삭제하시겠습니까?')) return;
-  	
-	try {
-		// 1. url 생성
-		const url = apiUrl(`/admin/department/departmentDelete?departmentId=${departmentId}`);
-		
-		// 2. 요청 - 벡엔드가 GET 방식 삭제를 받을 때
-		await fetch(url, {
-			method: 'GET',
-			credentials: 'include',
-		});
-		
-		// 3. 성공 -> 1페이지로 리셋하여 목록 재호출
-		fetchList();
-	} catch (e) {
-		alert('삭제 실패');
-		console.error('delete error', e);
-	}
-  }; 
 
   if (isLoading) {
     return (
@@ -170,24 +95,21 @@ export default function DepartmentListPage() {
 
               <div className="flex items-center justify-between text-sm text-gray-600">
                 <div className="flex items-center space-x-4">
-                  {/*<div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2">
                     <label>상태:</label>
                     <select className="px-2 py-1 border border-gray-300 rounded text-sm pr-8">
                       <option>전체</option>
                       <option>활성</option>
                       <option>비활성</option>
                     </select>
-                  </div>*/}
+                  </div>
                   <div className="flex items-center space-x-2">
                     <label>검색:</label>
                     <input
                       type="text"
-                      placeholder="부서명 검색"
-                      value={searchWord}
-                      onChange={(e) => {
-						setSearchWord(e.target.value);
-						setPage(1);
-					}}
+                      placeholder=""
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
                       className="px-2 py-1 border border-gray-300 rounded text-sm w-48"
                     />
                     <button
@@ -200,17 +122,11 @@ export default function DepartmentListPage() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <label>보기:</label>
-				  <select 
-				  				  name="limitRow"
-				  				  value={limitRow}
-				  				  onChange={(e) => {setLimitRow(Number(e.target.value)); setPage(1); }}
-				  				  className="px-2 py-1 border border-gray-300 rounded text-sm pr-8">
-				                      <option value={10}>10</option>
-				  					<option value={15}>15</option>
-				  					<option value={20}>20</option>
-				                      <option value={25}>25</option>
-				                      <option value={50}>50</option>
-				                    </select>
+                  <select className="px-2 py-1 border border-gray-300 rounded text-sm pr-8">
+                    <option>10</option>
+                    <option>25</option>
+                    <option>50</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -222,7 +138,7 @@ export default function DepartmentListPage() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       부서명
                     </th>
-                    {/*<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       부서코드
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -236,7 +152,7 @@ export default function DepartmentListPage() {
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       상태
-                    </th>*/}
+                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       작업
                     </th>
@@ -244,11 +160,11 @@ export default function DepartmentListPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {departments.map((dept) => (
-                    <tr key={dept.departmentId} className="hover:bg-gray-50 transition-colors">
+                    <tr key={dept.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {dept.departmentName}
+                        {dept.name}
                       </td>
-                      {/*<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                         {dept.code}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 max-w-xs truncate">
@@ -265,31 +181,19 @@ export default function DepartmentListPage() {
                           }`}>
                           {dept.isActive ? '활성' : '비활성'}
                         </span>
-                      </td>*/}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-					  <div className="flex items-center space-x-2">
-					                            <button 
-					  						  href={apiUrl(`/admin/department/departmentUpdate?departmentId=${dept.departmentId}`)}
-					  						  className="text-indigo-600 hover:text-indigo-900 transition-colors cursor-pointer">
-					                              수정
-					                            </button>
-					                            <button 
-					  						  onClick={() => handleDelete(dept.departmentId)}
-					  						  className="text-red-600 hover:text-red-900 transition-colors cursor-pointer">
-					                              삭제
-					                            </button>
-					                          </div>
+                        <div className="flex items-center space-x-2">
+                          <button className="text-indigo-600 hover:text-indigo-900 transition-colors cursor-pointer">
+                            수정하기
+                          </button>
+                          <button className="text-red-600 hover:text-red-900 transition-colors cursor-pointer">
+                            삭제
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
-				  {/* 데이터가 하나도 없을 때 */}
-				  {(!departments || departments.length === 0) && (
-				  	<tr>
-				  		<td colSpan={8} className="text-center py-6 text-sm text-gray-500">
-				  			검색 결과가 없습니다.
-				  		</td>
-				  	</tr>
-				  )}
                 </tbody>
               </table>
             </div>
@@ -297,51 +201,11 @@ export default function DepartmentListPage() {
             <div className="px-6 py-3 border-t border-gray-200 bg-gray-50">
               <div className="flex items-center justify-between text-sm text-gray-600">
                 <span>총 {departments.length}개 항목</span>
-                {/*<div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2">
                   <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 transition-colors cursor-pointer">이전</button>
                   <span>1 / 1</span>
                   <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 transition-colors cursor-pointer">다음</button>
-                </div>*/}
-				<ul className="inline-flex items-center space-x-1">
-								     {/* 이전 */}
-								     <li>
-								       <button
-								         onClick={() => setPage((p) => Math.max(1, p - 1))}
-								         disabled={page <= 1}
-								         className="px-3 py-1 border rounded disabled:opacity-40"
-								       >
-								         이전
-								       </button>
-								     </li>
-
-								     {/* 페이지 번호 */}
-								     {Array.from(
-								       { length: endPageNum - startPageNum + 1 },
-								       (_, idx) => startPageNum + idx
-								     ).map((i) => (
-								       <li key={i}>
-								         <button
-								           onClick={() => setPage(i)}
-								           className={`px-3 py-1 border rounded ${
-								             i === page ? 'bg-indigo-600 text-white' : 'hover:bg-gray-50'
-								           }`}
-								         >
-								           {i}
-								         </button>
-								       </li>
-								     ))}
-
-								     {/* 다음 */}
-								     <li>
-								       <button
-								         onClick={() => setPage((p) => Math.min(maxPageNum, p + 1))}
-								         disabled={page >= maxPageNum}
-								         className="px-3 py-1 border rounded disabled:opacity-40"
-								       >
-								         다음
-								       </button>
-								     </li>
-								   </ul>
+                </div>
               </div>
             </div>
           </div>

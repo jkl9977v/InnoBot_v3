@@ -1,7 +1,5 @@
 package com.innochatbot.admin.controller;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -9,8 +7,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.innochatbot.admin.command.AccessRuleCommand;
+import com.innochatbot.admin.dto.AccessRuleDTO;
+import com.innochatbot.admin.dto.PageResponse;
 import com.innochatbot.admin.mapper.AccessRuleMapper;
 import com.innochatbot.admin.service.AutoNumService;
 import com.innochatbot.admin.service.accessRule.AccessRuleDetailService;
@@ -18,10 +19,9 @@ import com.innochatbot.admin.service.accessRule.AccessRuleListService;
 import com.innochatbot.admin.service.accessRule.AccessRuleUpdateService;
 import com.innochatbot.admin.service.accessRule.AccessRuleWriteService;
 
+@RestController
 @RequestMapping("admin/accessRule")
-@Controller
-public class AccessRuleController { //파일 경로 관리
-	/*
+public class AccessRuleRestController { //파일 경로 관리
 	@Autowired
 	AutoNumService autoNumService;
 
@@ -52,18 +52,25 @@ public class AccessRuleController { //파일 경로 관리
         accessRuleWriteService.accessWrite(accessRuleCommand);
         return "redirect:accessList";
     }
-
     /*
     @GetMapping("accessList")
-    public String AccessRuleList(@RequestParam (defaultValue="1") int page
-    		, @RequestParam (defaultValue="10") int limitRow
-    		, @RequestParam (required=false) String searchWord
-    		, @RequestParam (required=false) String kind
-    		, Model model) {
-        accessRuleListService.accessList(page, limitRow, searchWord,kind, model);
+    public Map<String, Object> AccessRuleList(@RequestParam (defaultValue = "1") int page
+    		, @RequestParam (defaultValue = "10") int limitRow
+    		, @RequestParam (required = false) String searchWord
+    		, @RequestParam (required = false) String kind
+    		) {
+        accessRuleListService.accessList(page, limitRow, searchWord,kind);
         return "thymeleaf/accessRule/accessList";
     }
-    
+    */
+    @GetMapping("accessList")
+    public PageResponse<AccessRuleDTO> AccessRuleList(@RequestParam (defaultValue = "1") int page
+    		, @RequestParam (defaultValue = "10") int limitRow
+    		, @RequestParam (required = false) String searchWord
+    		, @RequestParam (required = false) String kind
+    		) {
+        return accessRuleListService.accessList2(page, limitRow, searchWord,kind);
+    }
     @GetMapping("accessSearch")
     public String AccessRuleSearch(@RequestParam (defaultValue="1") int page
     		, @RequestParam (defaultValue="10") int limitRow
@@ -95,10 +102,9 @@ public class AccessRuleController { //파일 경로 관리
     @Autowired
     AccessRuleMapper accessRuleMapper;
 
-    @GetMapping("accessDelete")
-    public String AccessRuleDelete(@RequestParam String accessId) {
+    @GetMapping("accessDelete") //삭제 로직 정상 작동 확인
+    public void AccessRuleDelete(@RequestParam String accessId) {
     	accessRuleMapper.accessRuleDelete(accessId);
-        return "redirect:accessList";
+        //return "redirect:accessList";
     }   
-    */
 }

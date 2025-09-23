@@ -1,14 +1,17 @@
 package com.innochatbot.admin.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.innochatbot.admin.command.FilePathCommand;
+import com.innochatbot.admin.dto.FileListResponse;
+import com.innochatbot.admin.dto.FilePathDTO;
+import com.innochatbot.admin.dto.PageResponse;
 import com.innochatbot.admin.mapper.FilePathMapper;
 import com.innochatbot.admin.service.AutoNumService;
 import com.innochatbot.admin.service.file.FileDetailService;
@@ -17,9 +20,9 @@ import com.innochatbot.admin.service.filePath.FilePathListService;
 import com.innochatbot.admin.service.filePath.FilePathUpdateService;
 import com.innochatbot.admin.service.filePath.FilePathWriteService;
 
-//@Controller
+@RestController
 @RequestMapping("admin/file")
-public class FilePathController { //파일 경로 관리
+public class FilePathRestController { //파일 경로 관리
 
     @Autowired
     AutoNumService autoNumService;
@@ -58,6 +61,7 @@ public class FilePathController { //파일 경로 관리
     }
     
     //fileList
+    /*
     @GetMapping("fileList") //경로쪽 코드 복잡할 예정, 경로 목록 보여주기
     public String fileList(@RequestParam (defaultValue = "1") int page
     		, @RequestParam (defaultValue = "10") int limitRow
@@ -69,7 +73,22 @@ public class FilePathController { //파일 경로 관리
     	filePathListService.filePathList(page, limitRow, pathId, searchWord, model, kind);
     	return "thymeleaf/file";
     }
-    @GetMapping("pathList") // "/"의 폴더, 파일 목록을 보여주는 용도..?
+    */
+    
+    
+    @GetMapping("fileList") //경로쪽 코드 복잡할 예정, 경로 목록 보여주기
+    public FileListResponse fileList(@RequestParam (defaultValue = "1") int page
+    		, @RequestParam (defaultValue = "10") int limitRow
+    		, @RequestParam (defaultValue = "path_000000001")String pathId
+    		, @RequestParam (required = false) String searchWord
+    		, @RequestParam (required = false) String kind
+    		) {
+    	//파일시스템을 보여줌
+    	return filePathListService.filePathList2(page, limitRow, pathId, searchWord, kind);
+    }
+    
+    
+    @GetMapping("pathList") // (미개발 기능) 기준경로부터 폴더를 보여주는 기능
     public String filePathList(@RequestParam (defaultValue="1") int page
     		, @RequestParam (defaultValue = "10") int limitRow
     		, @RequestParam (defaultValue = "path_000000001")String pathId
@@ -121,12 +140,14 @@ public class FilePathController { //파일 경로 관리
     @Autowired
     FilePathMapper filePathMapper;
     
+    /*
     @GetMapping("pathDelete")
     public String filePathDelete(@RequestParam String pathId) {
     	filePathMapper.filePathDelete(pathId);
     	System.out.println("삭제: " + pathId);
         return "redirect:/admin/file";
     }
+    */
     
     @GetMapping("fileDetail")
     public String fileDetail(@RequestParam("fileId") String fileId, Model model) {
