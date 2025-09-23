@@ -11,50 +11,10 @@
       "static/chunks/main-app.js",
       "static/chunks/app/not-found.js"
     ],
-    "/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/page.js"
-    ],
-    "/chat/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/chat/page.js"
-    ],
     "/admin/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/admin/layout.js"
-    ],
-    "/admin/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/admin/page.js"
-    ],
-    "/admin/analytics/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/admin/analytics/page.js"
-    ],
-    "/admin/accessRule/allowdList/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/admin/accessRule/allowdList/page.js"
-    ],
-    "/admin/accessRule/allowdWrite/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/admin/accessRule/allowdWrite/page.js"
-    ],
-    "/admin/accessRule/allowgList/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/admin/accessRule/allowgList/page.js"
-    ],
-    "/admin/accessRule/allowgWrite/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/admin/accessRule/allowgWrite/page.js"
     ],
     "/admin/user/userList/page": [
       "static/chunks/webpack.js",
@@ -71,55 +31,60 @@
       "static/chunks/main-app.js",
       "static/chunks/app/admin/department/departmentList/page.js"
     ],
-    "/admin/department/departmentWrite/page": [
+    "/admin/accessRule/accessList/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/department/departmentWrite/page.js"
+      "static/chunks/app/admin/accessRule/accessList/page.js"
     ],
     "/admin/grade/gradeList/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/admin/grade/gradeList/page.js"
     ],
-    "/admin/grade/gradeWrite/page": [
+    "/admin/accessRule/allowdList/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/grade/gradeWrite/page.js"
+      "static/chunks/app/admin/accessRule/allowdList/page.js"
     ],
-    "/admin/user/userWrite/page": [
+    "/admin/accessRule/allowgList/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/user/userWrite/page.js"
+      "static/chunks/app/admin/accessRule/allowgList/page.js"
     ],
-    "/admin/accessRule/accessList/page": [
+    "/chat/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/accessRule/accessList/page.js"
+      "static/chunks/app/chat/page.js"
     ],
-    "/admin/file/fileList/page": [
+    "/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/file/fileList/page.js"
+      "static/chunks/app/page.js"
     ],
-    "/admin/file/addAccessRule/page": [
+    "/admin/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/file/addAccessRule/page.js"
+      "static/chunks/app/admin/page.js"
     ],
-    "/admin/training-data/page": [
+    "/admin/analytics/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/training-data/page.js"
+      "static/chunks/app/admin/analytics/page.js"
     ],
     "/admin/basic-settings/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/admin/basic-settings/page.js"
     ],
-    "/admin/embedding-setting/page": [
+    "/admin/training-data/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/embedding-setting/page.js"
+      "static/chunks/app/admin/training-data/page.js"
+    ],
+    "/admin/file/fileList/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/admin/file/fileList/page.js"
     ]
   }
 }
