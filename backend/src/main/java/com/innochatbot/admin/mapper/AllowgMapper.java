@@ -9,7 +9,7 @@ import com.innochatbot.admin.dto.StartEndPageDTO;
 
 @Mapper
 public interface AllowgMapper {
-	public void allowgInsert(GradeDTO dto);
+	public int allowgInsert(GradeDTO dto);
 
 	public Integer allowgCount();
 

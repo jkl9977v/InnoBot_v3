@@ -10,7 +10,7 @@ import com.innochatbot.admin.dto.UserDTO;
 @Mapper
 public interface UserMapper {
 
-	public void userInsert(UserDTO dto);
+	public int userInsert(UserDTO dto);
 
 	public List<UserDTO> userList(StartEndPageDTO dto);
 

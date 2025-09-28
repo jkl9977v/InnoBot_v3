@@ -5,22 +5,36 @@ import { useRouter } from 'next/navigation';
 import AdminSidebar from '../../../../components/AdminSidebar';
 import AdminHeader from '../../../../components/AdminHeader';
 import DepartmentSearchModal, { DepartmentDTO } from '../../../../components/DepartmentSearchModal';
-import GradeSearchModal from '../../../../components/GradeSearchModal';
+import GradeSearchModal, { GradeDTO } from '../../../../components/GradeSearchModal';
+import { apiUrl } from '@/lib/api';
 
 interface DepartmentDTO {
-  id: string;
-  name: string;
-  code: string;
-  description: string;
+  departmentId: string;
+  departmentName: string;
+/*  code: string;
+  description: string;*/
 }
 
 interface GradeDTO {
-  id: string;
-  name: string;
-  code: string;
-  level: number;
-  description: string;
+  gradeId: string;
+  gradeName: string;
+  gradeLevel: number;
+  //code: string;
+  //description: string;
 }
+
+/*interface userDTO {
+	userNum: string,
+	userName: string,
+	userId: string,
+	userPw: string,
+	departmentId: string,
+	departmentName: string,
+	gradeId: string,
+	gradeName: string,
+	gradeLevel: number,
+	manager: boolean,
+}*/
 
 export default function UserWritePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -29,40 +43,21 @@ export default function UserWritePage() {
   const [expandedSection, setExpandedSection] = useState<string | null>('user-management');
   const [isDepartmentSearchModalOpen, setIsDepartmentSearchModalOpen] = useState(false);
   const [isGradeSearchModalOpen, setIsGradeSearchModalOpen] = useState(false);
-  const [departmentSearchQuery, setDepartmentSearchQuery] = useState('');
-  const [gradeSearchQuery, setGradeSearchQuery] = useState('');
   const router = useRouter();
 
   const [formData, setFormData] = useState({
-    name: '',
-    id: '',
-    password: '',
-    department: '',
-    grade: '',
-    isAdmin: false
+	userNum: '',
+    userName: '',
+    userId: '',
+    userPw: '',
+    departmentId: '',
+	departmentName: '',
+    gradeId: '',
+	gradeName: '',
+	gradeLevel: '',
+    manager: ''
   });
-
-  const [departments] = useState<DepartmentDTO[]>([
-    { id: '1', name: '개발팀', code: 'DEV', description: '소프트웨어 개발' },
-    { id: '2', name: '디자인팀', code: 'DES', description: 'UI/UX 디자인' },
-    { id: '3', name: '마케팅팀', code: 'MKT', description: '마케팅 및 홍보' },
-    { id: '4', name: '영업팀', code: 'SALES', description: '영업 및 고객관리' },
-    { id: '5', name: '인사팀', code: 'HR', description: '인사 관리' },
-    { id: '6', name: '재무팀', code: 'FIN', description: '재무 및 회계' }
-  ]);
-
-  const [grades] = useState<GradeDTO[]>([
-    { id: '1', name: '팀장', code: 'TL', level: 5, description: '팀 관리 및 운영' },
-    { id: '2', name: '대리', code: 'AL', level: 4, description: '업무 담당자' },
-    { id: '3', name: '연구원', code: 'RS', level: 3, description: '연구 및 개발' },
-    { id: '4', name: '인턴', code: 'IN', level: 1, description: '실습생' },
-    { id: '5', name: '과장', code: 'MG', level: 6, description: '중간 관리자' },
-    { id: '6', name: '부장', code: 'GM', level: 7, description: '고급 관리자' }
-  ]);
-
-  const [filteredDepartments, setFilteredDepartments] = useState<DepartmentDTO[]>(departments);
-  const [filteredGrades, setFilteredGrades] = useState<GradeDTO[]>(grades);
-
+  
   useEffect(() => {
 	//로그인 여부 확인 로직
     /*const loginStatus = localStorage.getItem('isLoggedIn');
@@ -73,45 +68,55 @@ export default function UserWritePage() {
     setIsLoggedIn(true);
     setIsLoading(false);
   }, [router]);
-
+  
   useEffect(() => {
-    if (departmentSearchQuery.trim() === '') {
-      setFilteredDepartments(departments);
-    } else {
-      const lower = departmentSearchQuery.toLowerCase();
-      setFilteredDepartments(
-        departments.filter(
-          dept =>
-            dept.name.toLowerCase().includes(lower) ||
-            dept.code.toLowerCase().includes(lower) ||
-            dept.description.toLowerCase().includes(lower)
-        )
-      );
-    }
-  }, [departmentSearchQuery, departments]);
-
-  useEffect(() => {
-    if (gradeSearchQuery.trim() === '') {
-      setFilteredGrades(grades);
-    } else {
-      const lower = gradeSearchQuery.toLowerCase();
-      setFilteredGrades(
-        grades.filter(
-          grade =>
-            grade.name.toLowerCase().includes(lower) ||
-            grade.code.toLowerCase().includes(lower) ||
-            grade.description.toLowerCase().includes(lower)
-        )
-      );
-    }
-  }, [gradeSearchQuery, grades]);
+	if (!isLoggedIn) return;
+	
+  }, [isLoggedIn]);
+  
+/*  const fetchUserNum = async () => { // 유저번호 받아오기
+	try {
+		//userNum 값 받아오기
+		const url = apiUrl('/admin/user/userWrite');
+		const res = await fetch(url, { 
+			method: 'GET',
+			headers: { Accept: 'application/json' },
+			credentials: 'include',
+		});
+		if (!res.ok) throw new Error('Server error ' + res.status);
+		
+		const data: userNum = await res.json();
+		setUserNum(data.userNum);
+	} catch (e) {
+		console.error('list fetch error', e);
+	}
+  };*/
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = () => {
-    console.log('사용자 생성:', formData);
+  const handleSubmit = async () => {
+	//필수값 공백 체크
+	const required = [
+		['userName', '이름'], ['userId', 'ID'], ['userPw', 'PW']
+	] as const ;
+	for (const [key, label] of required) {
+		if (!formData[key]) { alert(`${label}을 입력하세요.`); return; }
+	}
+	
+	//저장 요청
+	const url = apiUrl('/admin/user/userWrite')
+	const res = await fetch(url, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		credentials: 'include',
+		body: JSON.stringify(formData)		//화면에서 입력 받은 모든 값을 JSON 문자열로 묶어서 서버에 전송
+	});
+	if (!res.ok) { alert('저장 실패'); return; }
+	
+	alert('사용자 생성 완료');
+	router.push('/admin/user/userList');
   };
 
   const handleToggleSection = (section: string) => {
@@ -127,21 +132,16 @@ export default function UserWritePage() {
   };
 
   const handleSelectDepartment = (department: DepartmentDTO) => {
-    setFormData(prev => ({ ...prev, department: department.name }));
+    setFormData(prev => ({ ...prev, departmentId: department.departmentId }));
+	setFormData(prev => ({ ...prev, departmentName: department.departmentName }));
     setIsDepartmentSearchModalOpen(false);
   };
 
   const handleSelectGrade = (grade: GradeDTO) => {
-    setFormData(prev => ({ ...prev, grade: grade.name }));
+	setFormData(prev => ({ ...prev, gradeId: grade.gradeId }));
+    setFormData(prev => ({ ...prev, gradeName: grade.gradeName }));
+	setFormData(prev => ({ ...prev, gradeLevel: grade.gradeLevel }));
     setIsGradeSearchModalOpen(false);
-  };
-
-  const handleDepartmentSearch = () => {
-    console.log('Searching departments:', departmentSearchQuery);
-  };
-
-  const handleGradeSearch = () => {
-    console.log('Searching grades:', gradeSearchQuery);
   };
 
   if (isLoading) {
@@ -206,8 +206,8 @@ export default function UserWritePage() {
                   </label>
                   <input
                     type="text"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    value={formData.userName}
+                    onChange={(e) => handleInputChange('userName', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                     placeholder="사용자 이름"
                   />
@@ -219,8 +219,8 @@ export default function UserWritePage() {
                   </label>
                   <input
                     type="text"
-                    value={formData.id}
-                    onChange={(e) => handleInputChange('id', e.target.value)}
+                    value={formData.userId}
+                    onChange={(e) => handleInputChange('userId', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                     placeholder="사용자 ID"
                   />
@@ -232,8 +232,8 @@ export default function UserWritePage() {
                   </label>
                   <input
                     type="password"
-                    value={formData.password}
-                    onChange={(e) => handleInputChange('password', e.target.value)}
+                    value={formData.userPw}
+                    onChange={(e) => handleInputChange('userPw', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                     placeholder="비밀번호"
                   />
@@ -244,13 +244,23 @@ export default function UserWritePage() {
                     소속 부서
                   </label>
                   <div className="flex items-center space-x-2">
+				  	<input
+						type="text"
+				  		value={formData.departmentId}
+				  		onChange={(e) => handleInputChange('departmentId', e.target.value)}
+				  		className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+				  		placeholder="부서Id"
+				  		hidden readOnly
+				  	/>
                     <input
                       type="text"
-                      value={formData.department}
-                      onChange={(e) => handleInputChange('department', e.target.value)}
+                      value={formData.departmentName}
+                      onChange={(e) => handleInputChange('departmentName', e.target.value)}
+					  onClick={() => setIsDepartmentSearchModalOpen(true)}
                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                       placeholder="부서명"
                     />
+					
                     <button
                       onClick={() => setIsDepartmentSearchModalOpen(true)}
                       className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors cursor-pointer whitespace-nowrap text-sm"
@@ -265,15 +275,25 @@ export default function UserWritePage() {
                     사용자 직급
                   </label>
                   <div className="flex items-center space-x-4">
+				  	<input
+				      type="text"
+				      value={formData.gradeId}
+				      onChange={(e) => handleInputChange('gradeId', e.target.value)}
+				      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+				      placeholder="직급 ID"
+					  hidden readOnly
+				    />
                     <input
                       type="text"
-                      value={formData.grade}
-                      onChange={(e) => handleInputChange('grade', e.target.value)}
+					  onClick={() => setIsGradeSearchModalOpen(true)}
+                      value={formData.gradeName}
+                      onChange={(e) => handleInputChange('gradeName', e.target.value)}
                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                       placeholder="직급명"
                     />
 					<input
 					  type="text"
+					  onClick={() => setIsGradeSearchModalOpen(true)}
 					  value={formData.gradeLevel}
 					  onChange={(e) => handleInputChange('gradeLevel', e.target.value)}
 					  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
@@ -294,8 +314,8 @@ export default function UserWritePage() {
                     
 				  <input
 				     type="checkbox"
-				     checked={formData.isAdmin}
-				     onChange={(e) => handleInputChange('isAdmin', e.target.checked)}
+				     checked={formData.manager === 'y'}
+				     onChange={(e) => handleInputChange('manager', e.target.checked ? 'y' : '')}
 				     className="mr-2"
 				  />
                   </label>
@@ -320,173 +340,15 @@ export default function UserWritePage() {
 	  <DepartmentSearchModal
 	  	isOpen={isDepartmentSearchModalOpen}
 		onClose={() => setIsDepartmentSearchModalOpen(false)}
-		searchQuery={departmentSearchQuery}
-		setSearchQuery={setDepartmentSearchQuery}
-		filteredDepartments={filteredDepartments}
-		onSelectedDepartment={handleSelectDepartment}
-		onSearch={handleDepartmentSearch}
+		onSelectDepartment={handleSelectDepartment}
 	  />
 	
 	  {/*직급검색 모달 */}
 	  <GradeSearchModal
 	  	isOpen={isGradeSearchModalOpen}
 		onClose={() => setIsGradeSearchModalOpen(false)}
-		searchQuery={gradeSearchQuery}
-		setSearchQuery={setGradeSearchQuery}
-		filteredGrades={filteredGrades}
 		onSelectGrade={handleSelectGrade}
-		onSearch={handleGradeSearch}
 	  />
     </div>
   );
 }
-
-/*
-{ 부서 검색 모달 }
-{isDepartmentSearchModalOpen && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white rounded-lg shadow-lg w-[600px] max-h-[500px] overflow-hidden flex flex-col">
-      <div className="p-4 border-b border-gray-200">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">부서 검색</h3>
-          <button
-            onClick={() => setIsDepartmentSearchModalOpen(false)}
-            className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
-          >
-            <i className="ri-close-line w-5 h-5 flex items-center justify-center"></i>
-          </button>
-        </div>
-        <div className="flex items-center space-x-2">
-          <input
-            type="text"
-            placeholder="부서명 검색"
-            value={departmentSearchQuery}
-            onChange={(e) => setDepartmentSearchQuery(e.target.value)}
-            className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm"
-          />
-          <button
-            onClick={handleDepartmentSearch}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors cursor-pointer"
-          >
-            검색
-          </button>
-        </div>
-      </div>
-
-      <div className="overflow-y-auto flex-1">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                부서명
-              </th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                코드
-              </th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                선택
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {filteredDepartments.map((dept) => (
-              <tr key={dept.id} className="hover:bg-gray-50">
-                <td className="px-4 py-2 text-gray-900">{dept.name}</td>
-                <td className="px-4 py-2 text-gray-600">{dept.code}</td>
-                <td className="px-4 py-2">
-                  <button
-                    onClick={() => handleSelectDepartment(dept)}
-                    className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200 transition-colors cursor-pointer"
-                  >
-                    선택
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="p-4 border-t border-gray-200 text-center">
-        <div className="text-sm text-gray-600">총 {filteredDepartments.length}개</div>
-      </div>
-    </div>
-  </div>
-)}
-
-{ 직급 검색 모달 }
-{isGradeSearchModalOpen && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white rounded-lg shadow-lg w-[600px] max-h-[500px] overflow-hidden flex flex-col">
-      <div className="p-4 border-b border-gray-200">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">직급 검색</h3>
-          <button
-            onClick={() => setIsGradeSearchModalOpen(false)}
-            className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
-          >
-            <i className="ri-close-line w-5 h-5 flex items-center justify-center"></i>
-          </button>
-        </div>
-        <div className="flex items-center space-x-2">
-          <input
-            type="text"
-            placeholder="직급명 검색"
-            value={gradeSearchQuery}
-            onChange={(e) => setGradeSearchQuery(e.target.value)}
-            className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm"
-          />
-          <button
-            onClick={handleGradeSearch}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors cursor-pointer"
-          >
-            검색
-          </button>
-        </div>
-      </div>
-
-      <div className="overflow-y-auto flex-1">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                직급명
-              </th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                코드
-              </th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                레벨
-              </th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                선택
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {filteredGrades.map((grade) => (
-              <tr key={grade.id} className="hover:bg-gray-50">
-                <td className="px-4 py-2 text-gray-900">{grade.name}</td>
-                <td className="px-4 py-2 text-gray-600">{grade.code}</td>
-                <td className="px-4 py-2 text-gray-600">{grade.level}</td>
-                <td className="px-4 py-2">
-                  <button
-                    onClick={() => handleSelectGrade(grade)}
-                    className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200 transition-colors cursor-pointer"
-                  >
-                    선택
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="p-4 border-t border-gray-200 text-center">
-        <div className="text-sm text-gray-600">총 {filteredGrades.length}개</div>
-      </div>
-    </div>
-  </div>
-)}
- */

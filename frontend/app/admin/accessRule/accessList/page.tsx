@@ -152,10 +152,6 @@ export default function AccessListPage() {
   	  return null;
   }
   
-  
-
-
-
   return (
     <div className="flex h-screen bg-gray-50">
       <AdminSidebar

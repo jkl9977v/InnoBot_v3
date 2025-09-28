@@ -1,9 +1,7 @@
 {
-  "/chat/page": "app/chat/page.js",
-  "/admin/file/fileList/page": "app/admin/file/fileList/page.js",
-  "/admin/grade/gradeList/page": "app/admin/grade/gradeList/page.js",
+  "/admin/file/addAccessRule/page": "app/admin/file/addAccessRule/page.js",
+  "/admin/accessRule/allowgWrite/page": "app/admin/accessRule/allowgWrite/page.js",
   "/admin/accessRule/allowgList/page": "app/admin/accessRule/allowgList/page.js",
-  "/admin/user/userList/page": "app/admin/user/userList/page.js",
-  "/admin/page": "app/admin/page.js",
-  "/admin/analytics/page": "app/admin/analytics/page.js"
+  "/admin/accessRule/allowdWrite/page": "app/admin/accessRule/allowdWrite/page.js",
+  "/admin/accessRule/allowdList/page": "app/admin/accessRule/allowdList/page.js"
 }

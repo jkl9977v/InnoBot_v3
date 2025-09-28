@@ -4,14 +4,15 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminSidebar from '../../../../components/AdminSidebar';
 import AdminHeader from '../../../../components/AdminHeader';
-import GradeSearchModal from '../../../../components/GradeSearchModal'; //분리된 모달 
+import GradeSearchModal, { GradeDTO } from '../../../../components/GradeSearchModal'; //분리된 모달 
+import { apiUrl } from '@/lib/api';
 
-interface grade {
-  id: string;
-  name: string;
-  code: string;
-  level: number;
-  description: string;
+interface GradeDTO {
+  gradeId: string;
+  gradeName: string;
+  gradeLevel: number;
+  //code: string;
+  //description: string;
 }
 
 export default function AllowgWritePage() {
@@ -20,26 +21,15 @@ export default function AllowgWritePage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [expandedSection, setExpandedSection] = useState<string | null>('policies');
   const [isGradeSearchModalOpen, setIsGradeSearchModalOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
 
   const [formData, setFormData] = useState({
-    targetName: '',
-    ruleName: '',
-    gradeName: '',
-    isActive: true
+    allowgName: '',
+	allowgId: '',
+	gradeId: '',
+	gradeName: '',
+	gradeLevel: '',
   });
-
-  const [grades] = useState<grade[]>([
-    { id: '1', name: '팀장', code: 'TL', level: 5, description: '팀 관리 및 운영' },
-    { id: '2', name: '대리', code: 'AL', level: 4, description: '업무 담당자' },
-    { id: '3', name: '연구원', code: 'RS', level: 3, description: '연구 및 개발' },
-    { id: '4', name: '인턴', code: 'IN', level: 1, description: '실습생' },
-    { id: '5', name: '과장', code: 'MG', level: 6, description: '중간 관리자' },
-    { id: '6', name: '부장', code: 'GM', level: 7, description: '고급 관리자' }
-  ]);
-
-  const [filteredGrades, setFilteredGrades] = useState<grade[]>(grades);
 
   useEffect(() => {
     /*const loginStatus = localStorage.getItem('isLoggedIn');
@@ -50,22 +40,10 @@ export default function AllowgWritePage() {
     setIsLoggedIn(true);
     setIsLoading(false);
   }, [router]);
-
+  
   useEffect(() => {
-    if (searchQuery.trim() === '') {
-      setFilteredGrades(grades);
-    } else {
-      const lower = searchQuery.toLowerCase();
-      setFilteredGrades(
-        grades.filter(
-          grade =>
-            grade.name.toLowerCase().includes(lower) ||
-            grade.code.toLowerCase().includes(lower) ||
-            grade.description.toLowerCase().includes(lower)
-        )
-      );
-    }
-  }, [searchQuery, grades]);
+	if (!isLoggedIn) return;
+  }, [isLoggedIn]);
 
   const handleToggleSection = (section: string) => {
     if (expandedSection === section) {
@@ -75,15 +53,33 @@ export default function AllowgWritePage() {
     }
   };
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
-  const handleSubmit = () => {
-    console.log('Creating grade policy:', formData);
+  const handleSubmit = async () => {
+	//필수값 공백 체크
+	const required = [
+		['allowgName', '직급정책 명'], ['gradeName', '직급명'], ['gradeLevel', '직급 레벨']
+	] as const;
+	for (const [key, label] of required){
+		if (!formData[key]) { alert(`${label}을 입력하세요.`); return; }
+	} 
+	
+	//저장 요청
+	const url = apiUrl('/admin/accessRule/allowgWrite')
+	const res = await fetch(url, {
+		method: 'POST',
+		headers: { 'Content-Type' : 'application/json' },
+		credentials: 'include',
+		body: JSON.stringify(formData) // 화면에서 입력 받은 모든 값을 JSON 문자열로 묶어서 서버에 전송
+	});
+	if (!res.ok) { alert('저장 실패'); return; }
+	
+	alert('직급정책 생성 완료')
     router.push('/admin/accessRule/allowgList');
   };
 
@@ -91,16 +87,11 @@ export default function AllowgWritePage() {
     router.push('/admin/accessRule/allowgList');
   };
 
-  const handleSelectGrade = (grade: grade) => {
-    setFormData(prev => ({
-      ...prev,
-      gradeName: grade.name
-    }));
+  const handleSelectGrade = (grade: GradeDTO) => {
+  	setFormData(prev => ({ ...prev, gradeId: grade.gradeId }));
+    setFormData(prev => ({ ...prev, gradeName: grade.gradeName }));
+  	setFormData(prev => ({ ...prev, gradeLevel: grade.gradeLevel }));
     setIsGradeSearchModalOpen(false);
-  };
-
-  const handleSearch = () => {
-    console.log('Searching grades:', searchQuery);
   };
 
   if (isLoading) {
@@ -167,8 +158,8 @@ export default function AllowgWritePage() {
                   <input
                     type="text"
 					placeholder="정책 이름"
-                    value={formData.targetName}
-                    onChange={e => handleInputChange('targetName', e.target.value)}
+                    value={formData.allowgName}
+                    onChange={e => handleInputChange('allowgName', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                   />
                 </div>
@@ -178,33 +169,43 @@ export default function AllowgWritePage() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     허용기준 직급
                   </label>
-                  <input
-				  onClick={() => setIsGradeSearchModalOpen(true)}
-                    type="text"
-					placeholder="직급명"
-                    value={formData.gradeName}
-                    onChange={e => handleInputChange('gradeName', e.target.value)}
-                    className="flex-3 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                  />
+				  <div className="flex items-center space-x-4">
+				  	<input
+				      type="text"
+				      value={formData.gradeId}
+				      onChange={(e) => handleInputChange('gradeId', e.target.value)}
+				      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+				      placeholder="직급 ID"
+				    hidden readOnly
+				    />
+				    <input
+				      type="text"
+				    onClick={() => setIsGradeSearchModalOpen(true)}
+				      value={formData.gradeName}
+				      onChange={(e) => handleInputChange('gradeName', e.target.value)}
+				      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+				      placeholder="직급명"
+				    />
 				  <input
-				  onClick={() => setIsGradeSearchModalOpen(true)}
 				    type="text"
-					placeholder="직급 레벨"
+				    onClick={() => setIsGradeSearchModalOpen(true)}
 				    value={formData.gradeLevel}
-				    onChange={e => handleInputChange('gradeLevel', e.target.value)}
-				    className="flex-3 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+				    onChange={(e) => handleInputChange('gradeLevel', e.target.value)}
+				    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+				    placeholder="직급레벨"
 				  />
-				  <button
-				     onClick={() => setIsGradeSearchModalOpen(true)}
-				     className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors cursor-pointer whitespace-nowrap text-sm"
-				  >
-				     직급 검색
-				  </button>				  
+				    <button
+				      onClick={() => setIsGradeSearchModalOpen(true)}
+				      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors cursor-pointer whitespace-nowrap text-sm"
+				    >
+				      직급 검색
+				    </button>
+				  </div>			  
                 </div>
 
 
                 {/* 활성화 */}
-                <div>
+                {/*<div>
                   <label className="flex items-center space-x-2">
                     <input
                       type="checkbox"
@@ -214,7 +215,7 @@ export default function AllowgWritePage() {
                     />
                     <span className="text-sm font-medium text-gray-700">활성화</span>
                   </label>
-                </div>
+                </div>*/}
               </div>
 		
               <div className="flex justify-end mt-8">
@@ -234,11 +235,7 @@ export default function AllowgWritePage() {
 	  <GradeSearchModal
 	  	isOpen={isGradeSearchModalOpen}
 		onClose={() => setIsGradeSearchModalOpen(false)}
-		searchQuery={searchQuery}
-		setSearchQuery={setSearchQuery}
-		filteredGrades={filteredGrades}
 		onSelectGrade={handleSelectGrade}
-		onSearch={handleSearch}
 	  />
 	 </div>
   );

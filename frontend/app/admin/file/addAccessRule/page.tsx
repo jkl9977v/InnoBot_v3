@@ -5,13 +5,12 @@ import { useRouter } from 'next/navigation';
 import AdminSidebar from '../../../../components/AdminSidebar';
 import AdminHeader from '../../../../components/AdminHeader';
 import AccessRuleSearchModal from '../../../../components/AccessRuleSearchModal';
-
-interface AccessDTO {
-	id: string;
-	name: string;
-	type: 'allow' | 'deny';
-	target: string;
-	description: string;
+import { apiUrl } from '@/lib/api';
+ 
+interface AccessRuleDTO {
+	accessId: string;
+	accessName: string;
+	accessType: string;
 }
 
 export default function AddAccessRulePage() {
@@ -19,25 +18,19 @@ export default function AddAccessRulePage() {
 	const [isLoading, setIsLoading] = useState(true);
 	const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 	const [expandedSection, setExpandedSection] = useState<string | null>('file-system');
-	const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
-	const [searchQuery, setSearchQuery] = useState('');
+	const [isAccessRuleSearchModalOpen, setIsAccessRuleSearchModalOpen] = useState(false);
 	const router = useRouter();
 
 	const [formData, setFormData] = useState({
-		fileName: '',
-		policyName: ''
+		pathId: '',
+		path: '',
+		depth: '',
+		parentId: '',
+		parentPath: '',
+		accessId: '',
+		accessName: '',
+		accessType: '',
 	});
-
-	const [accessPolicies] = useState<AccessPolicy[]>([
-		{ id: '1', name: '접근정책', type: 'allow', target: 'admin/*', description: '관리자 전체 권한' },
-		{ id: '2', name: '접근권한 테스트', type: 'allow', target: 'test/*', description: '테스트 권한' },
-		{ id: '3', name: '접근권한 테스트2', type: 'deny', target: 'restricted/*', description: '제한된 영역' },
-		{ id: '4', name: '파일규칙 테스트', type: 'allow', target: 'files/*', description: '파일 접근 권한' },
-		{ id: '5', name: '0729 규칙테스트', type: 'allow', target: 'temp/*', description: '임시 규칙' },
-		{ id: '6', name: '0731 테스트', type: 'deny', target: 'legacy/*', description: '레거시 시스템 제한' }
-	]);
-
-	const [filteredPolicies, setFilteredPolicies] = useState<AccessPolicy[]>(accessPolicies);
 
 	useEffect(() => {
 		try {
@@ -57,39 +50,26 @@ export default function AddAccessRulePage() {
 		}
 	}, [router]);
 
-	useEffect(() => {
-		if (searchQuery.trim() === '') {
-			setFilteredPolicies(accessPolicies);
-		} else {
-			const lower = searchQuery.toLowerCase();
-			setFilteredPolicies(
-				accessPolicies.filter(
-					policy =>
-						policy.name.toLowerCase().includes(lower) ||
-						policy.description.toLowerCase().includes(lower)
-				)
-			);
-		}
-	}, [searchQuery, accessPolicies]);
-
 	const handleToggleSection = (section: string) => {
 		setExpandedSection(prev => (prev === section ? null : section));
 	};
 
-	const handleInputChange = (field: string, value: any) => {
-		setFormData(prev => ({
-			...prev,
-			[field]: value
-		}));
+	const handleInputChange = (field: string, value: string ) => {
+		setFormData(prev => ({...prev, [field]: value }));
 	};
 
-	const handleSubmit = () => {
-		if (!formData.fileName.trim() || !formData.policyName.trim()) {
-			alert('모든 필수 항목을 입력해주세요.');
-			return;
-		}
-
-		console.log('Creating file access rule:', formData);
+	const handleSubmit = async () => {
+		//저장 요청 
+		const url = apiUrl('/admin/file/addAccessRule');
+		const res = await fetch(url, {
+			method: 'POST',
+			headers: { 'contentType' : 'application/json' },
+			credentials: 'include',
+			body: JSON.stringify(formData) // 홤녀에서 입력 받은 모든 값을 JSON 문자여로 묶어서 서버에 전송
+		});
+		if (!res.ok) { alert('저장 실패'); return; }
+		
+		alert('저장 완료'); 
 		router.push('/admin/file/fileList');
 	};
 
@@ -97,16 +77,11 @@ export default function AddAccessRulePage() {
 		router.push('/admin/file/fileList');
 	};
 
-	const handleSelectPolicy = (policy: AccessPolicy) => {
-		setFormData(prev => ({
-			...prev,
-			policyName: policy.name
-		}));
-		setIsSearchModalOpen(false);
-	};
-
-	const handleSearch = () => {
-		console.log('Searching policies:', searchQuery);
+	const handleSelectAccessRule = (accessRule: AccessRuleDTO) => {
+		setFormData(prev => ({...prev, accessId: accessRule.accessId}));
+		setFormData(prev => ({...prev, accessName: accessRule.accessName}));
+		setFormData(prev => ({...prev, accessType: accessRule.accessType}));
+		setIsAccessRuleSearchModalOpen(false);
 	};
 
 	if (isLoading) {
@@ -174,8 +149,16 @@ export default function AddAccessRulePage() {
 									</label>
 									<input
 										type="text"
-										value={formData.fileName}
-										onChange={e => handleInputChange('fileName', e.target.value)}
+										value={formData.path}
+										placeholder="현재 경로"
+										onChange={e => handleInputChange('path', e.target.value)}
+										className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+									/>
+									<input
+										type="text"
+										value={formData.pathId}
+										onChange={e => handleInputChange('pathId', e.target.value)}
+										hidden readOnly
 										className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
 									/>
 								</div>
@@ -183,7 +166,10 @@ export default function AddAccessRulePage() {
 									<label className="block text-sm font-medium text-gray-700 mb-2">
 										계층
 									</label>
-									<input type="number" placeholder="계층" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm" />
+									<input type="number" placeholder="계층" 
+									value={formData.depth}
+									onChange={e => handleInputChange('depth', e.target.value)}
+									className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm" />
 								</div>
 								<div className="lg:col-span-2">
 									<label className="block text-sm font-medium text-gray-700 mb-2">
@@ -192,8 +178,16 @@ export default function AddAccessRulePage() {
 									<div className="flex space-x-2">
 										<input
 											type="text"
-											value={formData.policyName}
-											onChange={e => handleInputChange('policyName', e.target.value)}
+											placeholder="상위경로"
+											value={formData.parentPath}
+											onChange={e => handleInputChange('parentPath', e.target.value)}
+											className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+										/>
+										<input
+											type="text"
+											value={formData.parentId}
+											onChange={e => handleInputChange('parentId', e.target.value)}
+											hidden readOnly
 											className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
 										/>
 									</div>
@@ -207,14 +201,23 @@ export default function AddAccessRulePage() {
 									</label>
 									<div className="flex space-x-2">
 										<input
-										onClick={() => setIsSearchModalOpen(true)}
 											type="text"
-											value={formData.policyName}
-											onChange={e => handleInputChange('policyName', e.target.value)}
+											placeholder="정책명"
+											value={formData.accessName}
+											onChange={e => handleInputChange('accessName', e.target.value)}
+											onClick={() => setIsAccessRuleSearchModalOpen(true)}
+											className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+										/>
+										<input
+											type="text"
+											value={formData.accessId}
+											onChange={e => handleInputChange('accessId', e.target.value)}
+											onClick={() => setIsAccessRuleSearchModalOpen(true)}
+											hidden readOnly
 											className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
 										/>
 										<button
-											onClick={() => setIsSearchModalOpen(true)}
+											onClick={() => setIsAccessRuleSearchModalOpen(true)}
 											className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors cursor-pointer whitespace-nowrap text-sm"
 										>
 											접근정책 검색
@@ -228,8 +231,9 @@ export default function AddAccessRulePage() {
 									<div className="flex space-x-2">
 										<input
 											type="text"
-											value={formData.policyName}
-											onChange={e => handleInputChange('policyName', e.target.value)}
+											placeholder="허용타입"
+											value={formData.accessType}
+											onChange={e => handleInputChange('accessType', e.target.value)}
 											className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
 										/>
 									</div>
@@ -254,105 +258,11 @@ export default function AddAccessRulePage() {
 
 			{/*접근정책 검색 모달 분리 컴포넌트 사용 */}
 			<AccessRuleSearchModal
-				isOpen={isSearchModalOpen}
-				onClose={() => setIsSearchModalOpen(false)}
-				searchQuery={searchQuery}
-				setSearchQuery={setSearchQuery}
-				filteredPolicies={filteredPolicies}
-				onSelectPolicy={handleSelectPolicy}
-				onSearch={handleSearch}
+				isOpen={isAccessRuleSearchModalOpen}
+				onClose={() => setIsAccessRuleSearchModalOpen(false)}
+				onSelectAccessRule={handleSelectAccessRule}
 			/>
 
 		</div>
 	);
 }
-
-/*
-{ 접근정책 검색 모달 - 크기 더 확대 }
-{isSearchModalOpen && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-	<div className="bg-white rounded-lg shadow-lg w-[800px] max-h-[600px] overflow-hidden flex flex-col">
-	  <div className="p-6 border-b border-gray-200">
-		<div className="flex items-center justify-between mb-4">
-		  <h3 className="text-lg font-semibold text-gray-900">접근정책 검색</h3>
-		  <button
-			onClick={() => setIsSearchModalOpen(false)}
-			className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
-		  >
-			<i className="ri-close-line w-5 h-5 flex items-center justify-center"></i>
-		  </button>
-		</div>
-		<div className="flex items-center space-x-2">
-		  <select className="px-3 py-2 border border-gray-300 rounded text-sm pr-8">
-			<option>전체</option>
-			<option>접근정책</option>
-			<option>부서정책</option>
-			<option>직급정책</option>
-		  </select>
-		  <input
-			type="text"
-			placeholder="검색어"
-			value={searchQuery}
-			onChange={e => setSearchQuery(e.target.value)}
-			className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm"
-		  />
-		  <button
-			onClick={handleSearch}
-			className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors cursor-pointer"
-		  >
-			검색
-		  </button>
-		</div>
-	  </div>
-
-	  <div className="overflow-y-auto flex-1">
-		<table className="w-full text-sm">
-		  <thead className="bg-gray-50 border-b border-gray-200">
-			<tr>
-			  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-				접근정책
-			  </th>
-			  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-				허용 타입
-			  </th>
-			  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-				선택
-			  </th>
-			</tr>
-		  </thead>
-		  <tbody className="divide-y divide-gray-200">
-			{filteredPolicies.map(policy => (
-			  <tr key={policy.id} className="hover:bg-gray-50">
-				<td className="px-6 py-4 text-gray-900">{policy.name}</td>
-				<td className="px-6 py-4 text-gray-600">
-				  <span
-					className={`px-2 py-1 rounded-full text-xs ${
-					  policy.type === 'allow'
-						? 'bg-green-100 text-green-800'
-						: 'bg-red-100 text-red-800'
-					}`}
-				  >
-					{policy.type === 'allow' ? '허용 업읽' : '허용 없음'}
-				  </span>
-				</td>
-				<td className="px-6 py-4">
-				  <button
-					onClick={() => handleSelectPolicy(policy)}
-					className="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm hover:bg-blue-200 transition-colors cursor-pointer"
-				  >
-					선택
-				  </button>
-				</td>
-			  </tr>
-			))}
-		  </tbody>
-		</table>
-	  </div>
-
-	  <div className="p-4 border-t border-gray-200 text-center">
-		<div className="text-sm text-gray-600">총 {filteredPolicies.length}개</div>
-	  </div>
-	</div>
-  </div>
-)}
- */

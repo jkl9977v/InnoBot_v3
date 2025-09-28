@@ -68,13 +68,13 @@ public class DepartmentRestController {
 		return departmentListService.departmentList2(page, limitPage, searchWord, kind);
 	}
 	@GetMapping("departmentSearch")
-	public String departmentSearch(@RequestParam(defaultValue="1") int page
+	public PageResponse<DepartmentDTO> departmentSearch(@RequestParam(defaultValue="1") int page
 			, @RequestParam(defaultValue = "10") int limitPage
 			, @RequestParam(required = false) String searchWord
 			, @RequestParam(required = false) String kind
 			, Model model) {
-		departmentListService.departmentList(page, limitPage, searchWord, kind, model);
-		return "thymeleaf/department/departmentSearch";
+		//departmentListService.departmentList(page, limitPage, searchWord, kind, model);
+		return departmentListService.departmentList2(page, limitPage, searchWord, kind);
 	}
 	@GetMapping("departmentMultiSelect")
 	public String departmemtMultiSelect(@RequestParam(defaultValue="0") int page

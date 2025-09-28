@@ -1,5 +1,7 @@
 package com.innochatbot.admin.controller;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,8 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.innochatbot.admin.command.FilePathCommand;
 import com.innochatbot.admin.dto.FileListResponse;
-import com.innochatbot.admin.dto.FilePathDTO;
-import com.innochatbot.admin.dto.PageResponse;
 import com.innochatbot.admin.mapper.FilePathMapper;
 import com.innochatbot.admin.service.AutoNumService;
 import com.innochatbot.admin.service.file.FileDetailService;
@@ -61,21 +61,6 @@ public class FilePathRestController { //파일 경로 관리
     }
     
     //fileList
-    /*
-    @GetMapping("fileList") //경로쪽 코드 복잡할 예정, 경로 목록 보여주기
-    public String fileList(@RequestParam (defaultValue = "1") int page
-    		, @RequestParam (defaultValue = "10") int limitRow
-    		, @RequestParam (defaultValue = "path_000000001")String pathId
-    		, @RequestParam (required = false) String searchWord
-    		, @RequestParam (required = false) String kind
-    		, Model model) {
-    	//파일시스템을 보여줌
-    	filePathListService.filePathList(page, limitRow, pathId, searchWord, model, kind);
-    	return "thymeleaf/file";
-    }
-    */
-    
-    
     @GetMapping("fileList") //경로쪽 코드 복잡할 예정, 경로 목록 보여주기
     public FileListResponse fileList(@RequestParam (defaultValue = "1") int page
     		, @RequestParam (defaultValue = "10") int limitRow
@@ -124,10 +109,9 @@ public class FilePathRestController { //파일 경로 관리
     }
     
     
-    @GetMapping("addAccessRule")
-    public String addAccessRule(@RequestParam String pathId, Model model) {
-        filePathDetailService.pathDetail(pathId, model);
-        return "thymeleaf/path/addAccessRule";
+    @GetMapping("addAccessRule") //기능 추가 필요함 (아직 미완성)
+    public Map<String, String> addAccessRule(@RequestParam String pathId) {
+        return filePathDetailService.pathDetail2(pathId);
     }
 
     @PostMapping("addAccessRule")

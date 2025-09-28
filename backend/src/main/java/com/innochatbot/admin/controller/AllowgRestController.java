@@ -1,9 +1,15 @@
 package com.innochatbot.admin.controller;
 
+import java.util.Collections;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,7 +18,6 @@ import com.innochatbot.admin.command.GradeCommand;
 import com.innochatbot.admin.dto.GradeDTO;
 import com.innochatbot.admin.dto.PageResponse;
 import com.innochatbot.admin.mapper.AllowgMapper;
-import com.innochatbot.admin.service.AutoNumService;
 import com.innochatbot.admin.service.allowg.AllowgDetailService;
 import com.innochatbot.admin.service.allowg.AllowgListService;
 import com.innochatbot.admin.service.allowg.AllowgUpdateService;
@@ -22,9 +27,6 @@ import com.innochatbot.admin.service.allowg.AllowgWriteService;
 @RestController
 public class AllowgRestController {
 	@Autowired
-	AutoNumService autoNumService;
-	
-	@Autowired
     AllowgWriteService allowgWriteService;
     @Autowired
     AllowgListService allowgListService;
@@ -33,6 +35,7 @@ public class AllowgRestController {
     @Autowired
     AllowgUpdateService allowgUpdateService;
     
+    /*
     @GetMapping("allowgWrite")
     public String allowgWrite(GradeCommand gradeCommand
     		, @RequestParam(defaultValue = "allowg_") String sep
@@ -44,10 +47,19 @@ public class AllowgRestController {
     	model.addAttribute("command", gradeCommand);
     	return "thymeleaf//allowGrade/allowgWrite";
     }
-    @PostMapping("allowgWrite")
-    public String allowgWrite1(GradeCommand gradeCommand) {
-    	allowgWriteService.allowgWrite(gradeCommand);
-    	return "redirect:/admin/accessRule/allowgList";
+    */
+    @PostMapping(value="allowgWrite", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> allowgWrite1(@RequestBody GradeCommand gradeCommand) {
+    	System.out.println(gradeCommand);
+    	Boolean insertResult = allowgWriteService.allowgWrite(gradeCommand);
+    	if(insertResult) {
+			// 200 ok + {success:ture} JSON 객체 전달
+			return ResponseEntity.ok(Collections.singletonMap("success", true)); //성공 JSON, redirect: 200ok
+		} else {
+			// 500 (또는 400 ) -> 프론트가 예외처리 가능
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(Collections.singletonMap("insert_error", false)); // 실패 JSON
+		}
     }
     /*
     @GetMapping("allowgList")

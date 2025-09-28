@@ -1,5 +1,7 @@
 package com.innochatbot.admin.service.filePath;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
@@ -24,4 +26,9 @@ public class FilePathDetailService {
         model.addAttribute("dto2", dto2);
         
     }
+
+	public Map<String, String> pathDetail2(String pathId) {
+		
+		return null;
+	}
 }
