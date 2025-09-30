@@ -1,11 +1,16 @@
 package com.innochatbot.admin.controller;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -35,6 +40,7 @@ public class AllowdRestController {
     @Autowired
     AllowdUpdateService allowdUpdateService;
     
+    /*
     @GetMapping("allowdWrite")
     public String allowdWrite(DepartmentCommand departmentCommand
     		, @RequestParam(defaultValue = "allowd_") String sep
@@ -47,11 +53,21 @@ public class AllowdRestController {
     	model.addAttribute("command", departmentCommand);
     	return "thymeleaf/allowDepartment/allowdWrite";
     }
-    @PostMapping("allowdWrite")
-    public String allowdWrite1(DepartmentCommand departmentCommand
-    		, @RequestParam("departmentId") List<String> departmentId) {
-    	allowdWriteService.allowdWrite(departmentCommand, departmentId);
-    	return "redirect:/admin/accessRule/allowdList";
+    */
+    
+    @PostMapping(value = "allowdWrite", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> allowdWrite1(@RequestBody DepartmentCommand departmentCommand
+	/* , @RequestParam("departmentId") List<String> departmentId */) {
+    	Boolean insertResult = allowdWriteService.allowdWrite2(departmentCommand);
+    	
+    	if(insertResult) {
+    		// 200ok + {success:true} JSON 객체 전달
+    		return ResponseEntity.ok(Collections.singletonMap("success", true)); //성공 JSON, redirect: 200 ok
+    	} else {
+    		// 500 (또는 400)  -> 프론트가 예외처리 가능
+    		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+    				.body(Collections.singletonMap("insert_error", false)); //실패 JSON
+    	}
     }
     /*
     @GetMapping("allowdList")

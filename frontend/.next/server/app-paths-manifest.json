@@ -1,7 +1,7 @@
 {
-  "/admin/file/addAccessRule/page": "app/admin/file/addAccessRule/page.js",
-  "/admin/accessRule/allowgWrite/page": "app/admin/accessRule/allowgWrite/page.js",
-  "/admin/accessRule/allowgList/page": "app/admin/accessRule/allowgList/page.js",
+  "/admin/accessRule/accessList/page": "app/admin/accessRule/accessList/page.js",
+  "/admin/department/departmentList/page": "app/admin/department/departmentList/page.js",
+  "/admin/accessRule/accessWrite/page": "app/admin/accessRule/accessWrite/page.js",
   "/admin/accessRule/allowdWrite/page": "app/admin/accessRule/allowdWrite/page.js",
-  "/admin/accessRule/allowdList/page": "app/admin/accessRule/allowdList/page.js"
+  "/admin/file/addAccessRule/page": "app/admin/file/addAccessRule/page.js"
 }

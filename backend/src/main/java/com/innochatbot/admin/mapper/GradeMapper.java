@@ -11,7 +11,7 @@ import com.innochatbot.admin.dto.StartEndPageDTO;
 @Mapper
 public interface GradeMapper { 
 
-	public void gradeInsert(GradeDTO dto);
+	public int gradeInsert(GradeDTO dto);
 
 	public Integer gradeCount(Integer gradeLevel);
 

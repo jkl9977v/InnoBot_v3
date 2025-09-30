@@ -14,7 +14,7 @@ public interface AccessRuleMapper {
 
     public AccessRuleDTO accessRuleDetail(String accessId);
 
-    public void accessRuleInsert(AccessRuleDTO dto);
+    public int accessRuleInsert(AccessRuleDTO dto);
 
     public void accessRuleUpdate(AccessRuleDTO dto);
 

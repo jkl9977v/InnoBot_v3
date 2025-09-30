@@ -54,7 +54,7 @@ public class UserRestController {
 		System.out.println(userCommand);
 		Boolean insertResult = userWriteService.userWrite(userCommand);
 		if(insertResult) {
-			// 200 ok + {success:ture} JSON 객체 전달
+			// 200 ok + {success:true} JSON 객체 전달
 			return ResponseEntity.ok(Collections.singletonMap("success", true)); //성공 JSON, redirect: 200ok
 		} else {
 			// 500 (또는 400 ) -> 프론트가 예외처리 가능

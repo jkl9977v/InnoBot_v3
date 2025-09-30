@@ -79,7 +79,7 @@ export default function AllowgWritePage() {
 	});
 	if (!res.ok) { alert('저장 실패'); return; }
 	
-	alert('직급정책 생성 완료')
+	alert('직급정책 생성 완료');
     router.push('/admin/accessRule/allowgList');
   };
 

@@ -18,7 +18,7 @@ export default function allowdWritePage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [expandedSection, setExpandedSection] = useState<string | null>('policies');
   const [showDepartmentsSearchModal, setShowDepartmentsSearchModal] = useState(false);
-  const [selectedDepartments, setSelectedDepartments] = useState<Department[]>([]);		// 최종 선택 결과 보관
+  const [selectedDepartments, setSelectedDepartments] = useState<DepartmentDTO[]>([]);		// 최종 선택 결과 보관
   //const [allSelected, setAllSelected] = useState(false);
   
   //const [departments, setDepartments] = useState<DepartmentDTO[]>([]);
@@ -28,8 +28,9 @@ export default function allowdWritePage() {
   const [formData, setFormData] = useState({
 	allowdId: '',
 	allowdName: '',
-	departmentId: '',
-	departmentName: ''
+	//departmentId: '',
+	//departmentName: '',
+	departmentIds: [] as string[],
     //departents: [] as DepartmentDTO[] //배열
   });
 
@@ -73,10 +74,14 @@ export default function allowdWritePage() {
   const handleSubmit = async () => {
 	//필수값 공백 체크
 	const required = [
-		['allowdName', '부서정책 명'], ['departmentName', '부서명']
+		['allowdName', '부서정책 명']
 	] as const ;
 	for (const [key, label] of required) {
 		if (!formData[key]) { alert(`${label}을 입력하세요.`); return; }
+	}
+	//부서가 0개이면 막기
+	if (formData.departmentIds.length === 0) {
+		alert('부서를 한 개 이상 선택하세요.'); return;
 	}
 	
 	//저장 요청
@@ -106,8 +111,8 @@ export default function allowdWritePage() {
 	setSelectedDepartments(list);
 	if (list.length) {
 		setFormData(p => ({ ...p,
-			departmentId: list.map(d => d.departmentId)/*.join(',')*/,
-			departmentName: list.map(d => d.departmentName)/*.join(',')*/
+			departmentIds: list.map(d => d.departmentId)/*.join(',')*/
+			//departmentName: list.map(d => d.departmentName)/*.join(',')*/
 		}));
 	}
 	setShowDepartmentsSearchModal(false);
@@ -130,8 +135,14 @@ export default function allowdWritePage() {
     }
   };*/
 
-  const handleRemoveDepartment = (departmentId: number) => { 
-    setFormData(prev => ({ ...prev, departments: prev.departments.filter(d => d.departmentId !== departmentId) }));
+  const handleRemoveDepartment = (departmentId: string) => { 
+	//화면 목록 제거
+	setSelectedDepartments(prev => prev.filter(d => d.departmentId !== departmentId));
+	//formData 안 배열 업데이트
+	setFormData( p => ({ ...p,
+		departmentIds: p.departmentIds.filter(id => id !== departmentId)
+	}));
+    //setFormData(prev => ({ ...prev, departments: prev.departments.filter(d => d.departmentId !== departmentId) }));
   };
 
   if (isLoading) {
@@ -177,7 +188,7 @@ export default function allowdWritePage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">허용할 부서</label>
-				  <div className="flex">
+				  <div className="flex items-center space-x-2">
                   	<input type="text" /*value={formData.departmentName}*/
 					 onClick={() => setShowDepartmentsSearchModal(true)} 
 					 placeholder="부서명" 
@@ -194,7 +205,7 @@ export default function allowdWritePage() {
                       {selectedDepartments.map((department) => (
                         <div key={department.departmentId} className="flex items-center justify-between bg-gray-50 p-2 rounded border">
                           <span className="text-sm">{department.departmentName}</span>
-                          <button onClick={() => handleRemoveDepartment(department.departentId)} className="w-5 h-5 flex items-center justify-center text-gray-500 hover:text-red-500">
+                          <button onClick={() => handleRemoveDepartment(department.departmentId)} className="w-5 h-5 flex items-center justify-center text-gray-500 hover:text-red-500">
                             <i className="ri-close-line"></i>
                           </button>
                         </div>

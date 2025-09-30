@@ -19,7 +19,7 @@ public interface FilePathMapper {
 
     public void filePathInsert(FilePathDTO dto);
 
-    public void filePathUpdate(FilePathDTO dto);
+    public int filePathUpdate(FilePathDTO dto);
 
     public void filePathDelete(String pathId);
 

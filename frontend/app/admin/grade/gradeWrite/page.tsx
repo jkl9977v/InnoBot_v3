@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminSidebar from '../../../../components/AdminSidebar';
 import AdminHeader from '../../../../components/AdminHeader';
+import { apiUrl } from '@/lib/api';
 
 export default function GradeWritePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -18,11 +19,12 @@ export default function GradeWritePage() {
 
   const [formData, setFormData] = useState({
     gradeName: '',
-    gradeCode: '',
+	gradeLevel: ''
+/*    gradeCode: '',
     level: '',
     description: '',
     salary: '',
-    permissions: [] as string[]
+    permissions: [] as string[]*/
   });
 
   useEffect(() => {
@@ -50,8 +52,27 @@ export default function GradeWritePage() {
     }));
   };
 
-  const handleSubmit = () => {
-    console.log('Creating grade:', formData);
+  const handleSubmit = async () => {
+	//필수값 공백 체크
+	const required = [
+		['gradeName', '직급명'], ['gradeLevel', '직급레벨']
+	] as const;
+	for (const [key, label] of required) {
+		if  (!formData[key]) { alert(`${label}를 입력하세요.`); return; }
+	}
+	
+	//저장 요청
+	const url = apiUrl('/admin/grade/gradeWrite')
+	const res = await fetch(url, {
+		method: 'POST',
+		headers: { 'Content-Type' : 'application/json' },
+		credentials: 'include',
+		body: JSON.stringify(formData) // 화면에서 입력 받은 모든 값을 JSON 문자열로 묶어서 서버에 전송
+	});
+	if (!res.ok) { alert('저장 실패'); return; }
+	
+	alert('직급 생성 완료');
+    //console.log('Creating grade:', formData);
     router.push('/admin/grade/gradeList');
   };
 
@@ -138,9 +159,9 @@ export default function GradeWritePage() {
                       직급 레벨 *
                     </label>
                     <select
-						value={gradeLevel}
+						value={formData.gradeLevel}
                       //value={formData.level}
-                      onChange={(e) => handleGradeLevel(Number(e.target.value))}
+                      onChange={(e) => handleInputChange('gradeLevel',Number(e.target.value))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm pr-8"
                     >
                       {options.map((i) => (

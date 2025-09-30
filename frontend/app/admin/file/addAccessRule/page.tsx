@@ -31,6 +31,8 @@ export default function AddAccessRulePage() {
 		accessName: '',
 		accessType: '',
 	});
+	
+	const [selectedAccessRule, setSelectedAccessRule] = useState<AccessRuleDTO | null>(null);
 
 	useEffect(() => {
 		try {
@@ -135,8 +137,8 @@ export default function AddAccessRulePage() {
 				</div>
 
 				<div className="flex-1 overflow-y-auto p-6">
-					<div className="bg-white rounded-xl border border-gray-200 min-h-full">
-						<div className="p-6">
+					<div className="bg-white rounded-xl border border-gray-200 min-h-full flex">
+						<div className="flex-1 p-6 border-r border-gray-200">
 							<h2 className="text-lg font-semibold text-gray-900 mb-6">
 								접근권한 설정
 							</h2>
@@ -252,6 +254,88 @@ export default function AddAccessRulePage() {
 								</button>
 							</div>
 						</div>
+
+						            {/* 오른쪽 박스 - 상세 정보 */}
+						            <div className="w-96 flex flex-col">
+						              {/* 부서정책 상세 정보 */}
+						              <div className="flex-1 p-6 border-b border-gray-200">
+						                <h3 className="text-sm font-semibold text-gray-900 mb-4">부서정책 상세 정보 (미구현 기능)</h3>
+						                <div className="overflow-y-auto" style={{ maxHeight: '200px' }}>
+						                  {selectedAccessRule ? (
+						                    <div className="space-y-3 text-sm">
+						                      <div>
+						                        <span className="font-medium text-gray-700">정책명:</span>
+						                        <div className="text-gray-900">{/*selectedAllowd.allowdName*/}</div>
+						                      </div>
+						                      { /*<div>
+						                        <span className="font-medium text-gray-700">타겟명:</span>
+						                        <div className="text-gray-900">{selectedAllowd.targetName}</div>
+						                      </div>
+						                      <div>
+						                        <span className="font-medium text-gray-700">규칙명:</span>
+						                        <div className="text-gray-900">{selectedAllowd.ruleName}</div>
+						                      </div>*/}
+						                      <div>
+						                        <span className="font-medium text-gray-700">대상부서:</span>  배열처리 코드 적용 필요함 (미완성)
+						                        {/*<div className="text-gray-900">{selectedAllowd.departmentName.join(', ')}</div>*/}
+						                      </div>
+						                      {/*<div>
+						                        <span className="font-medium text-gray-700">상태:</span>
+						                        <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${selectedAllowd.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+						                          {selectedAllowd.isActive ? '활성' : '비활성'}
+						                        </div>
+						                      </div>*/}
+						                    </div>
+						                  ) : (
+						                    <div className="text-sm text-gray-500 text-center py-4">
+						                      접근정책을 선택하면 상세 정보가 표시됩니다.
+						                    </div>
+						                  )}
+						                </div>
+						              </div>
+
+						              {/* 직급정책 상세 정보 */}
+						              <div className="flex-1 p-6">
+						                <h3 className="text-sm font-semibold text-gray-900 mb-4">직급정책 상세 정보 (미구현 기능)</h3>
+						                <div className="overflow-y-auto" style={{ maxHeight: '200px' }}>
+						                  {selectedAccessRule ? (
+						                    <div className="space-y-3 text-sm">
+						                      <div>
+						                        <span className="font-medium text-gray-700">정책명:</span>
+						                        <div className="text-gray-900">{/*selectedAllowg.allowgName*/}</div>
+						                      </div>
+						                      {/*<div>
+						                        <span className="font-medium text-gray-700">타겟명:</span>
+						                        <div className="text-gray-900">{selectedAllowg.targetName}</div>
+						                      </div>
+						                      <div>
+						                        <span className="font-medium text-gray-700">규칙명:</span>
+						                        <div className="text-gray-900">{selectedAllowg.ruleName}</div>
+						                      </div>*/ }
+						                      <div>
+						                        <span className="font-medium text-gray-700">기준직급:</span>
+						                        <div className="text-gray-900">{/*selectedAllowg.gradeName*/}</div>
+						                      </div>
+											  <div>
+											    <span className="font-medium text-gray-700">직급 레벨:</span>
+											    <div className="text-gray-900">{/*selectedAllowg.gradeLevel*/}</div>
+											  </div>
+						                      {/*<div>
+						                        <span className="font-medium text-gray-700">상태:</span>
+						                        <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${selectedAllowg.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+						                          {selectedAllowg.isActive ? '활성' : '비활성'}
+						                        </div>
+						                      </div>*/}
+						                    </div>
+						                  ) : (
+						                    <div className="text-sm text-gray-500 text-center py-4">
+						                      접근정책을 선택하면 상세 정보가 표시됩니다.
+						                    </div>
+						                  )}
+						                </div>
+						              </div>
+						            </div>						
+						
 					</div>
 				</div>
 			</div>

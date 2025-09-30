@@ -1,9 +1,14 @@
 package com.innochatbot.admin.controller;
 
+import java.util.Collections;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,6 +38,7 @@ public class GradeRestController {
 	@Autowired
 	GradeUpdateService gradeUpdateService;
 	
+	/*
 	@GetMapping("gradeWrite")
 	public String gradeWrite(GradeCommand gradeCommand
 			, @RequestParam (defaultValue = "grade_") String sep
@@ -44,10 +50,19 @@ public class GradeRestController {
 		model.addAttribute("command", gradeCommand);
 		return "thymeleaf/grade/gradeWrite";
 	}
+	*/
 	@PostMapping("gradeWrite")
-	public String gradeWrite1(GradeCommand gradeCommand) {
-		gradeWriteService.gradeWrite(gradeCommand);
-		return "redirect:/admin/grade/gradeList";
+	public ResponseEntity<?> gradeWrite1(@RequestBody GradeCommand gradeCommand) {
+		System.out.println(gradeCommand);
+		Boolean insertResult = gradeWriteService.gradeWrite(gradeCommand);
+		if (insertResult) {
+			// 200 ok + {success: true} JSON 객체 전달
+			return ResponseEntity.ok(Collections.singletonMap("success", true)); // 성공 JSON, redirect : 200 ok
+		} else {
+			// 500 (또는 400)  -> 프론트가 예외처리 가능
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(Collections.singletonMap("insert_error", false)); //실패 JSON
+		}
 	}
 	/*
 	@GetMapping("gradeList")

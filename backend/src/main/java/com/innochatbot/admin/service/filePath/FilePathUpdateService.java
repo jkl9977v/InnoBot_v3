@@ -13,13 +13,17 @@ public class FilePathUpdateService {
     @Autowired
     FilePathMapper filePathMapper;
 
-    public void pathUpdate(FilePathCommand filePathCommand) {
+    public Boolean pathUpdate(FilePathCommand filePathCommand) {
+    	int updateResult = 0;
+    	
         FilePathDTO dto = new FilePathDTO();
 
         dto.setPathId(filePathCommand.getPathId());
         dto.setPath(filePathCommand.getPath());
         dto.setAccessId(filePathCommand.getAccessId());
-        filePathMapper.filePathUpdate(dto);
+        updateResult = filePathMapper.filePathUpdate(dto);
+        
+        return updateResult == 1;
     }
 
 }

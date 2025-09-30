@@ -10,7 +10,7 @@ import com.innochatbot.admin.dto.StartEndPageDTO;
 @Mapper
 public interface DepartmentMapper { 
 
-	public void departmentInsert(DepartmentDTO dto);
+	public int departmentInsert(DepartmentDTO dto);
 
 	public Integer departmentCount();
 

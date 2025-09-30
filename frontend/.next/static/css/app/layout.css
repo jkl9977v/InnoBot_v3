@@ -519,6 +519,9 @@ video {
 .mb-8{
   margin-bottom: 2rem;
 }
+.ml-1{
+  margin-left: 0.25rem;
+}
 .ml-2{
   margin-left: 0.5rem;
 }
@@ -554,9 +557,6 @@ video {
 }
 .mt-8{
   margin-top: 2rem;
-}
-.ml-1{
-  margin-left: 0.25rem;
 }
 .block{
   display: block;
@@ -1212,13 +1212,13 @@ video {
   padding-top: 1rem;
   padding-bottom: 1rem;
 }
-.py-8{
-  padding-top: 2rem;
-  padding-bottom: 2rem;
-}
 .py-6{
   padding-top: 1.5rem;
   padding-bottom: 1.5rem;
+}
+.py-8{
+  padding-top: 2rem;
+  padding-bottom: 2rem;
 }
 .pl-12{
   padding-left: 3rem;

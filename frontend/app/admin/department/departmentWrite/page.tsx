@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminSidebar from '../../../../components/AdminSidebar';
 import AdminHeader from '../../../../components/AdminHeader';
+import { apiUrl } from '@/lib/api';
 
 export default function DepartmentWritePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -13,11 +14,13 @@ export default function DepartmentWritePage() {
   const router = useRouter();
 
   const [formData, setFormData] = useState({
-    name: '',
+	departmentId: '',
+	departmentName: '',
+    /*name: '',
     code: '',
     description: '',
     manager: '',
-    isActive: true
+    isActive: true*/
   });
 
   useEffect(() => {
@@ -34,8 +37,27 @@ export default function DepartmentWritePage() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = () => {
-    console.log('부서 생성:', formData);
+  const handleSubmit = async () => {
+	// 필수값 공백 체크
+	const required = [
+		['departmentName', '부서명']
+	] as const;
+	for (const [key, label] of required) {
+		if(!formData[key]) { alert(`${label}을 입력하세요.`); return; }
+	}
+	
+	//저장 요청
+	const url = apiUrl('/admin/department/departmentWrite')
+	const res = await fetch(url, {
+		method: 'POST',
+		headers: { 'Content-Type' : 'application/json' },
+		credentials: 'include',
+		body: JSON.stringify(formData) // 화면에서 입력 받은 모든 값을 JSON 문자열로 묶어서 서버에 전송 
+	});
+	if (!res.ok) { alert('저장 실패'); return; }
+	
+	alert('부서 생성 완료');
+	router.push('/admin/department/departmentList');
   };
 
   const handleToggleSection = (section: string) => {
@@ -112,8 +134,8 @@ export default function DepartmentWritePage() {
                   </label>
                   <input
                     type="text"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    value={formData.departmentName}
+                    onChange={(e) => handleInputChange('departmentName', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                     placeholder="부서명을 입력하세요"
                   />

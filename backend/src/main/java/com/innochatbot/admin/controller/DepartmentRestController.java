@@ -1,9 +1,15 @@
 package com.innochatbot.admin.controller;
 
+import java.util.Collections;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,6 +38,7 @@ public class DepartmentRestController {
 	@Autowired
 	DepartmentUpdateService departmentUpdateService;
 	
+	/*
 	@GetMapping("departmentWrite")
 	public String departmentWrite(DepartmentCommand departmentCommand
 			, @RequestParam (defaultValue = "dep_") String sep
@@ -43,10 +50,21 @@ public class DepartmentRestController {
 		model.addAttribute("command", departmentCommand);
 		return "thymeleaf/department/departmentWrite";
 	}
-	@PostMapping("departmentWrite")
-	public String departmentWrite1(DepartmentCommand departmentCommand) {
-		departmentWriteService.departmentWrite(departmentCommand);
-		return "redirect:/admin/department/departmentList";
+	*/
+	
+	@PostMapping(value = "departmentWrite", consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> departmentWrite1(@RequestBody DepartmentCommand departmentCommand) {
+		System.out.println(departmentCommand);
+		Boolean insertResult = departmentWriteService.departmentWrite(departmentCommand);
+		
+		if (insertResult ) {
+			// 200 ok + { success:true } JSON 객체 전달
+			return ResponseEntity.ok(Collections.singletonMap("success", true)); //성공 JSON, redirect: 200 ok
+		} else {
+			// 500 (또는 400 ) -> 프론트가 예외처리 가능
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(Collections.singletonMap("isnert_error", false)); //실패 JSON
+		}
 	}
 	/*
 	@GetMapping("departmentList")
