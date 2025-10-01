@@ -108,6 +108,11 @@ export default function GradeListPage() {
     console.log('Searching grades:', searchWord);
   };
   
+  //업데이트 페이지 이동 기능
+  const handleUpdate = (gradeId: string) => {
+	router.push(`/admin/grade/gradeUpdate?gradeId=${gradeId}`);
+  }
+  
   //정책 삭제 기능
   const handleDelete = async(gradeId: string) => {
 	if(!confirm('정말 삭제하시겠습니까?')) return;
@@ -262,10 +267,14 @@ export default function GradeListPage() {
                       </td>*/}
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div className="flex items-center space-x-2">
-                          <button className="text-indigo-600 hover:text-indigo-900 transition-colors cursor-pointer">
+                          <button 
+						  onClick={() => handleUpdate(grade.gradeId)}
+						  className="text-indigo-600 hover:text-indigo-900 transition-colors cursor-pointer">
                             수정
                           </button>
-                          <button className="text-red-600 hover:text-red-900 transition-colors cursor-pointer">
+                          <button 
+						  onClick={ () => handleDelete(grade.gradeId)}
+						  className="text-red-600 hover:text-red-900 transition-colors cursor-pointer">
                             삭제
                           </button>
                         </div>

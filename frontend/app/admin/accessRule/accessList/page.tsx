@@ -116,9 +116,13 @@ export default function AccessListPage() {
   const handleSearch = () => {
     console.log('Searching access rules:', searchWord);
   };
+  
+  const handleUpdate = (accessId: string ) => {
+	router.push(`/admin/accessRule/accessUpdate?accessId=${accessId}`);
+  }
 
   // 정책 삭제 기능
-  const handleDelete = async (accessId: number) => {
+  const handleDelete = async (accessId: string) => {
     if (!confirm('정말 삭제하시겠습니까?')) return;
 
     try {
@@ -340,7 +344,7 @@ export default function AccessListPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div className="flex items-center space-x-2">
                           <button 
-						  href={apiUrl(`/admin/accessRule/accessUpdate?accessId=${rule.accessId}`)}
+						  onClick={() => handleUpdate(rule.accessId)}
 						  className="text-indigo-600 hover:text-indigo-900 transition-colors cursor-pointer">
                             수정
                           </button>

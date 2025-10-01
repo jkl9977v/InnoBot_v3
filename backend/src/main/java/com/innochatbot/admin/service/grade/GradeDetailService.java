@@ -16,5 +16,10 @@ public class GradeDetailService {
 		GradeDTO dto = gradeMapper.gradeDetail(gradeId);
 		model.addAttribute("dto", dto);
 	}
+
+	public GradeDTO gradeDetail2(String gradeId) {
+		GradeDTO dto = gradeMapper.gradeDetail(gradeId);
+		return dto;
+	}
 	
 }

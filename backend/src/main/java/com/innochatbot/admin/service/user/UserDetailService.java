@@ -12,12 +12,9 @@ public class UserDetailService {
 	@Autowired
 	UserMapper userMapper;
 
-	public void userDetail(String userNum, Model model) {
-		UserDTO dto = new UserDTO();
-		dto=userMapper.userDetail(userNum);
-		model.addAttribute("dto", dto);
-		System.out.println(dto);
-		
+	public UserDTO userDetail(String userNum) {
+		UserDTO dto=userMapper.userDetail(userNum);
+		return dto;
 	}
 
 }

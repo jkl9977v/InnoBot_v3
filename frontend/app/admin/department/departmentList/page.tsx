@@ -109,6 +109,11 @@ export default function DepartmentListPage() {
     console.log('Searching departments:', searchWord);
   };
   
+  //업데이트 페이지 이동 기능
+  const handleUpdate = (departmentId: string) => {
+	router.push(`/admin/department/departmentUpdate?departmentId=${departmentId}`);
+  }
+  
   //부서 삭제 기능
   const handleDelete = async (departmentId: string) => {
 	if (!confirm('정말 삭제하시겠습니까?')) return;
@@ -269,7 +274,7 @@ export default function DepartmentListPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
 					  <div className="flex items-center space-x-2">
 					                            <button 
-					  						  href={apiUrl(`/admin/department/departmentUpdate?departmentId=${dept.departmentId}`)}
+					  						  onClick={() => handleUpdate(dept.departmentId)}
 					  						  className="text-indigo-600 hover:text-indigo-900 transition-colors cursor-pointer">
 					                              수정
 					                            </button>

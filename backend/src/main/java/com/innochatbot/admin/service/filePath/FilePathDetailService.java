@@ -1,12 +1,14 @@
 package com.innochatbot.admin.service.filePath;
 
-import java.util.Map;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
+
 import com.innochatbot.admin.dto.AccessRuleDTO;
 import com.innochatbot.admin.dto.FilePathDTO;
+import com.innochatbot.admin.dto.PathDetailResponse;
 import com.innochatbot.admin.mapper.AccessRuleMapper;
 import com.innochatbot.admin.mapper.FilePathMapper;
 
@@ -27,8 +29,14 @@ public class FilePathDetailService {
         
     }
 
-	public Map<String, String> pathDetail2(String pathId) {
+	public PathDetailResponse pathDetail2(String pathId) {
+		FilePathDTO filePath = Objects.requireNonNull(
+	            filePathMapper.filePathDetail(pathId),
+	            () -> "잘못된 pathId" //supplier<String>
+	    );
+				filePathMapper.filePathDetail(pathId);
+		AccessRuleDTO accessRule = accessRuleMapper.accessRuleDetail(filePath.getAccessId());
 		
-		return null;
+		return new PathDetailResponse(filePath, accessRule);
 	}
 }

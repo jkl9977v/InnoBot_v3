@@ -26,9 +26,6 @@ import com.innochatbot.admin.service.grade.GradeWriteService;
 @RestController
 @RequestMapping("admin/grade")
 public class GradeRestController {
-	
-	@Autowired
-	AutoNumService autoNumService;
 	@Autowired
 	GradeWriteService gradeWriteService;
 	@Autowired
@@ -83,6 +80,7 @@ public class GradeRestController {
 			) {
 		return gradeListService.gradeList2(page, limitRow, searchWord, kind);
 	}
+	/*
 	@GetMapping("gradeSearch")
 	public String gradeSearch(@RequestParam (defaultValue = "1") int page
 			, @RequestParam (defaultValue = "10") int limitRow
@@ -92,21 +90,41 @@ public class GradeRestController {
 		gradeListService.gradeList(page, limitRow, searchWord, kind, model);
 		return "thymeleaf/grade/gradeSearch";
 	}
+	*/
 	@GetMapping("gradeDetail")
-	public String gradeDetail(@RequestParam String gradeId, Model model) {
-		gradeDetailService.gradeDetail(gradeId, model);
-		return "thymeleaf/grade/gradeDetail";
+	public ResponseEntity<?> gradeDetail(@RequestParam String gradeId) {
+		System.out.println(gradeId);
+		
+		// gradeId가 있을때 200ok + DTO
+		if (gradeId != null && !gradeId.trim().isEmpty()) {
+			GradeDTO dto = gradeDetailService.gradeDetail2(gradeId);
+			return ResponseEntity.ok(dto);
+		} else { // gradeId가 없을때
+			return ResponseEntity.badRequest()
+					.body("gradeId 값이 없습니다");
+		}
 	}
+	/*
 	@GetMapping("gradeUpdate")
 	public String gradeUpdate(@RequestParam String gradeId, Model model) {
 		gradeDetailService.gradeDetail(gradeId, model);
 		return "thymeleaf/grade/gradeUpdate";
 	}
+	*/
 	@PostMapping("gradeUpdate")
-	public String gradeUpdate1(GradeCommand gradeCommand) {
-		gradeUpdateService.gradeUpdate(gradeCommand);
-		return "redirect:/admin/grade/gradeList";
+	public ResponseEntity<?> gradeUpdate1(@RequestBody GradeCommand gradeCommand) {
+		System.out.println(gradeCommand);
+		Boolean updateResult = gradeUpdateService.gradeUpdate(gradeCommand);
+		if (updateResult) {
+			// 200 ok + { success: true} JSON 객체 전달
+			return ResponseEntity.ok(Collections.singletonMap("success", true)); 
+		} else {
+			//500 (또는 400) -> 프론트가 예외처리함
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(Collections.singletonMap("update_error", false)); //실패 JSON
+		}
 	}
+	
 	@Autowired
 	GradeMapper gradeMapper;
 	@GetMapping("gradeDelete")

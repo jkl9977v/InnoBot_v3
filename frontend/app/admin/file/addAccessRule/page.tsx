@@ -13,6 +13,15 @@ interface AccessRuleDTO {
 	accessType: string;
 }
 
+interface FilePathDTO {
+	pathId: string;
+	path: string;
+	depth: number;
+	parentId: string;
+	parentPath: string;
+	accessId: string | null;
+}
+
 export default function AddAccessRulePage() {
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
@@ -20,6 +29,10 @@ export default function AddAccessRulePage() {
 	const [expandedSection, setExpandedSection] = useState<string | null>('file-system');
 	const [isAccessRuleSearchModalOpen, setIsAccessRuleSearchModalOpen] = useState(false);
 	const router = useRouter();
+	
+	//서버 데이터
+	const [filePathDTO, setFilePathDTO] = useState<FilePathDTO[]>([]);
+	const [accessRuleDTO, setAccessRuleDTO] = useState<AccessRuleDTO[]>([]);
 
 	const [formData, setFormData] = useState({
 		pathId: '',
@@ -51,6 +64,36 @@ export default function AddAccessRulePage() {
 			setIsLoading(false);
 		}
 	}, [router]);
+	
+	useEffect (() => {
+		if(isLoggedIn) return; //fetchDetail;
+	}); // ,[isLoggedIn, page, limitRow, searchWord, kind]
+	
+	const fetchDetail = async () => { //filePathDetail 함수
+		try {
+			const params = new URLSearchParams({
+				pathId: pathId,
+			});
+			const url = apiUrl(`/admin/file/addAccessRule${params.toString()}`);
+			const res = await fetch (url, {
+				method: 'GET',
+				headers: { Accetp: 'application/json' },
+				credentials: 'include',
+			});
+			if(!res.ok) throw new Error('Server error ' + res.status);
+			const data: filePathDTO = await res.json();
+			
+			/*setAccessRules(data.list);
+			setMaxPageNum(data.maxPageNum);
+			setCount(data.count);
+			setStartPageNum(data.startPageNum);
+			setEndPageNum(data.endPageNum);*/
+		} catch (e) {
+			console.error('list fetch error', e);
+		} finally {
+			setIsLoading(false);
+		}
+	};
 
 	const handleToggleSection = (section: string) => {
 		setExpandedSection(prev => (prev === section ? null : section));

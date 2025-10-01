@@ -139,7 +139,12 @@ export default function UserListPage() {
     console.log('Searching users:', searchWord);
   };
   
-  // 정책 삭제 기능
+  // 유저 수정 기능
+  const handleUpdate = (userNum : string) => {
+	router.push(`/admin/user/userUpdate?userNum=${userNum}`);
+  };
+  
+  // 유저 삭제 기능
   const handleDelete = async (userNum: string) => {
 	if(!confirm('정말 삭제하시겠습니까?')) return;
 	
@@ -322,7 +327,7 @@ export default function UserListPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div className="flex items-center space-x-2">
 						<button 
-												  href={apiUrl(`/admin/user/userUpdate?userNum=${user.userNum}`)}
+												  onClick={() => handleUpdate(user.userNum)}
 												  className="text-indigo-600 hover:text-indigo-900 transition-colors cursor-pointer">
 						                            수정
 						                          </button>

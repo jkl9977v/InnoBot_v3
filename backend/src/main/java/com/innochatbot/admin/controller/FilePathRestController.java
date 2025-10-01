@@ -1,7 +1,6 @@
 package com.innochatbot.admin.controller;
 
 import java.util.Collections;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.innochatbot.admin.command.FilePathCommand;
 import com.innochatbot.admin.dto.FileListResponse;
+import com.innochatbot.admin.dto.PathDetailResponse;
 import com.innochatbot.admin.mapper.FilePathMapper;
 import com.innochatbot.admin.service.AutoNumService;
 import com.innochatbot.admin.service.file.FileDetailService;
@@ -115,7 +115,7 @@ public class FilePathRestController { //파일 경로 관리
     
     
     @GetMapping("addAccessRule") //기능 추가 필요함 (아직 미완성)
-    public Map<String, String> addAccessRule(@RequestParam String pathId) {
+    public PathDetailResponse addAccessRule(@RequestParam String pathId) {
         return filePathDetailService.pathDetail2(pathId);
     }
 

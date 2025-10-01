@@ -18,7 +18,7 @@ public interface DepartmentMapper {
 
 	public DepartmentDTO departmentDetail(String departmentId);
 
-	public void departmentUpdate(DepartmentDTO dto);
+	public int departmentUpdate(DepartmentDTO dto);
 
 	public void departmentDelete(String departmentId);
 

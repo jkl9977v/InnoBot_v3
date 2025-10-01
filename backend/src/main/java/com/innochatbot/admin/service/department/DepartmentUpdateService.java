@@ -12,12 +12,13 @@ public class DepartmentUpdateService {
 	@Autowired
 	DepartmentMapper departmentMapper;
 
-	public void departmentUpdate(DepartmentCommand departmentCommand) {
+	public Boolean departmentUpdate(DepartmentCommand departmentCommand) {
 		DepartmentDTO dto = new DepartmentDTO();
 		
 		dto.setDepartmentId(departmentCommand.getDepartmentId());
 		dto.setDepartmentName(departmentCommand.getDepartmentName());
 		
-		departmentMapper.departmentUpdate(dto);
+		int updateResult = departmentMapper.departmentUpdate(dto);
+		return updateResult == 1;
 	}
 }

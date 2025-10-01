@@ -1,6 +1,7 @@
 package com.innochatbot.admin.service.accessRule;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 
@@ -19,4 +20,9 @@ public class AccessRuleDetailService {
         
         System.out.println(dto);
     }
+
+	public AccessRuleDTO accessDetail2(String accessId) {
+		AccessRuleDTO dto = accessRuleMapper.accessRuleDetail(accessId);
+		return dto;
+	}
 }

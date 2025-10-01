@@ -39,7 +39,6 @@ public class AccessRuleRestController { //파일 경로 관리
     @Autowired
     AccessRuleDetailService accessRuleDetailService;
     
-    //1. accessRule 기본
     /*
     @GetMapping("accessWrite") //경로 추가
     public String AccessRuleWrite(AccessRuleCommand accessRuleCommand
@@ -68,7 +67,7 @@ public class AccessRuleRestController { //파일 경로 관리
     				.body(Collections.singletonMap("insert_error", false)); //실패 JSON
     	}
     }
-    /*
+    /*//기존 코드
     @GetMapping("accessList")
     public Map<String, Object> AccessRuleList(@RequestParam (defaultValue = "1") int page
     		, @RequestParam (defaultValue = "10") int limitRow
@@ -79,6 +78,8 @@ public class AccessRuleRestController { //파일 경로 관리
         return "thymeleaf/accessRule/accessList";
     }
     */
+
+    //현재 사용중인 accessList 코드
     @GetMapping("accessList")
     public PageResponse<AccessRuleDTO> AccessRuleList(@RequestParam (defaultValue = "1") int page
     		, @RequestParam (defaultValue = "10") int limitRow
@@ -87,6 +88,9 @@ public class AccessRuleRestController { //파일 경로 관리
     		) {
         return accessRuleListService.accessList2(page, limitRow, searchWord,kind);
     }
+    
+    // accessList와 코드 합침
+    /*
     @GetMapping("accessSearch")
     public String AccessRuleSearch(@RequestParam (defaultValue="1") int page
     		, @RequestParam (defaultValue="10") int limitRow
@@ -96,18 +100,30 @@ public class AccessRuleRestController { //파일 경로 관리
         accessRuleListService.accessList(page, limitRow, searchWord,kind, model);
         return "thymeleaf/accessRule/accessSearch";
     }
-
+    */
+    
+    //detail
     @GetMapping("accessDetail")
-    public String AccessRuleList1(@RequestParam String accessId, Model model) {
-        accessRuleDetailService.accessDetail(accessId, model);
-        return "thymeleaf/accessRule/accessDetail";
+    public ResponseEntity<?> AccessRuleDetail(@RequestParam String accessId) {
+    	System.out.println(accessId);
+    	
+    	// accessId가 있을때 200ok + DTO
+    	if (accessId != null && !accessId.trim().isEmpty()) {
+    		AccessRuleDTO dto = accessRuleDetailService.accessDetail2(accessId);
+    		return ResponseEntity.ok(dto);
+    	} else { // accessId 없을때
+    		return ResponseEntity.badRequest()
+    				.body("accessId 값이 없습니다.");
+    	}
     }
-
+    
+    /*
     @GetMapping("accessUpdate")
     public String AccessRuleUpdate(@RequestParam String accessId, Model model) {
     	accessRuleDetailService.accessDetail(accessId, model);
         return "thymeleaf/accessRule/accessUpdate";
     }
+    */
 
     @PostMapping("accessUpdate")
     public String AccessRuleUpdate1(AccessRuleCommand accessRuleCommand) {

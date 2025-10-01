@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.innochatbot.admin.command.UserCommand;
+import com.innochatbot.admin.dto.UserDTO;
 import com.innochatbot.admin.dto.UserListResponse;
 import com.innochatbot.admin.mapper.UserMapper;
 import com.innochatbot.admin.service.user.UserDetailService;
@@ -71,20 +72,41 @@ public class UserRestController {
 			, Model model) {
 		return userListService.userList2(page, limitRow, searchWord, kind, kind2);
 	}
+	
+	
 	@GetMapping("userDetail")
-	public String userDetail(@RequestParam String userNum, Model model) {
-		userDetailService.userDetail(userNum, model);
-		return "thymeleaf/user/userDetail";
+	public ResponseEntity<?> userDetail(@RequestParam String userNum) {
+		System.out.println(userNum);
+		
+		//userNum이 있을때
+		if (userNum != null && !userNum.trim().isEmpty()) {
+			UserDTO dto = userDetailService.userDetail(userNum);
+			System.out.println(dto);
+			return ResponseEntity.ok(dto);
+		} else {  //userNum가 없을때
+			return ResponseEntity.badRequest()
+					 .body("userNum 값이 없습니다.");
+		}
 	}
+	/*
 	@GetMapping("userUpdate")
 	public String userUpdate(@RequestParam String userNum, Model model) {
 		userDetailService.userDetail(userNum, model);
 		return "thymeleaf/user/userUpdate";
 	}
+	*/
 	@PostMapping("userUpdate")
-	public String userUpdate1(UserCommand userCommand) {
-		userUpdateService.userUpdate(userCommand);
-		return "redirect:/admin/user/userList";
+	public ResponseEntity<?> userUpdate1(@RequestBody UserCommand userCommand) {
+		System.out.println(userCommand);
+		Boolean updateResult = userUpdateService.userUpdate(userCommand);
+		if (updateResult) {
+			// 200 ok + { success : true } JSON 객체 전달
+			 return ResponseEntity.ok(Collections.singletonMap("success", true));
+		} else {
+			//500 (또는 400) -> 프론트가 예외처리함
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(Collections.singletonMap("update_error", false)); //실패 JSON
+		}
 	}
 	
 	@Autowired

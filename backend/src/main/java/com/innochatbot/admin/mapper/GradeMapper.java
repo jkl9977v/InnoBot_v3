@@ -20,7 +20,7 @@ public interface GradeMapper {
 
 	public GradeDTO gradeDetail(String gradeId);
 
-	public void gradeUpdate(GradeDTO dto);
+	public int gradeUpdate(GradeDTO dto);
 
 	public void gradeDelete(String gradeId);
 

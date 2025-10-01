@@ -18,7 +18,7 @@ public interface UserMapper {
 
 	public void userDelete(String userNum);
 
-	public void userUpdate(UserDTO dto);
+	public int userUpdate(UserDTO dto);
 
 	public Integer userCount();
 

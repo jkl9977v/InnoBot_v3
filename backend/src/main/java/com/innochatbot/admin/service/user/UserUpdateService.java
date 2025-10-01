@@ -12,7 +12,7 @@ public class UserUpdateService {
 	@Autowired
 	UserMapper userMapper;
 
-	public void userUpdate(UserCommand userCommand) {
+	public Boolean userUpdate(UserCommand userCommand) {
 		UserDTO dto = new UserDTO();
 		
 		dto.setUserId(userCommand.getUserId());
@@ -25,8 +25,8 @@ public class UserUpdateService {
 			dto.setManager("n");
 		}else dto.setManager(userCommand.getManager());
 		
-		userMapper.userUpdate(dto);
-		
+		int updateResult = userMapper.userUpdate(dto);
+		return updateResult == 1;
 	}
 	
 }

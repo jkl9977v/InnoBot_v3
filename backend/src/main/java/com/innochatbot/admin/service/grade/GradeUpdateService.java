@@ -12,13 +12,14 @@ public class GradeUpdateService {
 	@Autowired
 	GradeMapper gradeMapper;
 
-	public void gradeUpdate(GradeCommand gradeCommand) {
+	public Boolean gradeUpdate(GradeCommand gradeCommand) {
 		GradeDTO dto = new GradeDTO();
 		
 		dto.setGradeId(gradeCommand.getGradeId());
 		dto.setGradeName(gradeCommand.getGradeName());
 		dto.setGradeLevel(gradeCommand.getGradeLevel());
 		
-		gradeMapper.gradeUpdate(dto);
+		int updateResult = gradeMapper.gradeUpdate(dto);
+		return updateResult == 1;
 	}
 }

@@ -1,7 +1,7 @@
-	//  admin/accessRule/accessWrite
+	//  admin/accessRule/accessUpdate
 	'use client';
 	import { useState, useEffect } from 'react';
-	import { useRouter } from 'next/navigation';
+	import { useRouter, useSearchParams } from 'next/navigation';
 	import AdminSidebar from '../../../../components/AdminSidebar';
 	import AdminHeader from '../../../../components/AdminHeader';
 	import AllowdSearchModal from '../../../../components/AllowdSearchModal'; //분리된 모달
@@ -34,6 +34,9 @@
 	  const [isAllowgSearchModalOpen, setIsAllowgSearchModalOpen] = useState(false);
 
 	  const router = useRouter();
+	  
+	  const searchParams = useSearchParams();
+	  const accessId = searchParams.get('accessId'); //null 체크 필요
 	
 	  const [formData, setFormData] = useState({
 		accessId: '',
@@ -43,15 +46,12 @@
 		allowdName: '',
 		allowgId: '',
 		allowgName: '',
-	
 	  });
 	  
 	  const [selectedAllowd, setSelectedAllowd] = useState<DepartmentDTO | null>(null);
 	  const [selectedAllowg, setselectedAllowg] = useState<GradeDTO | null>(null);
 	
-	
 	  const [allowd, setAllowd] = useState<DepartmentDTO[]>([]);
-	
 	  const [allowg, setAllowg] = useState<GradeDTO[]>([]);
 	
 	  useEffect(() => {
@@ -74,8 +74,44 @@
 	  }, [router]);
 	  
 	  useEffect(() => {
-		if (!isLoggedIn) return;
-	  }, [isLoggedIn]);
+		if (!isLoggedIn || !accessId) return;
+		fetchDetail();
+	  }, [isLoggedIn, accessId]);
+	  
+	  const fetchDetail = async () => {
+		try {
+			const url = apiUrl(`/admin/accessRule/accessDetail?accessId=${accessId}`);
+			const res = await fetch(url, {
+				method: 'GET',
+				headers: { Accept: 'application/json' },
+				credentials: 'include'
+			});
+			if (!res.ok) throw new Error('detail fetch error ' + res.status);
+			const dto = await res.json();
+			setFormData(dto);		//서버 값으로 폼 초기화
+			
+			if (dto.allowdId) {
+				setSelectedAllowd({
+					allowdId: dto.allowdId,
+					allowdName: dto.allowdName,
+					departmentId: dto.departmentId,
+					departmentName: dto.departmentName
+				});
+			}
+			if (dto.allowgId) {
+				setSelectedAllowg({
+					allowgId: dto.allowgId,
+					allowgName: dto.allowgName,
+					gradeId: dto.gradeId,
+					gradeName: dto.gradeName,
+					gradeLevel: dto.gradeLevel
+				})
+			}
+		} catch (e) {
+			alert('데이터를 불러오지 못했습니다.');
+			console.error(e);
+		}
+	  };
 	
 	  const handleToggleSection = (section: string) => {
 	    if (expandedSection === section) {
@@ -102,20 +138,25 @@
 		for (const [key, label] of required){
 			if(!formData[key]) { alert(`${label}을 입력하세요`); return; }
 		}
+		try {
+			//저장 요청
+					const url = apiUrl('/admin/accessRule/accessUpdate')
+					const res = await fetch(url, {
+						method: 'POST',
+						headers: { 'Content-Type' : 'application/json' },
+						credentials: 'include',
+						body: JSON.stringify(formData) //화면에서 입력 받은 모든 값을 JSON 문자열로 묶어서 서버에 전송
+					});
+					if(!res.ok) { alert('수정 실패'); return; } // throw new Error
+					
+				    //console.log('Creating access rule:', formData);
+					alert('접근정책 수정 완료');
+				    router.push('/admin/accessRule/accessList');
+		} catch (e) {
+			alert('수정 실패');
+			console.error(e);
+		}
 		
-		//저장 요청
-		const url = apiUrl('/admin/accessRule/accessWrite')
-		const res = await fetch(url, {
-			method: 'POST',
-			headers: { 'Content-Type' : 'application/json' },
-			credentials: 'include',
-			body: JSON.stringify(formData) //화면에서 입력 받은 모든 값을 JSON 문자열로 묶어서 서버에 전송
-		});
-		if(!res.ok) { alert('저장 실패'); return; }
-		
-	    //console.log('Creating access rule:', formData);
-		alert('접근정책 생성 완료');
-	    router.push('/admin/accessRule/accessList');
 	  };
 	
 	  const handleGoBack = () => {
@@ -183,7 +224,7 @@
 	              <i className="ri-arrow-left-line w-5 h-5 flex items-center justify-center text-gray-600"></i>
 	            </button>
 	            <h1 className="text-xl font-semibold text-gray-900">
-	              접근정책 &gt; 접근정책 생성
+	              접근정책 &gt; 접근정책 수정
 	            </h1>
 	          </div>
 	          <div className="flex items-center justify-between text-sm text-gray-600 relative">
@@ -202,7 +243,7 @@
 	            {/* 왼쪽 박스 - 접근정책 정보 */}
 	            <div className="flex-1 p-6 border-r border-gray-200">
 	              <h2 className="text-lg font-semibold text-gray-900 mb-6">
-	                접근정책 생성
+	                접근정책 수정
 	              </h2>
 	
 	              <div className="space-y-6">
@@ -324,7 +365,7 @@
 	                  onClick={handleSubmit}
 	                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors cursor-pointer whitespace-nowrap"
 	                >
-	                  정책 생성
+	                  정책 수정
 	                </button>
 	              </div>
 	            </div>

@@ -18,7 +18,6 @@ import com.innochatbot.admin.command.DepartmentCommand;
 import com.innochatbot.admin.dto.DepartmentDTO;
 import com.innochatbot.admin.dto.PageResponse;
 import com.innochatbot.admin.mapper.DepartmentMapper;
-import com.innochatbot.admin.service.AutoNumService;
 import com.innochatbot.admin.service.department.DepartmentDetailService;
 import com.innochatbot.admin.service.department.DepartmentListService;
 import com.innochatbot.admin.service.department.DepartmentUpdateService;
@@ -27,8 +26,6 @@ import com.innochatbot.admin.service.department.DepartmentWriteService;
 @RestController
 @RequestMapping("admin/department")
 public class DepartmentRestController {
-	@Autowired
-	AutoNumService autoNumService;
 	@Autowired
 	DepartmentWriteService departmentWriteService;
 	@Autowired
@@ -85,6 +82,7 @@ public class DepartmentRestController {
 			) {
 		return departmentListService.departmentList2(page, limitPage, searchWord, kind);
 	}
+	/*
 	@GetMapping("departmentSearch")
 	public PageResponse<DepartmentDTO> departmentSearch(@RequestParam(defaultValue="1") int page
 			, @RequestParam(defaultValue = "10") int limitPage
@@ -94,6 +92,7 @@ public class DepartmentRestController {
 		//departmentListService.departmentList(page, limitPage, searchWord, kind, model);
 		return departmentListService.departmentList2(page, limitPage, searchWord, kind);
 	}
+	
 	@GetMapping("departmentMultiSelect")
 	public String departmemtMultiSelect(@RequestParam(defaultValue="0") int page
 			, @RequestParam(defaultValue = "0") int limitPage
@@ -103,20 +102,40 @@ public class DepartmentRestController {
 		departmentListService.departmentList(page, limitPage, searchWord, kind, model);
 		return "thymeleaf/department/departmentMultiSelect";
 	}
+	*/
 	@GetMapping("departmentDetail")
-	public String departmentDetail(@RequestParam String departmentId, Model model) {
-		departmentDetailService.departmentDetail(departmentId, model);
-		return "thymeleaf/department/departmentDetail";
+	public ResponseEntity<?> departmentDetail(@RequestParam String departmentId) {
+		System.out.println(departmentId);
+		
+		// departmentId가 있을 때 200ok + DTO
+		if (departmentId != null && !departmentId.trim().isEmpty()) {
+			DepartmentDTO dto = departmentDetailService.departmentDetail2(departmentId);
+			return ResponseEntity.ok(dto);
+		} else {
+			return ResponseEntity.badRequest()
+					.body("departmentId 값이 없습니다.");
+		}
 	}
+	/*
 	@GetMapping("departmentUpdate")
 	public String departmentUpdate(@RequestParam String departmentId, Model model) {
 		departmentDetailService.departmentDetail(departmentId, model);
 		return "thymeleaf/department/departmentUpdate";
 	}
+	*/
 	@PostMapping("departmentUpdate")
-	public String departmentUpdate1(DepartmentCommand departmentCommand) {
-		departmentUpdateService.departmentUpdate(departmentCommand);
-		return "redirect:/admin/department/departmentList";
+	public ResponseEntity<?> departmentUpdate(@RequestBody DepartmentCommand departmentCommand) {
+		System.out.println(departmentCommand);
+		Boolean updateResult = departmentUpdateService.departmentUpdate(departmentCommand);
+		
+		if (updateResult) {
+			//200 ok + { success: true } JSON 객체 전달
+			return ResponseEntity.ok(Collections.singletonMap("success", true));
+		} else {
+			// 500 (또는 400)  -> 프론트가 예외처리함
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(Collections.singletonMap("update_error", false)); //실패 JSON
+		}
 	}
 	@Autowired
 	DepartmentMapper departmentMapper;
