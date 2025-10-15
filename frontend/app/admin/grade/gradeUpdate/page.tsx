@@ -1,4 +1,4 @@
-//  admin/grade/gradeWrite
+//  admin/grade/gradeUpdate
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -54,7 +54,7 @@ export default function GradeUpdatePage() {
 			headers: { Accept: 'application/json' },
 			credentails: 'include'
 		});
-		if (!res.ok) throw new error('detail fetch error '+ res.status);
+		if (!res.ok) throw new Error('detail fetch error '+ res.status);
 		const dto = await res.json();
 		setFormData(dto);
 	} catch (e) {
@@ -88,7 +88,7 @@ export default function GradeUpdatePage() {
 	}
 	
 	//저장 요청
-	const url = apiUrl('/admin/grade/gradeUpdate')
+	const url = apiUrl(`/admin/grade/gradeUpdate?gradeId=${gradeId}`)
 	const res = await fetch(url, {
 		method: 'POST',
 		headers: { 'Content-Type' : 'application/json' },

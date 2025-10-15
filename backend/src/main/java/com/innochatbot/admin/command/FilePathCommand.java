@@ -17,4 +17,7 @@ public class FilePathCommand {
 	 Integer depth;
 	 String parentId;
 	 
+	 String parentPath;
+	 //String itemType;
+	 
 }

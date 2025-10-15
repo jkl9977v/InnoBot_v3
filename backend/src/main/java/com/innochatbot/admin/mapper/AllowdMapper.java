@@ -9,7 +9,7 @@ import com.innochatbot.admin.dto.StartEndPageDTO;
 
 @Mapper
 public interface AllowdMapper {
-	public void allowdInsert(DepartmentDTO dto);
+	public int allowdInsert(DepartmentDTO dto);
 
 	public Integer allowdCount();
 
@@ -19,5 +19,7 @@ public interface AllowdMapper {
 
 	public void allowdUpdate(DepartmentDTO dto);
 
-	public void allowdDelete(String allowdId);
+	public int allowdDelete(String allowdId);
+
+	public Integer allowdCount2(String allowdId);
 }

@@ -8,12 +8,18 @@
 	import AllowgSearchModal from '../../../../components/AllowgSearchModal'; //모달
 	import { apiUrl } from '@/lib/api';
 	
-	
-	interface DepartmentDTO {
+	interface AllowdRowDTO {
 		allowdId: string;
 		allowdName: string;
 		departmentId: string;
 		departmentName: string;
+	}
+	
+	interface DepartmentDTO {
+		allowdId: string;
+		allowdName: string;
+		departmentId: string[];
+		departmentName: string[];
 	}
 	
 	interface GradeDTO {
@@ -22,6 +28,18 @@
 	  gradeId: string;
 	  gradeName: string;
 	  gradeLevel: number;
+	}
+	
+	interface AccessRuleDTO {
+		accessId: string;
+		accessName: string;
+		accessType: string;
+		
+		allowdId: string | null;
+		allowgId: string | null;
+		
+		departmentDTO: DepartmentDTO | null;
+		gradeDTO: GradeDTO | null;
 	}
 	
 	export default function AccessWritePage() {
@@ -46,10 +64,11 @@
 		allowdName: '',
 		allowgId: '',
 		allowgName: '',
+
 	  });
 	  
 	  const [selectedAllowd, setSelectedAllowd] = useState<DepartmentDTO | null>(null);
-	  const [selectedAllowg, setselectedAllowg] = useState<GradeDTO | null>(null);
+	  const [selectedAllowg, setSelectedAllowg] = useState<GradeDTO | null>(null);
 	
 	  const [allowd, setAllowd] = useState<DepartmentDTO[]>([]);
 	  const [allowg, setAllowg] = useState<GradeDTO[]>([]);
@@ -87,25 +106,58 @@
 				credentials: 'include'
 			});
 			if (!res.ok) throw new Error('detail fetch error ' + res.status);
-			const dto = await res.json();
-			setFormData(dto);		//서버 값으로 폼 초기화
+			const dto: AccessRuleDTO = await res.json();
+			setFormData({ //서버 값으로 폼 초기화
+				accessId: dto.accessId,
+				accessName: dto.accessName,
+				accessType: dto.accessType,
+				
+				allowdId: dto.allowdId ?? '',
+				allowdName: dto.departmentDTO?.allowdName ?? '', // 꺼내서 주입
+				allowgId: dto.allowgId ?? '',
+				allowgName: dto.gradeDTO?.allowgName ?? '',
+				
+			});		
 			
-			if (dto.allowdId) {
+			console.log(dto);
+			
+/*			if (dto.allowdId) {
 				setSelectedAllowd({
-					allowdId: dto.allowdId,
-					allowdName: dto.allowdName,
-					departmentId: dto.departmentId,
-					departmentName: dto.departmentName
+					allowdId: dto.DepartmentDTO.allowdId,
+					allowdName: dto.DepartmentDTO.allowdName,
+					departmentId: dto.DepartmentDTO.departmentId,
+					departmentName: dto.DepartmentDTO.departmentName
 				});
 			}
 			if (dto.allowgId) {
 				setSelectedAllowg({
-					allowgId: dto.allowgId,
-					allowgName: dto.allowgName,
-					gradeId: dto.gradeId,
-					gradeName: dto.gradeName,
-					gradeLevel: dto.gradeLevel
+					allowgId: dto.GradeDTO.allowgId,
+					allowgName: dto.GradeDTO.allowgName,
+					gradeId: dto.GradeDTO.gradeId,
+					gradeName: dto.GradeDTO.gradeName,
+					gradeLevel: dto.GradeDTO.gradeLevel
 				})
+			}*/
+			
+			if(dto.allowdId) {
+				const rows = await fetchAllowdDetail(dto.allowdId); 
+				if(rows.length) {
+					setSelectedAllowd({
+						allowdId: rows[0].allowdId,
+						allowdName: rows[0].allowdName,
+						departmentId: rows.map(r => r.departmentId),
+						departmentName: rows.map(r => r.departmentName),
+					});
+				} else {
+					setSelectedAllowd(null);
+				}
+			}
+			
+			if (dto.allowgId) {
+				const allowg = await fetchAllowgDetail(dto.allowgId);
+				setSelectedAllowg(allowg);
+			} else {
+				setSelectedAllowg(null);
 			}
 		} catch (e) {
 			alert('데이터를 불러오지 못했습니다.');
@@ -140,18 +192,17 @@
 		}
 		try {
 			//저장 요청
-					const url = apiUrl('/admin/accessRule/accessUpdate')
-					const res = await fetch(url, {
-						method: 'POST',
-						headers: { 'Content-Type' : 'application/json' },
-						credentials: 'include',
-						body: JSON.stringify(formData) //화면에서 입력 받은 모든 값을 JSON 문자열로 묶어서 서버에 전송
-					});
-					if(!res.ok) { alert('수정 실패'); return; } // throw new Error
+			const url = apiUrl(`/admin/accessRule/accessUpdate?accessId=${accessId}`)
+			const res = await fetch(url, {
+				method: 'POST',
+				headers: { 'Content-Type' : 'application/json' },
+				credentials: 'include',
+				body: JSON.stringify(formData) //화면에서 입력 받은 모든 값을 JSON 문자열로 묶어서 서버에 전송
+			});
+			if(!res.ok) { alert('수정 실패'); return; } // throw new Error
 					
-				    //console.log('Creating access rule:', formData);
-					alert('접근정책 수정 완료');
-				    router.push('/admin/accessRule/accessList');
+			alert('접근정책 수정 완료');
+			router.push('/admin/accessRule/accessList');
 		} catch (e) {
 			alert('수정 실패');
 			console.error(e);
@@ -163,14 +214,47 @@
 	    router.push('/admin/accessRule/accessList');
 	  };
 	
-	  const handleSelectAllowd = (dto: DepartmentDTO) => {
+/*	  const handleSelectAllowd = (dto: DepartmentDTO) => {
 		setFormData(prev => ({ ...prev, allowdId: dto.allowdId}));
 		setFormData(prev => ({ ...prev, allowdName: dto.allowdName}));
 		setFormData(prev => ({ ...prev, departmentId: dto.departmentId}));
 	    setFormData(prev => ({ ...prev, departmentName: dto.departmentName }));
 	    setSelectedAllowd(dto);
 	    setIsAllowdSearchModalOpen(false);
-	  };
+	  };*/
+	  
+	  const handleSelectAllowd = async ({allowdId, allowdName} : {allowdId: string; allowdName: string}) =>{
+		  //1. form - id / name만 저장
+		  setFormData(prev => ({
+		  	...prev,
+		  	allowdId,
+		  	allowdName,
+		  }));
+		
+		  //2. 상세정보 Ajax 호출
+		  try {
+		  	const list = await fetchAllowdDetail(allowdId);
+		  	
+		  	if (list.length === 0 ) throw new Error('empty');
+		  	
+		  	const departmentId = list.map(d => d.departmentId);
+		  	const departmentName = list.map(d => d.departmentName);
+		  	
+		  	setSelectedAllowd({ // 패널에 뿌릴 전체 정보
+		  		allowdId,
+		  		allowdName,
+		  		departmentId: list.map(r => r.departmentId),
+		  		departmentName: list.map(r => r.departmentName),
+		  	});
+		  	
+		  	console.log(list);
+		  } catch(e) {
+		  	console.error(e);
+		  	alert('부서정책 상세 정보를 가져오지 못했습니다.');
+		  	setSelectedAllowd(null);
+		  }
+		  setIsAllowdSearchModalOpen(false);
+	  }
 	
 	  const handleSelectAllowg = (dto: GradeDTO) => {
 		setFormData(prev => ({ ...prev, allowgId: dto.allowgId}));
@@ -178,7 +262,7 @@
 		setFormData(prev => ({ ...prev, gradeId: dto.gradeId}));
 	    setFormData(prev => ({ ...prev, gradeName: dto.gradeName }));
 		setFormData(prev => ({ ...prev, gradeLevel: dto.gradeLevel }));
-	    setselectedAllowg(dto);
+	    setSelectedAllowg(dto);
 	    setIsAllowgSearchModalOpen(false);
 	  };
 		
@@ -187,6 +271,44 @@
 						
 	  const showAllowg = ['특정 직급 이상 허용', '일부 부서의 특정 직급 이상 허용']
 	  					.includes(formData.accessType);
+						
+	  const fetchAllowdDetail = async (allowdId: string ): Promise<AllowdRowDTO[]> => {
+		try {
+			console.log(allowdId);
+			const url = apiUrl(`/admin/accessRule/allowdDetail?allowdId=${allowdId}`)
+			const res = await fetch(url, {
+				method: 'GET',
+				headers: { Accept: 'application/json'},
+				credentials: 'include',
+			});
+			if (!res.ok) throw new Error ('Server error ' + res.status );
+			
+			return res.json(); // 값을 반환, 배열 그대로 리턴
+		} catch (e) {
+			console.error('list fetch error', e); 
+		} finally {
+			setIsLoading(false);
+		}
+	  }
+	  
+	  const fetchAllowgDetail = async (allowgId: string) => {
+		try {
+			console.log(allowgId);
+			const url = apiUrl(`/admin/accessRule/allowgDetail?allowgId=${allowgId}`)
+			const res = await fetch(url, {
+				method: 'GET',
+				headers: { Accept: 'application/json' },
+				credentials: 'include', 
+			});
+			if(!res.ok) throw new Error ('Server error ' + res.status );
+			
+			return res.json(); // 값을 반환
+		} catch (e) {
+			console.error('list fetch error', e);
+		} finally {
+			setIsLoading(false);
+		}
+	  }
 	  
 	  if (isLoading) {
 	    return (
@@ -312,7 +434,7 @@
 					)}
 	
 	
-					{/*직급정책 입력 블록 */}
+					{/* 직급정책 입력 블록 */}
 					{showAllowg && (
 						<div>
 						   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -375,7 +497,7 @@
 	              {/* 부서정책 상세 정보 */}
 	              <div className="flex-1 p-6 border-b border-gray-200">
 	                <h3 className="text-sm font-semibold text-gray-900 mb-4">부서정책 상세 정보</h3>
-	                <div className="overflow-y-auto" style={{ maxHeight: '200px' }}>
+	                <div className="overflow-y-auto" style={{ maxHeight: '250px' }}>
 	                  {selectedAllowd ? (
 	                    <div className="space-y-3 text-sm">
 	                      <div>
@@ -391,8 +513,14 @@
 	                        <div className="text-gray-900">{selectedAllowd.ruleName}</div>
 	                      </div>*/}
 	                      <div>
-	                        <span className="font-medium text-gray-700">대상부서:</span>  배열처리 코드 적용 필요함 (미완성)
-	                        {/*<div className="text-gray-900">{selectedAllowd.departmentName.join(', ')}</div>*/}
+	                        <span className="font-medium text-gray-700">대상부서:</span>  
+	                        {selectedAllowd.departmentName && selectedAllowd.departmentName.length > 0 ? (
+								selectedAllowd.departmentName.map((name, idx) => (
+									<div key={idx} className="text-gray-900">{name}</div> // 한줄에 하나씩
+								))
+							) : (
+								<div className="text-gray-500" align="center"> 대상 부서가 없습니다.</div>
+							)}
 	                      </div>
 	                      {/*<div>
 	                        <span className="font-medium text-gray-700">상태:</span>

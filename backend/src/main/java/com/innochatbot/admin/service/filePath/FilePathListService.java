@@ -69,7 +69,8 @@ public class FilePathListService {
 		//filePath.setKind2(kind2);
 		filePath.setList(list);
 		
-		System.out.println(list);
+		//콘솔로그에서 확인하기
+		//System.out.println(list);
 		
 		//경로 정보 옵션
 		FilePathDTO pathDetail2 = filePathMapper.filePathDetail2(pathId);
@@ -77,9 +78,18 @@ public class FilePathListService {
 		//Wrapper 사용
 		FileListResponse res = new FileListResponse();
 		res.setFileList(filePath);
-		res.setPathDetial(pathDetail2);
+		res.setPathDetail(pathDetail2);
+		
+		System.out.println(pathDetail2);
 		
 		return res;
+	}
+
+
+	public List<FilePathDTO> pathList(String pathId) {
+		List<FilePathDTO> pathList = filePathMapper.pathList();
+		System.out.println(pathList);
+		return pathList;
 	}
 
 }

@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -80,6 +79,7 @@ public class AllowgRestController {
     		) {
     	return allowgListService.allowgList2(page, limitRow, searchWord, kind);
     }
+    /*
     @GetMapping("allowgSearch")
     public String allowgSearch(@RequestParam (defaultValue="1") int page
     		, @RequestParam (defaultValue="10") int limitRow
@@ -89,21 +89,42 @@ public class AllowgRestController {
     	allowgListService.allowgList(page, limitRow, searchWord, kind, model);
     	return "thymeleaf/allowGrade/allowgSearch";
     }
+    */
     @GetMapping("allowgDetail")
-    public String allowgDetail(@RequestParam String allowgId, Model model) {
-    	allowgDetailService.allowgDetail(allowgId, model);
-    	return "thymeleaf/allowGrade/allowgDetail";
+    public ResponseEntity<?> allowgDetail(@RequestParam String allowgId) {
+    	System.out.println(allowgId);
+    	
+    	//allowgId가 있을 때 200ok + DTO
+    	if (allowgId != null && !allowgId.trim().isEmpty()) {
+    		GradeDTO dto = allowgDetailService.allowgDetail(allowgId);
+    		return ResponseEntity.ok(dto);
+    	} else { // allowgId가 없을때
+    		return ResponseEntity.badRequest()
+    				.body("allowgId 값이 없습니다");
+    	}
     }
+    /*
     @GetMapping("allowgUpdate")
     public String allowgUpdate(@RequestParam String allowgId, Model model) {
     	allowgDetailService.allowgDetail(allowgId, model);
     	return "thymeleaf/allowGrade/allowgUpdate";
     }
+    */
     @PostMapping("allowgUpdate")
-    public String allowgUpdate1(GradeCommand gradeCommand) {
-    	allowgUpdateService.allowgUpdate(gradeCommand);
-    	return "redirect:/admin/accessRule/allowgList";
+    public ResponseEntity<?> allowgUpdate(@RequestBody GradeCommand gradeCommand) {
+    	System.out.println(gradeCommand);
+    	boolean updateResult = allowgUpdateService.allowgUpdate(gradeCommand);
+    	if (updateResult) {
+    		//200ok + { success : true } JSON 객체 전달
+    		return ResponseEntity.ok(Collections.singletonMap("success", true));
+    	} else {
+    		//500 (또는 400) -> 프론트가 예외처리 함
+    		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+    				.body(Collections.singletonMap("update_error", false)); //실패 JSON
+    	}
     }
+    
+    
     @Autowired
     AllowgMapper allowgMapper;
     

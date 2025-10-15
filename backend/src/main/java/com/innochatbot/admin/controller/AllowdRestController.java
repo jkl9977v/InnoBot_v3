@@ -5,9 +5,9 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -56,8 +56,7 @@ public class AllowdRestController {
     */
     
     @PostMapping(value = "allowdWrite", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> allowdWrite1(@RequestBody DepartmentCommand departmentCommand
-	/* , @RequestParam("departmentId") List<String> departmentId */) {
+    public ResponseEntity<?> allowdWrite1(@RequestBody DepartmentCommand departmentCommand) {
     	Boolean insertResult = allowdWriteService.allowdWrite2(departmentCommand);
     	
     	if(insertResult) {
@@ -88,6 +87,7 @@ public class AllowdRestController {
     		) {
     	return allowdListService.allowdList2(page, limitRow, searchWord, kind);
     }
+    /*
     @GetMapping("allowdSearch")
     public String allowdSearch(@RequestParam (defaultValue="1") int page
     		, @RequestParam (defaultValue="10") int limitRow
@@ -97,21 +97,41 @@ public class AllowdRestController {
     	allowdListService.allowdList(page, limitRow, searchWord, kind, model);
     	return "thymeleaf/allowDepartment/allowdSearch";
     }
+    */
     @GetMapping("allowdDetail")
-    public String allowdDetail(@RequestParam String allowdId, Model model) {
-    	allowdDetailService.allowdDetail(allowdId, model);
-    	return "thymeleaf/allowDepartment/allowdDetail";
+    public ResponseEntity<?> allowdDetail(@RequestParam String allowdId) {
+    	System.out.println(allowdId);
+    	
+    	//allowdId가 있을때 200ok + DTO
+    	if (allowdId != null && !allowdId.trim().isEmpty()) {
+    		List<DepartmentDTO> list = allowdDetailService.allowdDetail(allowdId);
+    		return ResponseEntity.ok(list);
+    	} else {
+    		return ResponseEntity.badRequest()
+    			.body("allowdId 값이 없습니다.");
+    	}
     }
+    /*
     @GetMapping("allowdUpdate")
     public String allowdUpdate(@RequestParam String allowdId, Model model) {
     	allowdDetailService.allowdDetail(allowdId, model);
     	return "thymeleaf/allowDepartment/allowdUpdate";
     }
+    */
     @PostMapping("allowdUpdate")
-    public String allowdUpdate1(DepartmentCommand departmentCommand
-    		, @RequestParam("departmentId") List<String> departmentId) {
-    	allowdUpdateService.allowdUpdate(departmentCommand, departmentId);
-    	return "redirect:/admin/accessRule/allowdList";
+    public ResponseEntity<?> allowdUpdate1(@RequestBody DepartmentCommand departmentCommand) {
+    	
+    	System.out.println("allowdUpdate");
+    	boolean updateResult = allowdUpdateService.allowdUpdate(departmentCommand);
+    	
+    	if(updateResult) {
+    		// 200ok + { success : true } JSON 객체 전달
+    		return ResponseEntity.ok(Collections.singletonMap("success", true)); //성공 JSON, redirect: 200ok
+    	} else {
+    		// 500 (또는 400) -> 프론트가 예외철 ㅣ가능
+    		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+    				.body(Collections.singletonMap("insert_error", false)); // 실패 JSON
+    	}
     }
     
     @Autowired

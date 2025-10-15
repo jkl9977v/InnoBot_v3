@@ -72,7 +72,7 @@ export default function DepartmentUpdatePage() {
 	}
 	
 	//저장 요청
-	const url = apiUrl('/admin/department/departmentUpdate')
+	const url = apiUrl(`/admin/department/departmentUpdate?departmentId=${departmentId}`)
 	const res = await fetch(url, {
 		method: 'POST',
 		headers: { 'Content-Type' : 'application/json' },

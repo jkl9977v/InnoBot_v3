@@ -23,6 +23,7 @@ public class AccessRuleDetailService {
 
 	public AccessRuleDTO accessDetail2(String accessId) {
 		AccessRuleDTO dto = accessRuleMapper.accessRuleDetail(accessId);
+		System.out.println(dto);
 		return dto;
 	}
 }

@@ -12,10 +12,10 @@ public class FileDetailService {
 	@Autowired
 	FileMapper fileMapper;
 
-	public void fileDetail(String fileId, Model model) {
+	public FileDTO fileDetail(String fileId) {
 		FileDTO dto = fileMapper.fileDetail(fileId);
 		System.out.println("파일 상세정보: " +dto);
-		model.addAttribute("dto", dto);
+		return dto;
 	}
 
 }

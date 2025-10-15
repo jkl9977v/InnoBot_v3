@@ -105,6 +105,10 @@ export default function AllowdListPage() {
 	const formatDate = (date: Date) => {
 		return date.toLocaleDateString('ko-KR');
 	};
+	
+	const handleUpdate = (allowdId: string) => {
+		router.push(`/admin/accessRule/allowdUpdate?allowdId=${allowdId}`);
+	}
 
 	//정책 삭제 기능
 	const handleDelete = async (allowdId: string) => {
@@ -318,7 +322,7 @@ export default function AllowdListPage() {
 											<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
 												<div className="flex items-center space-x-2">
 													<button
-														href={apiUrl(`/admin/accessRule/allowdUpdate?allowdId=${rule.allowdId}`)}
+														onClick={() => handleUpdate(rule.allowdId)}
 														className="text-indigo-600 hover:text-indigo-900 transition-colors cursor-pointer">
 														수정
 													</button>

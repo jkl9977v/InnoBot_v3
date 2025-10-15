@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.innochatbot.admin.command.GradeCommand;
 import com.innochatbot.admin.dto.GradeDTO;
@@ -17,17 +18,30 @@ public class AllowgUpdateService {
 	@Autowired
 	GradeMapper gradeMapper;
 
-	public void allowgUpdate(GradeCommand gradeCommand) {
+	@Transactional
+	public boolean allowgUpdate(GradeCommand gradeCommand) {
 		List<GradeDTO> list = gradeMapper.gradeList(null, gradeCommand.getGradeLevel());
-		allowgMapper.allowgDelete(gradeCommand.getAllowgId());
-		for(GradeDTO gDTO : list) {
-			GradeDTO dto = new GradeDTO();
+		Integer i = allowgMapper.allowgCount2(gradeCommand.getAllowgId());
+		
+		//System.out.println("삭제할 행 개수: " + i);
+		int deleteResult = 0;
+		deleteResult += allowgMapper.allowgDelete(gradeCommand.getAllowgId());
+		
+		int updateResult = 0;
+		
+		if (deleteResult == i) {
 			
-			dto.setAllowgId(gradeCommand.getAllowgId());
-			dto.setAllowgName(gradeCommand.getAllowgName());
-			dto.setGradeId(gDTO.getGradeId());
-			
-			allowgMapper.allowgInsert(dto);
+			for(GradeDTO gDTO : list) {
+				GradeDTO dto = new GradeDTO();
+				
+				dto.setAllowgId(gradeCommand.getAllowgId());
+				dto.setAllowgName(gradeCommand.getAllowgName());
+				dto.setGradeId(gDTO.getGradeId());
+				
+				updateResult += allowgMapper.allowgInsert(dto);
+			}
 		}
+
+		return updateResult == list.size();
 	}
 }

@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import AdminSidebar from '../../../../components/AdminSidebar';
 import AdminHeader from '../../../../components/AdminHeader';
-import DepartmentSearchModal, { DepartmentDTO } from '../../../../components/DepartmentSearchModal';
-import GradeSearchModal, { GradeDTO } from '../../../../components/GradeSearchModal';
+import DepartmentSearchModal from '../../../../components/DepartmentSearchModal';
+import GradeSearchModal from '../../../../components/GradeSearchModal';
 import { apiUrl } from '@/lib/api';
 
 interface DepartmentDTO {
@@ -53,12 +53,15 @@ export default function UserUpdatePage() {
     userName: '',
     userId: '',
     userPw: '',
-    departmentId: '',
+	manager: 'n',
+	
+    departmentId: '', 
 	departmentName: '',
-    gradeId: '',
-	gradeName: '',
-	gradeLevel: '',
-    manager: ''
+    
+	gradeId: '', 
+	gradeName: '', 
+	gradeLevel: 0
+    
   });
   
   useEffect(() => {
@@ -75,6 +78,7 @@ export default function UserUpdatePage() {
   useEffect(() => {
 	if (!isLoggedIn || !userNum) return;
 	fetchDetail();
+	//departmentDetail();
   }, [isLoggedIn, userNum]);
   
   const fetchDetail = async () => {
@@ -85,14 +89,43 @@ export default function UserUpdatePage() {
 			headers: { Accept: 'application/json' },
 			credentials: 'include'
 		});
-		if (!res.ok) throw new error('detail fetch error ' + res.status );
-		const dto = await res.json();
+		if (!res.ok) throw new Error('detail fetch error ' + res.status );
+		const raw = await res.json();
+		const dto = { //데이터 받을때 중첩 -> 평면으로 펼치기
+			...raw,
+			departmentId: raw.departmentDTO?.departmentId ?? '',
+			departmentName: raw.departmentDTO?.departmentName ?? '',
+			gradeId: raw.gradeDTO?.gradeId ?? '',
+			gradeName: raw.gradeDTO?.gradeName ?? '',
+			gradeLevel: raw.gradeDTO?.gradeLevel ?? 0
+			
+		}
+		console.log('서버 -> 프론트 : ' , dto);
 		setFormData(dto);
+		console.log('state 변경 후 : ' , dto);
 	} catch (e) {
 		alert('데이터를 불러오지 못했습니다.');
 		console.error(e);
 	}
   }
+  
+/*  const departmentDetail = async (departmentId: string) => {
+
+	try {
+		const url = apiUrl(`/admin/department/departmentDetail?departmentId=${departmentId}`)
+		const res = await fetch(url, {
+			method: 'GET',
+			headers: { Accept: 'application/json'},
+			credentials: 'include'
+		});
+		if(!res.ok) throw new Error('detail fetch error ' + res.status);
+		const dto = await res.json();
+		setFormData(dto);
+	} catch (e) {
+		alert ('데이터를 불러오지 못했습니다.');
+		console.error(e);
+	}
+  }*/
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -108,7 +141,7 @@ export default function UserUpdatePage() {
 	}
 	
 	//저장 요청
-	const url = apiUrl('/admin/user/userUpdate')
+	const url = apiUrl(`/admin/user/userUpdate?userNum=${userNum}`)
 	const res = await fetch(url, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
@@ -248,7 +281,7 @@ export default function UserUpdatePage() {
                   <div className="flex items-center space-x-2">
 				  	<input
 						type="text"
-				  		value={formData.departmentId}
+				  		value={formData.departmentId ?? ''}
 				  		onChange={(e) => handleInputChange('departmentId', e.target.value)}
 				  		className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
 				  		placeholder="부서Id"
@@ -256,7 +289,7 @@ export default function UserUpdatePage() {
 				  	/>
                     <input
                       type="text"
-                      value={formData.departmentName}
+                      value={formData.departmentName ?? ''}
                       onChange={(e) => handleInputChange('departmentName', e.target.value)}
 					  onClick={() => setIsDepartmentSearchModalOpen(true)}
                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
@@ -280,7 +313,7 @@ export default function UserUpdatePage() {
                   <div className="flex items-center space-x-4">
 				  	<input
 				      type="text"
-				      value={formData.gradeId}
+				      value={formData.gradeId ?? ''}
 				      onChange={(e) => handleInputChange('gradeId', e.target.value)}
 				      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
 				      placeholder="직급 ID"
@@ -289,7 +322,7 @@ export default function UserUpdatePage() {
                     <input
                       type="text"
 					  onClick={() => setIsGradeSearchModalOpen(true)}
-                      value={formData.gradeName}
+                      value={formData.gradeName ?? ''}
                       onChange={(e) => handleInputChange('gradeName', e.target.value)}
                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                       placeholder="직급명"
@@ -298,7 +331,7 @@ export default function UserUpdatePage() {
 					<input
 					  type="text"
 					  onClick={() => setIsGradeSearchModalOpen(true)}
-					  value={formData.gradeLevel}
+					  value={formData.gradeLevel ?? ''}
 					  onChange={(e) => handleInputChange('gradeLevel', e.target.value)}
 					  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
 					  placeholder="직급레벨"
@@ -320,7 +353,7 @@ export default function UserUpdatePage() {
 				  <input
 				     type="checkbox"
 				     checked={formData.manager === 'y'}
-				     onChange={(e) => handleInputChange('manager', e.target.checked ? 'y' : '')}
+				     onChange={(e) => handleInputChange('manager', e.target.checked ? 'y' : 'n')}
 				     className="mr-2"
 				  />
                   </label>

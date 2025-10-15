@@ -1,7 +1,5 @@
 {
-  "/admin/accessRule/accessList/page": "app/admin/accessRule/accessList/page.js",
-  "/admin/department/departmentList/page": "app/admin/department/departmentList/page.js",
-  "/admin/user/userList/page": "app/admin/user/userList/page.js",
-  "/admin/user/userUpdate/page": "app/admin/user/userUpdate/page.js",
-  "/admin/department/departmentUpdate/page": "app/admin/department/departmentUpdate/page.js"
+  "/admin/analytics/page": "app/admin/analytics/page.js",
+  "/admin/file/fileList/page": "app/admin/file/fileList/page.js",
+  "/admin/embedding-setting/page": "app/admin/embedding-setting/page.js"
 }

@@ -19,5 +19,7 @@ public interface AllowgMapper {
 
 	public void allowgUpdate(GradeDTO dto);
 
-	public void allowgDelete(String allowgId);
+	public int allowgDelete(String allowgId);
+
+	public Integer allowgCount2(String allowgId);
 }

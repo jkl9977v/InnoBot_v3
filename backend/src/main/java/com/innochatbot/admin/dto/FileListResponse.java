@@ -14,5 +14,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class FileListResponse {
 	PageResponse<FilePathDTO> fileList; //현재 경로의 파일, 폴더 목록
-	FilePathDTO pathDetial ; // 현재경로 상세정보 표시
+	FilePathDTO pathDetail ; // 현재경로 상세정보 표시
 }

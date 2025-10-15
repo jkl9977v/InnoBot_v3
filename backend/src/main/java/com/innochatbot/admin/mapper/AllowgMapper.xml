@@ -14,6 +14,11 @@ values(#{allowgId}, #{allowgName}, #{gradeId})
 select count(distinct allowg_id) from allow_grade
 </select>
 
+<select id="allowgCount2" resultType="Integer" parameterType="string"> 
+select count(*) from allow_grade
+where allowg_id = #{allowgId}
+</select>
+
 <select id="allowgList" parameterType="StartEndPageDTO" resultType="gradeDTO">
 select * from (
 select row_number() over (order by allowg_id) as rn

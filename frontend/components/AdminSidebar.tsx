@@ -27,9 +27,9 @@ export default function AdminSidebar({ isSidebarOpen, expandedSection, onToggleS
       label: '접근정책',
       hasSubmenu: true,
       submenu: [
-        { id: 'access-policy', label: '접근정책', href: '/admin/accessRule/accessList' },
-        { id: 'department-policy', label: '부서정책', href: '/admin/accessRule/allowdList' },
-        { id: 'position-policy', label: '직급정책', href: '/admin/accessRule/allowgList' }
+        { id: 'accessRule', label: '접근정책', href: '/admin/accessRule/accessList' },
+        { id: 'allowDepartment', label: '부서정책', href: '/admin/accessRule/allowdList' },
+        { id: 'allowGrade', label: '직급정책', href: '/admin/accessRule/allowgList' }
       ]
     },
     {
@@ -40,7 +40,7 @@ export default function AdminSidebar({ isSidebarOpen, expandedSection, onToggleS
       submenu: [
         { id: 'users', label: '사용자 관리', href: '/admin/user/userList' },
         { id: 'departments', label: '부서 관리', href: '/admin/department/departmentList' },
-        { id: 'positions', label: '직급 관리', href: '/admin/grade/gradeList' }
+        { id: 'grades', label: '직급 관리', href: '/admin/grade/gradeList' }
       ]
     },
     { id: 'files', icon: 'ri-folder-line', label: '파일 시스템', href: '/admin/file/fileList' },

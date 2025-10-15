@@ -86,7 +86,7 @@ export default function BasicSettingsPage() {
         <div className="flex-1 overflow-y-auto p-6">
           <div className="bg-white rounded-xl border border-gray-200 min-h-full">
             <div className="p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6">챗봇 기본 설정</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-6">챗봇 기본 설정 (미구현 기능)</h2>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>

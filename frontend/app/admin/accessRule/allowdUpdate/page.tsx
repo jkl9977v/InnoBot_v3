@@ -1,7 +1,7 @@
-// app/admin/accessRule/allowdWrite/page.tsx
+// app/admin/accessRule/allowdUpdate/page.tsx
 'use client';
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import AdminSidebar from '../../../../components/AdminSidebar';
 import AdminHeader from '../../../../components/AdminHeader';
 import DepartmentsSearchModal, { DepartmentDTO } from '../../../../components/DepartmentsSearchModal'; //검색창 모달
@@ -12,7 +12,7 @@ interface DepartmentDTO {
 	departmentName: string;
 };
 
-export default function allowdWritePage() {
+export default function allowdUpdatePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -24,6 +24,9 @@ export default function allowdWritePage() {
   //const [departments, setDepartments] = useState<DepartmentDTO[]>([]);
 
   const router = useRouter();
+  
+  const searchParams = useSearchParams();
+  const allowdId = searchParams.get('allowdId'); //null 체크 필요함
 
   const [formData, setFormData] = useState({
 	allowdId: '',
@@ -39,6 +42,52 @@ export default function allowdWritePage() {
     setIsLoggedIn(true);
     setIsLoading(false);
   }, [router]);
+  
+  useEffect(() => {
+	if(!isLoggedIn || !allowdId) return;
+	fetchDetail();
+  }, [isLoggedIn, allowdId]);
+  
+  const fetchDetail = async () => {  //서버에서 값 가져와서 보여주는 부분
+	try {
+		const url = apiUrl(`/admin/accessRule/allowdDetail?allowdId=${allowdId}`)
+		const res = await fetch (url, {
+			method: 'GET',
+			headers: { Accept: 'application/json' },
+			credentials: 'include'
+		});
+		if (!res.ok) throw new Error('detail fetch error ' + res.status);
+		
+		const list: Array<{
+			allowdId: string;
+			allowdname: string;
+			departmentId: string;
+			departmentName: string;
+		}> = await res.json();
+
+		// allowdId / allowdName 은 0번째 요소에서 꺼낸다.
+		const { allowdId: AllowdId, allowdName } = list[0];
+
+		// 부서 배열 -> 화면용과 저장용 두개로 나누어서 변환한다.
+		const deptArr = list.map(d => ({
+			departmentId: d.departmentId,
+			departmentName: d.departmentName,
+		}));
+		
+		setFormData({
+			allowdId: AllowdId,
+			allowdName,
+			departmentIds: deptArr.map(d => d.departmentId),
+		});
+		
+		//const dto = await res.json();
+		//console.log(dto);
+		setSelectedDepartments(deptArr); //화면에 바로 보여줄 목록
+	} catch (e) {
+		alert('데이터를 불러오지 못했습니다.');
+		console.error(e);
+	}
+  }
   
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -58,21 +107,24 @@ export default function allowdWritePage() {
 	}
 	
 	//저장 요청
-	const url = apiUrl('/admin/accessRule/allowdWrite');
+	const url = apiUrl(`/admin/accessRule/allowdUpdate?allowdId=${allowdId}`);
 	const res = await fetch(url, {
 		method: 'POST',
 		headers: { 'Content-Type' : 'application/json' },
 		credentials: 'include',
 		body: JSON.stringify(formData) // 화면에서 입력 받은 모든 값을 JSON 문자열로 묶어서 서버에 전송
 	});
+	
+	console.log(formData);
+	
 	if (!res.ok) { alert('저장 실패'); return; }
 	
-	alert('부서정책 생성 완료');
+	alert('부서정책 수정 완료');
 	router.push('/admin/accessRule/allowdList');
   };
   
   const handleToggleSection = (section: string) => {
-	  if (expendedSectgion === section ) {
+	  if (expandedSection === section ) {
 	  	setExpandedSection(null);
 	  } else {
 	  	setExpandedSection(section);
@@ -128,19 +180,19 @@ export default function allowdWritePage() {
             <button onClick={handleBack} className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer">
               <i className="ri-arrow-left-line w-5 h-5 flex items-center justify-center text-gray-600"></i>
             </button>
-            <h1 className="text-xl font-semibold text-gray-900">부서정책 생성</h1>
+            <h1 className="text-xl font-semibold text-gray-900">부서정책 수정</h1>
           </div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6">
           <div className="bg-white rounded-xl border border-gray-200 min-h-full">
             <div className="p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6">부서정책 생성</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-6">부서정책 수정</h2>
 
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">부서정책 * </label>
-                  <input type="text" value={formData.allowdName} 
+                  <input type="text" value={formData.allowdName ?? ''} 
 				  placeholder="정책 이름" 
 				  onChange={(e) => handleInputChange('allowdName', e.target.value)} 
 				  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
@@ -195,7 +247,7 @@ export default function allowdWritePage() {
               </div>
 
               <div className="flex justify-end mt-8">
-                <button onClick={handleSubmit} className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg">부서정책 생성</button>
+                <button onClick={handleSubmit} className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg">부서정책 수정</button>
               </div>
             </div>
           </div>

@@ -57,14 +57,7 @@ export default function UserListPage() {
   const router = useRouter();
 
   // 서버 데이터
-  const [users, setUsers] = useState<UserDTO[]>([
-    /*{ id: '1', name: '김민수', username: 'kim123', department: '개발팀', position: '대리', isAdmin: false, isActive: true, lastAccess: new Date('2025-01-08') },
-    { id: '2', name: '이수진', username: 'lee456', department: '기획팀', position: '주임', isAdmin: false, isActive: true, lastAccess: new Date('2025-01-07') },
-    { id: '3', name: '박준호', username: 'park789', department: '마케팅팀', position: '팀장', isAdmin: true, isActive: true, lastAccess: new Date('2025-01-06') },
-    { id: '4', name: '최영희', username: 'choi111', department: '인사팀', position: '과장', isAdmin: false, isActive: false, lastAccess: new Date('2025-01-03') },
-    { id: '5', name: '정철수', username: 'jung222', department: '개발팀', position: '선임', isAdmin: false, isActive: true, lastAccess: new Date('2025-01-05') },
-    { id: '6', name: '한미래', username: 'han333', department: '디자인팀', position: '사원', isAdmin: false, isActive: true, lastAccess: new Date('2025-01-04') }*/
-  ]);
+  const [users, setUsers] = useState<UserDTO[]>([]);
   const [departments, setDepartments] = useState<DepartmentDTO[]>([]);
   const [grades, setGrades] = useState<GradeDTO[]>([]);
   const [page, setPage] = useState(1);
@@ -98,8 +91,8 @@ export default function UserListPage() {
 			page: String(page),
 			limitRow: String(limitRow),
 			searchWord: searchWord,
-			//kind: kind,
-			//kind2: kind2,
+			kind: kind,
+			kind2: kind2,
 		});
 		const url = apiUrl(`/admin/user/userList?${params.toString()}`);
 		const res = await fetch(url, {
@@ -216,7 +209,7 @@ export default function UserListPage() {
 					className="px-2 py-1 border border-gray-300 rounded text-sm pr-8">
                       <option value="" >전체</option>
 					  {departments.map((dept) => (
-                      <option key={dept.departmentId} value="${dept.departmentId}"> {dept.departmentName}</option>
+                      <option key={dept.departmentId} value={dept.departmentId}> {dept.departmentName}</option>
                       ))}
                     </select>
                     <label>직급:</label>
@@ -229,14 +222,8 @@ export default function UserListPage() {
 					className="px-2 py-1 border border-gray-300 rounded text-sm pr-8">
                       <option value="" >전체</option>
 					  {grades.map((grade) => (
-						<option key={grade.gradeId} value="${grade.gradeId}">{grade.gradeName}</option>
+						<option key={grade.gradeId} value={grade.gradeId}>{grade.gradeName}</option>
 					  ))}
-                     
-                      {/*<option>주임</option>
-                      <option>대리</option>
-                      <option>과장</option>
-                      <option>선임</option>
-                      <option>팀장</option>*/}
                     </select>
                   </div>
                   <div className="flex items-center space-x-2">

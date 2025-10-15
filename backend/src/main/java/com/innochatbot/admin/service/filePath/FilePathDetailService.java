@@ -28,7 +28,8 @@ public class FilePathDetailService {
         model.addAttribute("dto2", dto2);
         
     }
-
+    
+    /*
 	public PathDetailResponse pathDetail2(String pathId) {
 		FilePathDTO filePath = Objects.requireNonNull(
 	            filePathMapper.filePathDetail(pathId),
@@ -38,5 +39,17 @@ public class FilePathDetailService {
 		AccessRuleDTO accessRule = accessRuleMapper.accessRuleDetail(filePath.getAccessId());
 		
 		return new PathDetailResponse(filePath, accessRule);
+	}
+	*/
+    
+	public FilePathDTO pathDetail2(String pathId) {
+		FilePathDTO filePath = Objects.requireNonNull(
+	            filePathMapper.filePathDetail(pathId),
+	            () -> "잘못된 pathId" //supplier<String>
+	    );
+				filePathMapper.filePathDetail(pathId);
+		AccessRuleDTO accessRule = accessRuleMapper.accessRuleDetail(filePath.getAccessId());
+		
+		return filePath;
 	}
 }

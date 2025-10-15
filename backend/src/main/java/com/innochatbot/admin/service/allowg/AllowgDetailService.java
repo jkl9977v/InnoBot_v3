@@ -12,8 +12,8 @@ public class AllowgDetailService {
 	@Autowired
 	AllowgMapper allowgMapper;
 
-	public void allowgDetail(String allowgId, Model model) {
+	public GradeDTO allowgDetail(String allowgId) {
 		GradeDTO dto = allowgMapper.allowgDetail(allowgId);
-		model.addAttribute("dto", dto);
+		return dto;
 	}
 }

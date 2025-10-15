@@ -1,7 +1,7 @@
 // /admin/file/fileList
 'use client';
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import AdminSidebar from '../../../../components/AdminSidebar';
 import AdminHeader from '../../../../components/AdminHeader';
@@ -44,12 +44,15 @@ interface FileDTO {
 	updateTime: string | null; //임시로 string 적용
 }
 
-interface FolderTreeNode { //추후 기능 구현하기
-  id: string;
-  name: string;
-  children?: FolderTreeNode[];
-  isOpen: boolean;
+interface filePathDTO2 { //추후 기능 구현하기
+  pathId: string;
   path: string;
+  accessId: string | null;
+  depth: number;
+  parentId: string | null;
+  //children?: FolderTreeNode[];
+  //isOpen: boolean;
+  //pathId, path, depth, parentId, parentPath ...
 }
 
 interface PageResponse<T> {
@@ -70,21 +73,17 @@ export default function FileListPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
-  //const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
   const [showFolderTree, setShowFolderTree] = useState(true);
-  const [selectedPath, setSelectedPath] = useState('D:/InnoBiot_v3/docs');
+  const [selectedPath, setSelectedPath] = useState('');
+  
   const router = useRouter();
 
-  const [fileLists, setFileLists] = useState<FilePathDTO[]>([
-    /*{ id: '1', name: '봇데이터 폴더', type: 'folder', lastModified: new Date('2025-01-02'), permission: '읽기/쓰기' },
-    { id: '2', name: '대화 연결 docx', type: 'folder', lastModified: new Date('2025-01-02'), permission: '읽기' },
-    { id: '3', name: 'ImoECM_P2.pdf', type: 'file', size: '32227 KB', lastModified: new Date('2025-07-02'), permission: '다운로드' },
-    { id: '4', name: 'ImoMark_P2.pdf', type: 'file', size: '17871 KB', lastModified: new Date('2025-07-02'), permission: '다운로드' },
-    { id: '5', name: 'LizardBackup_P2.pdf', type: 'file', size: '41974 KB', lastModified: new Date('2025-07-02'), permission: '다운로드' },
-    { id: '6', name: 'uPouch_P2.pdf', type: 'file', size: '25451 KB', lastModified: new Date('2025-07-02'), permission: '다운로드' },
-    { id: '7', name: 'settings - 복사본.csv', type: 'file', size: '1.1 KB', lastModified: new Date('2025-06-10'), permission: '다운로드' }*/
-  ]);
+  const searchParams = useSearchParams();
+  const pathId = (searchParams.get('pathId') ?? 'path_000000001');
+  const [currentPathId, setCurrentPathId] = useState(pathId);
+  
+  const [fileLists, setFileLists] = useState<FilePathDTO[]>([]);
   
   const [files, setFiles] = useState<FileDTO[]>([]);
   const [page, setPage] = useState(1);
@@ -95,8 +94,9 @@ export default function FileListPage() {
   const [count, setCount] = useState(0);
   const [startPageNum, setStartPageNum] = useState(1);
   const [endPageNum, setEndPageNum] = useState(1);
+  const [pathDetail, setPathDetail] = useState<FilePathDTO | null>(null);
 
-  const [folderTree, setFolderTree] = useState<FolderTreeNode[]>([
+/*  const [folderTree, setFolderTree] = useState<FolderTreeNode[]>([
     {
       id: 'root',
       name: 'InnoBot_v3',
@@ -167,7 +167,9 @@ export default function FileListPage() {
         }
       ]
     }
-  ]);
+  ]); */
+  
+  const [folderTree, setFolderTree] = useState<filePathDTO2[]>([]);
 
   useEffect(() => {
     /*const loginStatus = localStorage.getItem('isLoggedIn');
@@ -180,16 +182,22 @@ export default function FileListPage() {
   }, [router]);
   
   useEffect(() => {
-	if(isLoggedIn) fetchList();
-  }, [isLoggedIn, page, limitRow, searchWord, kind]);
+	if(isLoggedIn) { 
+		fetchList();
+		fetchPathList(); 
+	}
+  }, [isLoggedIn, currentPathId, page, limitRow, searchWord, kind]);
   
-  const fetchList = async () => { //목록 가져오기 함수
+  const fetchList = async ( pathId: string = currentPathId) => { //목록 가져오기 함수
 	try{
 		const params = new URLSearchParams({
 			page: String(page),
 			limitRow: String(limitRow),
-			searchWord: searchWord,
+			searchWord,
+			kind,
+			pathId: pathId,
 		});
+		
 		const url = apiUrl(`/admin/file/fileList?${params.toString()}`);
 		const res = await fetch(url, {
 			method: 'GET',
@@ -199,6 +207,8 @@ export default function FileListPage() {
 		if(!res.ok) throw new Error('Server error ' + res.status);
 		const data: fileListResposne = await res.json();
 		
+		console.log(data);
+				
 		/*setFileLists(
 			Array.isArray(data.fileList.list)
 				? data.fileList.list		//itemType 'directory'도 같이 오면 .filter()
@@ -212,6 +222,11 @@ export default function FileListPage() {
 		setCount(data.fileList.count);
 		setStartPageNum(data.fileList.startPageNum);
 		setEndPageNum(data.fileList.endPageNum);
+		setSelectedPath(data.pathDetail.path);
+		setCurrentPathId(pathId);
+		setPathDetail(data.pathDetail);
+		
+		console.log(data.pathDetail.path);
 		
 		//옵션
 		//setFiles(data.files);
@@ -223,6 +238,28 @@ export default function FileListPage() {
 		setIsLoading(false);
 	}
   };
+  
+  const fetchPathList = async() => {
+	try {
+		const url = apiUrl(`/admin/file/pathList`);
+		const res = await fetch(url, {
+			method: 'GET',
+			headers: { Accept: 'application/json'},
+			credentials: 'include',
+		});
+		if(!res.ok) throw new Error('Server error ' + res.status);
+		const data: filePathDTO2[] = await res.json();
+		
+		setFolderTree(buildTree(data));
+		console.log(data);
+		// setFileNode?? (data.fileNode??);
+	} catch (e) {
+		console.error('list fetch error', e);
+	} finally {
+		setIsLoading(false);
+	}
+	
+  }
 
   const handleToggleSection = (section: string) => {
     if (expandedSection === section) {
@@ -247,19 +284,20 @@ export default function FileListPage() {
     setFolderTree(toggleNode(folderTree));
   };
 
-  const handleSelectFolder = (path: string) => {
+  const handleSelectFolder = (path: string, pathId: string) => {
     setSelectedPath(path);
+	fetchList(pathId);
   };
 
   const renderFolderTree = (nodes: FolderTreeNode[], level: number = 0) => {
     return nodes.map(node => (
-      <div key={node.id}>
+      <div key={node.pathId}>
         <div 
           className={`flex items-center cursor-pointer hover:bg-gray-100 px-2 py-1 rounded text-sm ${
             selectedPath === node.path ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700'
           }`}
           style={{ paddingLeft: `${8 + level * 16}px` }}
-          onClick={() => handleSelectFolder(node.path)}
+          onClick={() => handleSelectFolder(node.path, node.pathId)}
         >
           {node.children && (
             <button
@@ -302,6 +340,42 @@ export default function FileListPage() {
     console.log('Searching fileLists:', searchWord);
   };
   
+  const fileDetail = (fileId?: string) => {
+	router.push(`/admin/file/fileDetail?fileId=${fileId}`);
+  }
+  const addAccessRule = (pathId : string = currentPathId) => {
+	router.push(`/admin/file/addAccessRule?pathId=${pathId}`);
+  }
+  
+  function buildTree(list: filePathDTO2[]) {
+	const map:Record<string, any> = {};
+	const roots: any[] = [];
+	
+	//(1)노드 기본 객체 준비
+	list.forEach(p => {
+		map[p.pathId] = {
+			//...p,
+			id: p.pathId,
+			pathId: p.pathId,
+			path: p.path,
+			name: p.path.split('/').pop() || p.pathId, //폴더명
+			isOpen: p.depth === 0, 							// 접힘/펼침
+			children: [] as any[],
+		};
+	});
+	
+	//(2)부모-자식 연결
+	list.forEach(p => {
+		if(p.parentId && map[p.parentId]) {
+			map[p.parentId].children.push(map[p.pathId]);
+		} else {
+			roots.push(map[p.pathId]);				// depth = 0
+		}
+	});
+		
+	return roots; //depth 0들이 최상위로 간다.
+  }
+  
 
   if (isLoading) {
     return (
@@ -343,7 +417,8 @@ export default function FileListPage() {
                     onClick={() => setShowFolderTree(false)}
                     className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
                   >
-                    <i className="ri-close-line w-4 h-4 flex items-center justify-center"></i>
+                    {/*<i className="ri-close-line w-4 h-4 flex items-center justify-center"></i>*/}
+					<i className="ri-arrow-left-line w-4 h-4 flex items-center justify-center"></i>
                   </button>
                 </div>
                 <div className="flex-1 overflow-y-auto p-2">
@@ -370,10 +445,11 @@ export default function FileListPage() {
                       {selectedPath}
                     </h3>
                   </div>
-                  <Link href="/admin/file/addAccessRule" className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors cursor-pointer whitespace-nowrap text-sm">
+                  <button onClick={() => addAccessRule()}
+				  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors cursor-pointer whitespace-nowrap text-sm">
                     <i className="ri-add-line w-4 h-4 flex items-center justify-center mr-2 inline-flex"></i>
                     접근권한 설정
-                  </Link>
+                  </button>
                 </div>
 
                 <div className="flex items-center justify-between text-sm text-gray-600">
@@ -386,12 +462,15 @@ export default function FileListPage() {
                         <option>크기순</option>
                       </select>*/}
                       <label>확장자:</label>
-                      <select className="px-2 py-1 border border-gray-300 rounded text-sm pr-8">
-                        <option>전체</option>
-                        <option>PDF</option>
-                        <option>DOC</option>
-                        <option>CSV</option>
-                        <option>폴더</option>
+                      <select 
+					  name="kind"
+					  vlaue={kind}
+					  onChange={(e) => {(e.target.value); setPage(1); }}
+					  className="px-2 py-1 border border-gray-300 rounded text-sm pr-8">
+                        <option value="">전체</option>
+                        <option value="pdf">PDF</option>
+                        <option value="doc">DOC</option>
+                        <option value="csv">CSV</option>
                       </select>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -503,6 +582,25 @@ export default function FileListPage() {
                     </tbody> */}
 					
 					<tbody className="divide-y divide-gray-200">
+						{/* 상위폴더 이동 버튼 */}
+						{pathDetail && pathDetail.depth > 0 && (
+							<tr key="pathDetail.parentId" className="hover:bg-gray-50 transition-colors">
+								{/* 1열 : 폴더 아이콘 */}
+								<td className="px-6 py-4 whitespace-nowrap">
+									<button
+										onClick={() => fetchList(pathDetail.parentId)}
+										className="flex items-center space-x-2 text-sm font-medium text-gray-900 hover:underline"
+									>
+										<i className="ri-folder-line text-yellow-600 text-lg"/>
+										<span> ... </span>
+									</button>
+								</td>
+								<td className="px-6 py-4" />
+								<td className="px-6 py-4" />
+								<td className="px-6 py-4" />
+							</tr>
+						)}
+					
 									    {(fileLists ?? []).map((item, idx) => {
 											const key =
 											      item.itemType === 'directory'
@@ -552,12 +650,12 @@ export default function FileListPage() {
 									              {isDir ? (
 									                /* 폴더는 클릭시 하위경로 로딩 (예시) */
 									                <button
-									                  onClick={() => setSelectedPath(item.path)}
+									                  onClick={() => fetchList(item.pathId)}
 									                  className="text-sm font-medium text-gray-900 hover:underline"
 									                >
 									                  {name}
 									                </button>
-									              ) : (
+									              ):(
 									                <span className="text-sm font-medium text-gray-900">
 									                  {name}
 									                </span>
@@ -578,14 +676,23 @@ export default function FileListPage() {
 									          {/* 작업 */}
 									          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
 									            <div className="flex items-center space-x-2">
-									              {!isDir && (
-									                <Link
-									                  href={`/admin/file/fileDetail?fileId=${item.FileDTO?.fileId}`}
+									              {!isDir && item.fileDTO?.fileId != null ? (
+									                /*<Link
+									                  href={`/admin/file/fileDetail?fileId=${item.fileDTO?.fileId}`}
 									                  className="text-indigo-600 hover:text-indigo-900"
 									                >
 									                  자세히
-									                </Link>
-									              )}
+									                </Link>*/
+													
+													<button
+														onClick={() => fileDetail(item.fileDTO?.fileId)}
+														className="text-indigo-600 hover:text-indigo-900"
+													> 
+														자세히 
+													</button>
+									              ):(
+													'-'
+												  )}
 									            </div>
 									          </td>
 									        </tr>
@@ -620,6 +727,21 @@ export default function FileListPage() {
                       ))}
                     </div>*/}
 					<div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+					  {/* 상위폴더 이동 버튼 */}
+					  {pathDetail && pathDetail.depth > 0 && (
+						<div key={pathDetail.parentId} className="group cursor-pointer">
+							<div 
+							onClick={() => fetchList(pathDetail.parentId)}
+							className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors">
+						          <div className="flex flex-col items-center text-center">
+						            <i className={`ri-folder-line text-yellow-500 text-3xl mb-2`} />
+						            <p className="text-sm font-medium text-gray-900 truncate w-full"> ... </p>
+						            <p className="text-xs text-gray-500 mt-1"> <br/> </p>
+						          </div>
+							</div>
+						</div>
+					  )} 
+					
 					  {(fileLists ?? []).map((item, idx) => {
 						const key =
 							item.itemType === 'directory'
@@ -644,13 +766,31 @@ export default function FileListPage() {
 
 					    return (
 					      <div key={key} className="group cursor-pointer">
-					        <div className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors">
-					          <div className="flex flex-col items-center text-center">
-					            <i className={`${icon} text-3xl mb-2`} />
-					            <p className="text-sm font-medium text-gray-900 truncate w-full">{name}</p>
-					            <p className="text-xs text-gray-500 mt-1">{size}</p>
-					          </div>
-					        </div>
+							  {isDir ? (
+								<div 
+								onClick={() => fetchList(item.pathId)}
+								className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors">
+							          <div className="flex flex-col items-center text-center">
+							            <i className={`${icon} text-3xl mb-2`} />
+							            <p className="text-sm font-medium text-gray-900 truncate w-full">{name}</p>
+							            <p className="text-xs text-gray-500 mt-1">{size}</p>
+							          </div>
+								</div>	
+							) : (
+									<div 
+									onClick={
+										item.fileDTO?.fileId ? () => fileDetail(item.fileDTO?.fileId)
+										: undefined
+									}
+									className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors">
+								  <div className="flex flex-col items-center text-center">
+								    <i className={`${icon} text-3xl mb-2`} />
+								    <p className="text-sm font-medium text-gray-900 truncate w-full">{name}</p>
+								    <p className="text-xs text-gray-500 mt-1">{size}</p>
+								  </div>
+								</div>
+								
+							)}
 					      </div>
 					    );
 					  })}

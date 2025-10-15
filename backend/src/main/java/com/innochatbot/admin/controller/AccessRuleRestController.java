@@ -126,9 +126,17 @@ public class AccessRuleRestController { //파일 경로 관리
     */
 
     @PostMapping("accessUpdate")
-    public String AccessRuleUpdate1(AccessRuleCommand accessRuleCommand) {
-    	accessRuleUpdateService.accessUpdate(accessRuleCommand);
-        return "redirect:accessList";
+    public ResponseEntity<?> AccessRuleUpdate1(@RequestBody AccessRuleCommand accessRuleCommand) {
+    	Boolean updateResult = accessRuleUpdateService.accessUpdate(accessRuleCommand);
+    	
+    	if (updateResult) {
+    		// 200ok + {success : true} JSON 객체 전달
+    		return ResponseEntity.ok(Collections.singletonMap("success", true)); //성공 JOSN, redirect : 200 ok
+    	} else {
+    		// 500 (또는 400) -> 프론트가 예외처리 가능
+    		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+    				.body(Collections.singletonMap("insert_error", false)); // 실패 JSON
+    	}
     }
     
     @Autowired

@@ -8,12 +8,18 @@
 	import AllowgSearchModal from '../../../../components/AllowgSearchModal'; //모달
 	import { apiUrl } from '@/lib/api';
 	
-	
-	interface DepartmentDTO {
+	interface AllowdRowDTO {
 		allowdId: string;
 		allowdName: string;
 		departmentId: string;
 		departmentName: string;
+	}
+	
+	interface DepartmentDTO {
+		allowdId: string;
+		allowdName: string;
+		departmentId: string[];
+		departmentName: string[];
 	}
 	
 	interface GradeDTO {
@@ -43,15 +49,16 @@
 		allowdName: '',
 		allowgId: '',
 		allowgName: '',
+		
+		departmentId: [] as string[],		
+		departmentName: [] as string[],	
 	
 	  });
 	  
 	  const [selectedAllowd, setSelectedAllowd] = useState<DepartmentDTO | null>(null);
 	  const [selectedAllowg, setselectedAllowg] = useState<GradeDTO | null>(null);
 	
-	
 	  const [allowd, setAllowd] = useState<DepartmentDTO[]>([]);
-	
 	  const [allowg, setAllowg] = useState<GradeDTO[]>([]);
 	
 	  useEffect(() => {
@@ -122,12 +129,51 @@
 	    router.push('/admin/accessRule/accessList');
 	  };
 	
-	  const handleSelectAllowd = (dto: DepartmentDTO) => {
-		setFormData(prev => ({ ...prev, allowdId: dto.allowdId}));
+	  const handleSelectAllowd = async ({allowdId, allowdName}: {allowdId: string; allowdName: string} /*DepartmentDTO*/) => {
+		/*setFormData(prev => ({ ...prev, allowdId: dto.allowdId}));
 		setFormData(prev => ({ ...prev, allowdName: dto.allowdName}));
 		setFormData(prev => ({ ...prev, departmentId: dto.departmentId}));
-	    setFormData(prev => ({ ...prev, departmentName: dto.departmentName }));
-	    setSelectedAllowd(dto);
+	    setFormData(prev => ({ ...prev, departmentName: dto.departmentName }));*/
+		
+		// 1. form - id / name만 저장
+		setFormData(prev => ({
+			...prev,
+			allowdId,
+			allowdName,
+			//departmentId: [...dto.departmentId],
+			//departmentName: [...dto.departmentName],
+		}));
+		
+	    //setSelectedAllowd(dto);
+/*		setSelectedAllowd({
+			...dto,
+			//departmentId: [...dto.departmentId],
+			//departmentName: [...dto.departmentName],
+		});*/
+		
+		// 2. 상세정보 Ajax 호출
+		try {
+			const list = await fetchAllowdDetail(allowdId);
+			
+			if (list.length === 0 ) throw new Error('empty');
+			
+			const departmentId = list.map(d => d.departmentId);
+			const departmentName = list.map(d => d.departmentName);
+
+			setSelectedAllowd({ //패널에 뿌릴 전체 정보
+				allowdId,
+				allowdName,
+				departmentId: list.map(r => r.departmentId),
+				departmentName: list.map(r => r.departmentName),
+			}); 
+			
+			console.log(list);
+		} catch(e) {
+			console.error(e);
+			alert('부서정책 상세 정보를 가져오지 못했습니다.');
+			setSelectedAllowd(null);
+		}
+		
 	    setIsAllowdSearchModalOpen(false);
 	  };
 	
@@ -140,6 +186,28 @@
 	    setselectedAllowg(dto);
 	    setIsAllowgSearchModalOpen(false);
 	  };
+	  
+	  const fetchAllowdDetail = async (allowdId: string): Promise<AllowdRowDTO[]> => {
+		try {
+			console.log(allowdId);
+			const url = apiUrl(`/admin/accessRule/allowdDetail?allowdId=${allowdId}`)
+			const res = await fetch(url, {
+				method: 'GET',
+				headers: { Accept : 'application/json'},
+				credentials: 'include',
+			});
+			if (!res.ok) throw new Error('Server error ' + res.status);
+
+			return res.json(); // 값을 반환, 배열 그대로 리턴
+
+			//setSelectedAllowd(data);
+			console.log(list);
+		} catch (e) {
+			console.error('list fetch error', e);
+	  	} finally {
+			setIsLoading(false);
+	  	}
+	  }
 		
 	  const showAllowd = ['일부 부서 허용', '일부 부서의 특정 직급 이상 허용']
 	  					.includes(formData.accessType);
@@ -334,8 +402,9 @@
 	              {/* 부서정책 상세 정보 */}
 	              <div className="flex-1 p-6 border-b border-gray-200">
 	                <h3 className="text-sm font-semibold text-gray-900 mb-4">부서정책 상세 정보</h3>
-	                <div className="overflow-y-auto" style={{ maxHeight: '200px' }}>
+	                <div className="overflow-y-auto" >
 	                  {selectedAllowd ? (
+						<>
 	                    <div className="space-y-3 text-sm">
 	                      <div>
 	                        <span className="font-medium text-gray-700">정책명:</span>
@@ -350,8 +419,17 @@
 	                        <div className="text-gray-900">{selectedAllowd.ruleName}</div>
 	                      </div>*/}
 	                      <div>
-	                        <span className="font-medium text-gray-700">대상부서:</span>  배열처리 코드 적용 필요함 (미완성)
-	                        {/*<div className="text-gray-900">{selectedAllowd.departmentName.join(', ')}</div>*/}
+	                        <span className="font-medium text-gray-700">대상부서:</span>  
+	                        <div className="text-gray-900">
+							{selectedAllowd.departmentname && selectedAllowd.departmentName.length > 0 ? (
+								selectedAllowd.departmentName.map((name, idx) => (
+									<div key={idx} className="text-gray-900">{name}</div> /*한줄에 하나*/
+								))
+							) : (
+								<div className="text-gray-500" align="center">대상 부서가 없습니다.</div>
+							)
+							}
+							</div>
 	                      </div>
 	                      {/*<div>
 	                        <span className="font-medium text-gray-700">상태:</span>
@@ -360,6 +438,7 @@
 	                        </div>
 	                      </div>*/}
 	                    </div>
+						</>
 	                  ) : (
 	                    <div className="text-sm text-gray-500 text-center py-4">
 	                      부서정책을 선택하면 상세 정보가 표시됩니다.

@@ -19,6 +19,7 @@ import com.innochatbot.admin.service.user.UserWriteService;
 //@Controller
 @RequestMapping("admin/user")
 public class UserController {
+	/*
 	@Autowired
 	AutoNumService autoNumService;
 	@Autowired
@@ -79,5 +80,6 @@ public class UserController {
 		userMapper.userDelete(userNum);
 		return "redirect:/admin/user/userList";
 	}
+	*/
 
 }

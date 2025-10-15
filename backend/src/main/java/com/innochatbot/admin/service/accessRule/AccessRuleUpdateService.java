@@ -13,7 +13,7 @@ public class AccessRuleUpdateService {
     @Autowired
     AccessRuleMapper accessRuleMapper;
 
-    public void accessUpdate(AccessRuleCommand accessRuleCommand) {
+    public Boolean accessUpdate(AccessRuleCommand accessRuleCommand) {
         AccessRuleDTO dto = new AccessRuleDTO();
 
         dto.setAccessId(accessRuleCommand.getAccessId());
@@ -22,7 +22,9 @@ public class AccessRuleUpdateService {
         dto.setAllowgId(accessRuleCommand.getAllowgId());
         dto.setAccessType(accessRuleCommand.getAccessType());
         
-        accessRuleMapper.accessRuleUpdate(dto);
+        int  updateResult = accessRuleMapper.accessRuleUpdate(dto);
+        
+        return updateResult == 1;
     }
 
 }

@@ -138,4 +138,8 @@ where path_id=#{pathId}
 delete from file_path where path_id = #{pathId}
 </delete>
 
+<select id="pathList" resultType="pathDTO">
+select *from file_path
+</select>
+
 </mapper>

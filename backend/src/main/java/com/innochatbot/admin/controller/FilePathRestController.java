@@ -1,6 +1,7 @@
 package com.innochatbot.admin.controller;
 
 import java.util.Collections;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,7 +15,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.innochatbot.admin.command.FilePathCommand;
+import com.innochatbot.admin.dto.FileDTO;
 import com.innochatbot.admin.dto.FileListResponse;
+import com.innochatbot.admin.dto.FilePathDTO;
 import com.innochatbot.admin.dto.PathDetailResponse;
 import com.innochatbot.admin.mapper.FilePathMapper;
 import com.innochatbot.admin.service.AutoNumService;
@@ -77,18 +80,14 @@ public class FilePathRestController { //파일 경로 관리
     	return filePathListService.filePathList2(page, limitRow, pathId, searchWord, kind);
     }
     
-    
-    @GetMapping("pathList") // (미개발 기능) 기준경로부터 폴더를 보여주는 기능
-    public String filePathList(@RequestParam (defaultValue="1") int page
-    		, @RequestParam (defaultValue = "10") int limitRow
-    		, @RequestParam (defaultValue = "path_000000001")String pathId
-    		, @RequestParam (required = false) String searchWord
-    		, @RequestParam (required = false ) String kind
-    		, Model model) {
-    	//파일시스템을 보여줌
-    	filePathListService.filePathList(page, limitRow, pathId, searchWord, model, kind);
-    	return "thymeleaf/file";
+    @GetMapping("pathList") // 기준경로부터 폴더를 보여주는 기능
+    public List<FilePathDTO> filePathList(
+    		@RequestParam (defaultValue = "path_000000001")String pathId) {
+    	//폴더 정보 전송하기
+    	return filePathListService.pathList(pathId);
     }
+    
+    /*
     @GetMapping("pathSearch")
     public String filePathSearch(String searchWord, Model model) {
     	filePathListService.filePathSearch(searchWord, model);
@@ -112,10 +111,17 @@ public class FilePathRestController { //파일 경로 관리
         filePathUpdateService.pathUpdate(filePathCommand);
         return "redirect:pathList";
     }
+    */
     
-    
+    /*
     @GetMapping("addAccessRule") //기능 추가 필요함 (아직 미완성)
     public PathDetailResponse addAccessRule(@RequestParam String pathId) {
+        return filePathDetailService.pathDetail2(pathId);
+    }
+    */
+    
+    @GetMapping("addAccessRule") 
+    public FilePathDTO addAccessRule(@RequestParam String pathId) {
         return filePathDetailService.pathDetail2(pathId);
     }
 
@@ -148,8 +154,16 @@ public class FilePathRestController { //파일 경로 관리
     */
     
     @GetMapping("fileDetail")
-    public String fileDetail(@RequestParam("fileId") String fileId, Model model) {
-    	fileDetailService.fileDetail(fileId, model);
-    	return "thymeleaf/file/fileDetail";
+    public ResponseEntity<?> fileDetail(@RequestParam String fileId) {
+    	System.out.println(fileId);
+    	
+    	//fileId가 있을때 200 ok + DTO
+    	if (fileId != null && !fileId.trim().isEmpty()) {
+    		FileDTO dto = fileDetailService.fileDetail(fileId);
+    		return ResponseEntity.ok(dto);
+    	} else {
+    		return ResponseEntity.badRequest()
+    				.body("fileId 값이 없습니다.");
+    	}
     }
 }
