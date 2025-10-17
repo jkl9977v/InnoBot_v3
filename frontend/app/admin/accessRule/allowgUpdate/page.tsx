@@ -3,9 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import AdminSidebar from '../../../../components/AdminSidebar';
-import AdminHeader from '../../../../components/AdminHeader';
+import AdminHeader from '../../../../components/AdminHeader_handleGoBack';
 import GradeSearchModal, { GradeDTO } from '../../../../components/GradeSearchModal'; //분리된 모달 
 import { apiUrl } from '@/lib/api';
+import { useLoading } from '@/hooks/useLoading';
+import FullPageSpinner from '../../../../components/FullPageSpinner';
 
 interface GradeDTO {
   gradeId: string;
@@ -16,8 +18,7 @@ interface GradeDTO {
 }
 
 export default function AllowgUpdatePage() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const { isLoading, setIsLoading, wrap } = useLoading();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [expandedSection, setExpandedSection] = useState<string | null>('policies');
   const [isGradeSearchModalOpen, setIsGradeSearchModalOpen] = useState(false);
@@ -33,22 +34,13 @@ export default function AllowgUpdatePage() {
 	gradeName: '',
 	gradeLevel: '',
   });
-
-  useEffect(() => {
-    /*const loginStatus = localStorage.getItem('isLoggedIn');
-    if (loginStatus !== 'true') {
-      router.push('/login');
-      return;
-    }*/
-    setIsLoggedIn(true);
-    setIsLoading(false);
-  }, [router]);
   
   useEffect(() => {
-	if (!isLoggedIn && !allowgId) return;
+	if (!allowgId) return;
+	setIsLoading(false);
 	fetchDetail();
-  }, [isLoggedIn, allowgId]);
-  
+  }, [allowgId]);
+ 
   const fetchDetail = async () => {
 	try {
 		const url = apiUrl(`/admin/accessRule/allowgDetail?allowgId=${allowgId}`)
@@ -115,18 +107,6 @@ export default function AllowgUpdatePage() {
     setIsGradeSearchModalOpen(false);
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
-        <div className="w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  if (!isLoggedIn) {
-    return null;
-  }
-
   return (
     <div className="flex h-screen bg-gray-50" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif' }}>
       <AdminSidebar 
@@ -136,34 +116,11 @@ export default function AllowgUpdatePage() {
       />
 
       <div className="flex-1 flex flex-col">
-        <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
-            >
-              <i className="ri-menu-line w-5 h-5 flex items-center justify-center text-gray-600"></i>
-            </button>
-            <button
-              onClick={handleGoBack}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
-            >
-              <i className="ri-arrow-left-line w-5 h-5 flex items-center justify-center text-gray-600"></i>
-            </button>
-            <h1 className="text-xl font-semibold text-gray-900">
-              접근정책 &gt; 직급정책 수정
-            </h1>
-          </div>
-          <div className="flex items-center justify-between text-sm text-gray-600 relative">
-            <div className="flex items-center space-x-2 cursor-pointer">
-              <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
-                <i className="ri-user-line text-indigo-600"></i>
-              </div>
-              <span className="text-sm text-gray-700">관리자</span>
-              <i className="ri-arrow-down-s-line w-4 h-4 flex items-center justify-center text-gray-400"></i>
-            </div>
-          </div>
-        </div>
+	  <AdminHeader
+	    title="직급정책 > 직급정책 수정"
+	  	handleGoBack={() => handleGoBack()}
+	    onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+	  />
 
         <div className="flex-1 overflow-y-auto p-6">
           <div className="bg-white rounded-xl border border-gray-200 min-h-full">

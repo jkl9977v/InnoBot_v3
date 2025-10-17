@@ -6,6 +6,8 @@ import Link from 'next/link';
 import AdminSidebar from '../../../../components/AdminSidebar';
 import AdminHeader from '../../../../components/AdminHeader';
 import { apiUrl } from '@/lib/api';
+import { useLoading } from '@/hooks/useLoading';
+import FullPageSpinner from '../../../../components/FullPageSpinner';
 
 interface AllowgDTO {
   allowgid: string;
@@ -34,8 +36,9 @@ interface PageResponse<T> {
 }
 
 export default function AllowgListPage() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const { isLoading, setIsLoading, wrap } = useLoading();
+  //const [isLoggedIn, setIsLoggedIn] = useState(false);
+  //const [isLoading, setIsLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [expandedSection, setExpandedSection] = useState<string | null>('policies');
 
@@ -51,22 +54,11 @@ export default function AllowgListPage() {
   const [count, setCount] = useState(0);
   const [startPageNum, setStartPageNum] = useState(1);
   const [endPageNum, setEndPageNum] = useState(1);
-
-  useEffect(() => { //로그인 여부 확인
-	/*
-    const loginStatus = localStorage.getItem('isLoggedIn');
-    if (loginStatus !== 'true') {
-      router.push('/login');
-      return;
-    }
-	*/
-    setIsLoggedIn(true);
-    setIsLoading(false);
-  }, [router]);
   
   useEffect(() => {
-	if(isLoggedIn) fetchList();
-  }, [isLoggedIn, page, limitRow, searchWord]);
+	 fetchList();
+	 setIsLoading(false);
+  }, [page, limitRow, searchWord]);
   
   const fetchList = async () => { //목록 가져오기 함수
 	try {
@@ -135,22 +127,9 @@ export default function AllowgListPage() {
 	}
   }
 
-  const handleSearch = () => {
+/*  const handleSearch = () => {
     console.log('Searching position policies:', searchWord);
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
-        <div className="w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  if (!isLoggedIn) {
-    return null;
-  }
-
+  };*/
   return (
     <div className="flex h-screen bg-gray-50">
       <AdminSidebar
@@ -161,7 +140,7 @@ export default function AllowgListPage() {
 
       <div className="flex-1 flex flex-col">
         <AdminHeader
-          title="접근정책 > 직급정책 관리"
+          title="직급정책 > 직급정책 관리"
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         />
 
@@ -207,7 +186,10 @@ export default function AllowgListPage() {
                       className="px-2 py-1 border border-gray-300 rounded text-sm w-48"
                     />
                     <button
-                      onClick={handleSearch}
+					onClick={(e) => {
+						setSearchWord(e.target.value);
+						setPage(1);
+					}}
                       className="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-sm transition-colors cursor-pointer"
                     >
                       검색

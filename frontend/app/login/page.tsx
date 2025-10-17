@@ -1,4 +1,4 @@
-//login.page
+// login.page
 'use client';
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -15,11 +15,6 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   //const [showPassword, setShowPassword] = useState(false);
-/*  const res = await fetch('http://localhost:8080/admin/getHeader', {
-	mothod: 'GET',
-	credntials: 'include'
-  });
-  const data = await res.json();*/
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,7 +26,7 @@ export default function LoginPage() {
 			method: 'POST',
 			credentials: 'include', //세션 쿠키 받으려면 필요
 			headers: {'Content-Type' : 'application/json'},
-			body: JSON.stringify({ userId, userPw})
+			body: JSON.stringify({ userId, userPw })
 		});
 		
 		const data= await res.json().catch(() => null);
@@ -44,6 +39,8 @@ export default function LoginPage() {
 	} catch(err){
 		console.error(err);
 		setError('네트워크 오류');
+	} finally {
+		setIsLoading(false);
 	}
   };
 

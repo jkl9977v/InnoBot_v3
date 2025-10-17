@@ -1,5 +1,7 @@
 {
-  "/admin/analytics/page": "app/admin/analytics/page.js",
-  "/admin/file/fileList/page": "app/admin/file/fileList/page.js",
-  "/admin/embedding-setting/page": "app/admin/embedding-setting/page.js"
+  "/page": "app/page.js",
+  "/login/page": "app/login/page.js",
+  "/chat/page": "app/chat/page.js",
+  "/admin/page": "app/admin/page.js",
+  "/admin/analytics/page": "app/admin/analytics/page.js"
 }

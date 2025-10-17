@@ -78,7 +78,6 @@ public class LoginRestController {
     
     //로그아웃
     @PostMapping("logout")
-    @ResponseBody
     public ResponseEntity<?> logout(HttpServletRequest request, HttpSession session) {
     	session = request.getSession(false);
     	if(session != null) session.invalidate();
@@ -90,7 +89,6 @@ public class LoginRestController {
     
     //로그아웃
     @GetMapping("logout")
-    @ResponseBody
     public ResponseEntity<?> logout1(HttpServletRequest request, HttpSession session) {
     	session = request.getSession(false);
     	if(session != null) session.invalidate();

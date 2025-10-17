@@ -3,7 +3,11 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import AdminHeader from '../../components/AdminHeader';
 import { apiUrl } from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
+import { useLoading } from '@/hooks/useLoading';
+import FullPageSpinner from '../../components/FullPageSpinner';
 
 interface Message {
   id: string;
@@ -26,7 +30,11 @@ interface ChatSettings {
 }
 
 export default function ChatPage() {
-  const [isLoading, setIsLoading] = useState(false);
+  const { isLoggedIn, checking, error, logout } = useAuth(); //훅 호출
+  
+  const { isLoading, setIsLoading, wrap } = useLoading();
+    
+  //const [isLoading, setIsLoading] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [showChatSettings, setShowChatSettings] = useState(false);
   const [chatSettings2, setChatSettings2] = useState<ChatSettings>({
@@ -35,15 +43,7 @@ export default function ChatPage() {
     minSimilarityScore: 0.7
   });
   const router = useRouter();
-
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      content: '안녕하세요! 티움봇입니다. 무엇을 도와드릴까요?',
-      isUser: false,
-      timestamp: new Date()
-    }
-  ]);
+  
   const [inputValue, setInputValue] = useState('');
   const [isMessageLoading, setIsMessageLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -69,7 +69,8 @@ export default function ChatPage() {
   >([]);
   const [loading, setLoading] = useState(false);
   
-  const [chatSessions] = useState<ChatSession[]>([
+  //대화목록: 추후 DB 설계 후 DB에서 정보 가져와서 화면에 보여주는 방식으로 변경하기
+  const [chatSessions] = useState<ChatSession[]>([ 
     {
       id: '1',
       title: '새로운 대화',
@@ -90,11 +91,11 @@ export default function ChatPage() {
     }
   ]);
   
-  const [checking, setChecking] = useState(true); //로그인 체크
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  //const [checking, setChecking] = useState(true); //로그인 체크
+  //const [isLoggedIn, setIsLoggedIn] = useState(false);
+  //const [error, setError] = useState<string | null>(null);
   
-  async function checkLogin(){
+/*  async function checkLogin(){
 	setChecking(true);
 	setError(null);
 	try {
@@ -132,16 +133,25 @@ export default function ChatPage() {
 		setChecking(false);
 	}
   }
-  
-  useEffect(() => {
+  */
+/*  useEffect(() => {
 	//로그인 상태 확인
 	//checkLogin();
 	setIsLoggedIn(true);
-  }, []);
+  }, []);*/
   
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+  
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: '1',
+      content: '안녕하세요! 티움봇입니다. 무엇을 도와드릴까요?',
+      isUser: false,
+      timestamp: new Date()
+    }
+  ]);
   
   // 초기 환영 메시지 (한 번만)
   useEffect(() => {
@@ -241,7 +251,7 @@ export default function ChatPage() {
         )
       );
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
   
@@ -303,10 +313,10 @@ export default function ChatPage() {
     return () => window.removeEventListener('keydown', onKey);
   }, []);*/
 
-  const handleLogout = () => {
+/*  const handleLogout = () => {
     localStorage.removeItem('isLoggedIn');
     router.push('/');
-  };
+  };*/
 
   const handleSettingChange = (field: keyof ChatSettings, value: string | number) => {
     setChatSettings2(prev => ({
@@ -321,17 +331,7 @@ export default function ChatPage() {
     alert('설정이 저장되었습니다.');
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
-        <div className="w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  if (!isLoggedIn) {
-    return null;
-  }
+  if (isLoading) return <FullPageSpinner />;
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -386,7 +386,7 @@ export default function ChatPage() {
             <span className="text-sm text-gray-300">챗봇 관리</span>
           </Link>
           <button 
-            onClick={handleLogout}
+            onClick={logout}
             className="w-full flex items-center space-x-2 p-2 hover:bg-gray-800 rounded-lg transition-colors cursor-pointer"
           >
             <i className="ri-logout-circle-line w-5 h-5 flex items-center justify-center text-gray-400"></i>
@@ -397,48 +397,11 @@ export default function ChatPage() {
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
-        {/* Admin Header */}
-        <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
-            >
-              <i className="ri-menu-line w-5 h-5 flex items-center justify-center text-gray-600"></i>
-            </button>
-            <h1 className="text-xl font-semibold text-gray-900">챗봇 대화</h1>
-          </div>
-          <div className="flex items-center justify-between text-sm text-gray-600 relative">
-            <div className="flex items-center space-x-2 cursor-pointer" onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}>
-              <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
-                <i className="ri-user-line text-indigo-600"></i>
-              </div>
-              <span className="text-sm text-gray-700">사용자</span>
-              <i className="ri-arrow-down-s-line w-4 h-4 flex items-center justify-center text-gray-400"></i>
-            </div>
-
-            {isUserMenuOpen && (
-              <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                <div className="p-4 border-b border-gray-200">
-                  <div className="text-sm text-gray-600 space-y-1">
-                    <div><strong>ID:</strong> 1234</div>
-                    <div><strong>이름:</strong> 테스트 계정</div>
-                    <div><strong>부서:</strong> DevOps</div>
-                    <div><strong>직급:</strong> 연구원</div>
-                  </div>
-                </div>
-                <div className="p-2 space-y-1">
-                  <button className="w-full text-left px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer text-sm text-gray-700">
-                    내 정보 수정
-                  </button>
-                  <button onClick={handleLogout} className="w-full text-left px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer text-sm text-gray-700">
-                    로그아웃
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+	  {/* Admin Header */}
+	  <AdminHeader
+	    title="챗봇 대화"
+	    onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+	  />
 
         {/* Chat Header */}
         <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">

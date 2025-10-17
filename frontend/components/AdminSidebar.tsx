@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
+import { apiUrl } from '@/lib/api';
 
 interface AdminSidebarProps {
   isSidebarOpen: boolean;
@@ -11,11 +12,23 @@ interface AdminSidebarProps {
 }
 
 export default function AdminSidebar({ isSidebarOpen, expandedSection, onToggleSection }: AdminSidebarProps) {
+  const [isLoggedIn, setIsLoggedIn] = useState();
   const router = useRouter();
   const pathname = usePathname();
 
-  const handleLogout = () => {
-    localStorage.removeItem('isLoggedIn');
+  const handleLogout = async () => {
+	try {
+		await fetch(apiUrl('/logout'),{
+			method: 'POST',
+			credentials: 'include',
+			headers: { Accept : 'application.json' }
+		});
+	} catch (e) {
+		console.error('logout error ', e);
+	} finally {
+		//로그아웃 후 UI 갱신
+		setIsLoggedIn(false);
+	}
     router.push('/');
   };
 

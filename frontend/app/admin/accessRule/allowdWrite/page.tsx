@@ -3,9 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminSidebar from '../../../../components/AdminSidebar';
-import AdminHeader from '../../../../components/AdminHeader';
+import AdminHeader from '../../../../components/AdminHeader_handleGoBack';
 import DepartmentsSearchModal, { DepartmentDTO } from '../../../../components/DepartmentsSearchModal'; //검색창 모달
 import { apiUrl } from '@/lib/api';
+import { useLoading } from '@/hooks/useLoading';
+import FullPageSpinner from '../../../../components/FullPageSpinner'; 
 
 interface DepartmentDTO {
 	departmentId: string;
@@ -13,8 +15,7 @@ interface DepartmentDTO {
 };
 
 export default function allowdWritePage() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const { isLoading, setIsLoading, wrap } = useLoading();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [expandedSection, setExpandedSection] = useState<string | null>('policies');
   const [showDepartmentsSearchModal, setShowDepartmentsSearchModal] = useState(false);
@@ -35,8 +36,6 @@ export default function allowdWritePage() {
   });
 
   useEffect(() => {
-    /* 로그인 체크 생략(데모) */
-    setIsLoggedIn(true);
     setIsLoading(false);
   }, [router]);
   
@@ -105,32 +104,22 @@ export default function allowdWritePage() {
     //setFormData(prev => ({ ...prev, departments: prev.departments.filter(d => d.departmentId !== departmentId) }));
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
-        <div className="w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  if (!isLoggedIn) return null;
+/*  if (!isLoggedIn) return null;*/
 
   return (
     <div className="flex h-screen bg-gray-50">
-      <AdminSidebar isSidebarOpen={isSidebarOpen} expandedSection={expandedSection} onToggleSection={handleToggleSection} />
+      <AdminSidebar 
+	  	isSidebarOpen={isSidebarOpen} 
+		expandedSection={expandedSection} 
+		onToggleSection={handleToggleSection} 
+		/>
 
       <div className="flex-1 flex flex-col">
-        <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer">
-              <i className="ri-menu-line w-5 h-5 flex items-center justify-center text-gray-600"></i>
-            </button>
-            <button onClick={handleBack} className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer">
-              <i className="ri-arrow-left-line w-5 h-5 flex items-center justify-center text-gray-600"></i>
-            </button>
-            <h1 className="text-xl font-semibold text-gray-900">부서정책 생성</h1>
-          </div>
-        </div>
+	  <AdminHeader
+	    title="부서정책 > 부서정책 생성"
+	  	handleGoBack={() => handleGoBack()}
+	    onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+	  />
 
         <div className="flex-1 overflow-y-auto p-6">
           <div className="bg-white rounded-xl border border-gray-200 min-h-full">

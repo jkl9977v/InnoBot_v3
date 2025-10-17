@@ -26,8 +26,9 @@ public class UserLoginService {
 				// 왜냐하면 아무 사용자가 다 로그인 가능하면 안되기 때문
 				if(loginSession.getUserPw().equals(loginCommand.getUserPw())) {
 					//비밀번호가 일치
-					System.out.println(loginSession.getUserId() + " 로그인 성공");
 					session.setAttribute("loginSession", loginSession);
+					System.out.println(loginSession.getUserId() + " 로그인 성공");
+					System.out.println("loginSession " + loginSession);
 					System.out.println("session Id"+ session.getId());
 					
 					LoginStatus=true;

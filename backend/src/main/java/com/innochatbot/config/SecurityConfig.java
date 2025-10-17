@@ -8,42 +8,25 @@ import org.springframework.context.annotation.Bean;
 @Configuration
 public class SecurityConfig {
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
-        http
-                .cors() // ✅ CORS 설정 활성화
-                .and()
-                .csrf().disable() // (개발 중에는 보통 비활성화 disable())
-                .authorizeHttpRequests()
-            		.requestMatchers("/admin/login", "/css/**", "/js/**", "/img/**").permitAll()
-            		//.requestMatchers("/admin/**").authenticated()  // 관리자 페이지 보호
-            		.anyRequest().permitAll();
-        //.authorizeHttpRequests().anyRequest().permitAll(); // 예시: 모든 요청 허용
-
-        return http.build();
-    }
+	@Bean
+	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+	    http
+	        .cors().and()
+	        .csrf().disable()
+	        .authorizeHttpRequests()
+	            .requestMatchers("/login", "/css/**", "/js/**", "/img/**").permitAll()
+	            .anyRequest().permitAll()
+	        .and()
+	        .logout(logout -> logout
+	            .logoutUrl("/logout") // 기본값이기도 함
+	            .invalidateHttpSession(true)
+	            .deleteCookies("JSESSIONID")
+	            .logoutSuccessHandler((req, res, auth) -> {
+	                res.setStatus(200);
+	                res.setContentType("application/json;charset=UTF-8");
+	                res.getWriter().write("{\"success\":true,\"message\":\"로그아웃 되었습니다.\"}");
+	            })
+	        );
+	    return http.build();
+	}
 }
-/*
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-        	.cors().and()
-        	.csrf().disable()
-            .authorizeHttpRequests()
-            	.requestMatchers("/admin/login", "/css/**", "/js/**", "/img/**").permitAll()
-                .requestMatchers("/admin/**").authenticated()  // 관리자 페이지 보호
-                .anyRequest().permitAll()
-            .and()
-            .formLogin()  // 기본 로그인 페이지 사용
-                .loginPage("/admin/login")        // 커스텀 로그인 화면 사용 시 설정
-                .defaultSuccessUrl("/admin/manuals/view", true)
-                .permitAll()
-            .and()
-            .logout()
-                .logoutSuccessUrl("/")
-                .permitAll();
-
-        return http.build();
-    }
- */

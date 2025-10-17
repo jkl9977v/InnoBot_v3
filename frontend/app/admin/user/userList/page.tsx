@@ -6,6 +6,8 @@ import Link from 'next/link';
 import AdminSidebar from '../../../../components/AdminSidebar';
 import AdminHeader from '../../../../components/AdminHeader';
 import { apiUrl } from '@/lib/api';
+import { useLoading } from '@/hooks/useLoading';
+import FullPageSpinner from '../../../../components/FullPageSpinner';
 
 interface UserListResponse {
 	users: PageResponse<UserDTO>;
@@ -50,8 +52,9 @@ interface PageResponse<T> {
 }
 
 export default function UserListPage() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const { isLoading, setIsLoading, wrap } = useLoading();
+  //const [isLoggedIn, setIsLoggedIn] = useState(false);
+  //const [isLoading, setIsLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [expandedSection, setExpandedSection] = useState<string | null>('user-management');
   const router = useRouter();
@@ -70,20 +73,10 @@ export default function UserListPage() {
   const [startPageNum, setStartPageNum] = useState(1);
   const [endPageNum, setEndPageNum] = useState(1);
   
-
-  useEffect(() => { //로그인 여부 확인
-    /*const loginStatus = localStorage.getItem('isLoggedIn');
-    if (loginStatus !== 'true') {
-      router.push('/login');
-      return;
-    }*/
-    setIsLoggedIn(true);
-    setIsLoading(false);
-  }, [router]);
-  
   useEffect(() => {
-	if(isLoggedIn) fetchList();
-  }, [isLoggedIn, page, limitRow, searchWord, kind, kind2]);
+	 fetchList();
+	 setIsLoading(false);
+  }, [ page, limitRow, searchWord, kind, kind2]);
   
   const fetchList = async () => { //목록 가져오기 함수
 	try {
@@ -159,18 +152,6 @@ export default function UserListPage() {
 	}
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
-        <div className="w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  if (!isLoggedIn) {
-    return null;
-  }
-
   return (
     <div className="flex h-screen bg-gray-50">
       <AdminSidebar 
@@ -189,7 +170,7 @@ export default function UserListPage() {
           <div className="bg-white rounded-xl border border-gray-200">
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">사용자 관리</h3>
+                <h3 className="text-lg font-semibold text-gray-900">사용자 목록</h3>
                 <Link href="/admin/user/userWrite" className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors cursor-pointer whitespace-nowrap text-sm">
                   <i className="ri-add-line w-4 h-4 flex items-center justify-center mr-2 inline-flex"></i>
                   사용자 생성

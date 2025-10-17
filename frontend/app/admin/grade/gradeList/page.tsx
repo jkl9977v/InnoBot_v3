@@ -6,6 +6,8 @@ import Link from 'next/link';
 import AdminSidebar from '../../../../components/AdminSidebar';
 import AdminHeader from '../../../../components/AdminHeader';
 import { apiUrl } from '@/lib/api';
+import { useLoading } from '@/hooks/useLoading';
+import FullPageSpinner from '../../../../components/FullPageSpinner';
 
 interface GradeDTO {
   gradeId: string;
@@ -30,8 +32,9 @@ interface PageResponse<T> {
 }
 
 export default function GradeListPage() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const {isLoading, setIsLoading, wrap } = useLoading();
+  //const [isLoggedIn, setIsLoggedIn] = useState(false);
+  //const [isLoading, setIsLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [expandedSection, setExpandedSection] = useState<string | null>('user-management');
   //const [searchWord, setsearchWord] = useState('');
@@ -48,20 +51,10 @@ export default function GradeListPage() {
   const [startPageNum, setStartPageNum] = useState(1);
   const [endPageNum, setEndPageNum] = useState(1);
   
-
-  useEffect(() => { //로그인 여부 확인
-    /*const loginStatus = localStorage.getItem('isLoggedIn');
-    if (loginStatus !== 'true') {
-      router.push('/login');
-      return;
-    }*/
-    setIsLoggedIn(true);
-    setIsLoading(false);
-  }, [router]);
-  
   useEffect(() => {
-	if(isLoggedIn) fetchList();
-  }, [isLoggedIn, page, limitRow, searchWord]);
+	fetchList();
+	setIsLoading(false);
+  }, [page, limitRow, searchWord]);
   
   const fetchList = async () => { // 목록 가져오기 함수
 	try{
@@ -134,19 +127,7 @@ export default function GradeListPage() {
 		console.error('delete error', e);
 	}
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
-        <div className="w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  if (!isLoggedIn) {
-    return null;
-  }
-
+  
   return (
     <div className="flex h-screen bg-gray-50">
       <AdminSidebar 
@@ -157,7 +138,7 @@ export default function GradeListPage() {
 
       <div className="flex-1 flex flex-col">
         <AdminHeader 
-          title="직급 관리"
+          title="사용자 / 부서 / 직급 > 직급관리"
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         />
 

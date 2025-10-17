@@ -4,12 +4,15 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AdminSidebar from '../../../../components/AdminSidebar';
-import { apiUrl } from '@/lib/api'; 
+import AdminHeader from '../../../../components/AdminHeader';
+import { apiUrl } from '@/lib/api';
+import { useLoading } from '@/hooks/useLoading';
+import FullPageSpinner from '../../../../components/FullPageSpinner';
 
 interface AccessRuleDTO {
-  accessId: String;
-  accessName: String;
-  accessType: String;
+  accessId: string;
+  accessName: string;
+  accessType: string;
   /*type: 'allow' | 'deny';
   target: string;
   description: string;
@@ -31,8 +34,9 @@ interface PageResponse<T> {
 }
 
 export default function AccessListPage() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const { isLoading, setIsLoading, wrap } = useLoading();
+  //const [isLoggedIn, setIsLoggedIn] = useState(false);
+  //const [isLoading, setIsLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [expandedSection, setExpandedSection] = useState<string | null>('section');
   const router = useRouter();
@@ -48,29 +52,10 @@ export default function AccessListPage() {
   const [startPageNum, setStartPageNum] = useState(1);
   const [endPageNum, setEndPageNum] = useState(1);
   
-
-  useEffect(() => { //로그인 여부 확인
-    try {
-		/*
-      const loginStatus = localStorage.getItem('isLoggedIn');
-      if (loginStatus !== 'true') {
-        router.push('/login');
-        return;
-      }
-	  */
-      setIsLoggedIn(true);
-    } catch (error) {
-      console.error('Error reading login status:', error);
-      router.push('/login');
-      return;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [router]);
-  
   useEffect(() => {
-  	if(isLoggedIn) fetchList();
-  }, [isLoggedIn, page, limitRow, searchWord, kind]);
+  	 fetchList();
+	 setIsLoading(false);
+  }, [page, limitRow, searchWord, kind]);
   
   const fetchList = async () => { // 목록 가져오기 함수
   	try {
@@ -136,25 +121,13 @@ export default function AccessListPage() {
       });
 
       // 3) 성공 → 1페이지로 리셋하여 목록 재호출
-      //setPage(1);]
+      //setPage(1);
 	  fetchList();
     } catch (e) {
       alert('삭제 실패');
       console.error('delete error', e);
     }
   };
-   
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
-        <div className="w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  if (!isLoggedIn) {
-  	  return null;
-  }
   
   return (
     <div className="flex h-screen bg-gray-50">
@@ -165,28 +138,10 @@ export default function AccessListPage() {
       />
 
       <div className="flex-1 flex flex-col">
-        <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
-            >
-              <i className="ri-menu-line w-5 h-5 flex items-center justify-center text-gray-600"></i>
-            </button>
-            <h1 className="text-xl font-semibold text-gray-900">
-              접근정책 &gt; 접근정책 관리
-            </h1>
-          </div>
-          <div className="flex items-center justify-between text-sm text-gray-600 relative">
-            <div className="flex items-center space-x-2 cursor-pointer">
-              <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
-                <i className="ri-user-line text-indigo-600"></i>
-              </div>
-              <span className="text-sm text-gray-700">관리자</span>
-              <i className="ri-arrow-down-s-line w-4 h-4 flex items-center justify-center text-gray-400"></i>
-            </div>
-          </div>
-        </div>
+		  <AdminHeader
+		    title="접근정책 > 접근정책 관리"
+		    onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+		  />
 
         <div className="flex-1 overflow-y-auto p-6">
           <div className="bg-white rounded-xl border border-gray-200">

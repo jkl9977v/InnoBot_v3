@@ -6,7 +6,9 @@ import AdminSidebar from '../../../components/AdminSidebar';
 import AdminHeader from '../../../components/AdminHeader';
 import PathSearchModal from '../../../components/PathSearchModal'; // 컴포넌트 경로 맞춰서 변경
 import { apiUrl } from '@/lib/api'; // 있으면 사용, 없으면 getApi fallback 사용
-
+import { useLoading } from '@/hooks/useLoading';
+import FullPageSpinner from '../../../components/FullPageSpinner';
+ 
 type ChatbotDTO = {
   path?: string | null;
   hour?: number | null;
@@ -68,8 +70,9 @@ export default function EmbeddingSettingPage() {
   const getApi = (p: string) => (typeof apiUrl === 'function' ? apiUrl(p) : p);
 
   // UI 상태
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const { isLoading, setIsLoading, wrap } = useLoading();
+  //const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  //const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
@@ -96,7 +99,7 @@ export default function EmbeddingSettingPage() {
 
   // 페이지 로드 시 DTO 불러오기 (초기화)
   useEffect(() => {
-    setIsLoggedIn(true); // 로그인 체크 필요하면 교체
+    //setIsLoggedIn(true); // 로그인 체크 필요하면 교체
 	
     fetch(apiUrl('/admin/chatbot-setting'), {
       method: 'GET',
@@ -228,15 +231,6 @@ export default function EmbeddingSettingPage() {
       setIsEmbeddingRunning(false);
     }
   }
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
-        <div className="w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-  if (!isLoggedIn) return null;
 
   // RenderUI (상단: 임베딩 설정, 하단: 모달 렌더)
   return (

@@ -6,6 +6,8 @@ import Link from 'next/link';
 import AdminSidebar from '../../../../components/AdminSidebar';
 import AdminHeader from '../../../../components/AdminHeader';
 import { apiUrl } from '@/lib/api';
+import { useLoading } from '@/hooks/useLoading';
+import FullPageSpinner from '../../../../components/FullPageSpinner';
 
 interface fileListResposne {
 	fileList: PageResponse<FilePathDTO>;
@@ -69,8 +71,9 @@ interface PageResponse<T> {
 }
 
 export default function FileListPage() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const { isLoading, setIsLoading, wrap } = useLoading();
+  //const [isLoggedIn, setIsLoggedIn] = useState(false);
+  //const [isLoading, setIsLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
@@ -95,98 +98,17 @@ export default function FileListPage() {
   const [startPageNum, setStartPageNum] = useState(1);
   const [endPageNum, setEndPageNum] = useState(1);
   const [pathDetail, setPathDetail] = useState<FilePathDTO | null>(null);
-
-/*  const [folderTree, setFolderTree] = useState<FolderTreeNode[]>([
-    {
-      id: 'root',
-      name: 'InnoBot_v3',
-      isOpen: true,
-      path: 'D:/InnoBot_v3',
-      children: [
-        {
-          id: 'docs',
-          name: 'docs',
-          isOpen: true,
-          path: 'D:/InnoBot_v3/docs',
-          children: [
-            {
-              id: 'botdata',
-              name: '봇데이터 폴더',
-              isOpen: false,
-              path: 'D:/InnoBot_v3/docs/봇데이터 폴더',
-              children: [
-                {
-                  id: 'training',
-                  name: '학습자료',
-                  isOpen: false,
-                  path: 'D:/InnoBiot_v3/docs/봇데이터 폴더/학습자료'
-                },
-                {
-                  id: 'models',
-                  name: '모델파일',
-                  isOpen: false,
-                  path: 'D:/InnoBiot_v3/docs/봇데이터 폴더/모델파일'
-                }
-              ]
-            },
-            {
-              id: 'chat-docs',
-              name: '대화 연결 docx',
-              isOpen: false,
-              path: 'D:/InnoBiot_v3/docs/대화 연결 docx',
-              children: [
-                {
-                  id: 'templates',
-                  name: '템플릿',
-                  isOpen: false,
-                  path: 'D:/InnoBiot_v3/docs/대화 연결 docx/템플릿'
-                }
-              ]
-            }
-          ]
-        },
-        {
-          id: 'config',
-          name: 'config',
-          isOpen: false,
-          path: 'D:/InnoBot_v3/config',
-          children: [
-            {
-              id: 'system',
-              name: 'system',
-              isOpen: false,
-              path: 'D:/InnoBot_v3/config/system'
-            }
-          ]
-        },
-        {
-          id: 'backup',
-          name: 'backup',
-          isOpen: false,
-          path: 'D:/InnoBot_v3/backup'
-        }
-      ]
-    }
-  ]); */
   
   const [folderTree, setFolderTree] = useState<filePathDTO2[]>([]);
 
   useEffect(() => {
-    /*const loginStatus = localStorage.getItem('isLoggedIn');
-    if (loginStatus !== 'true') {
-      router.push('/login');
-      return;
-    }*/
-    setIsLoggedIn(true);
     setIsLoading(false);
   }, [router]);
   
-  useEffect(() => {
-	if(isLoggedIn) { 
+  useEffect(() => { 
 		fetchList();
 		fetchPathList(); 
-	}
-  }, [isLoggedIn, currentPathId, page, limitRow, searchWord, kind]);
+  }, [currentPathId, page, limitRow, searchWord, kind]);
   
   const fetchList = async ( pathId: string = currentPathId) => { //목록 가져오기 함수
 	try{
@@ -374,19 +296,6 @@ export default function FileListPage() {
 	});
 		
 	return roots; //depth 0들이 최상위로 간다.
-  }
-  
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
-        <div className="w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  if (!isLoggedIn) {
-    return null;
   }
 
   return (

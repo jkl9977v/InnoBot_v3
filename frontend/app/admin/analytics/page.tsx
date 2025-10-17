@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminSidebar from '../../../components/AdminSidebar';
 import AdminHeader from '../../../components/AdminHeader';
+import { useLoading } from '@/hooks/useLoading';
+import FullPageSpinner from '../../../components/FullPageSpinner';
 
 interface AnalyticsData {
   totalConversations: number;
@@ -13,8 +15,9 @@ interface AnalyticsData {
 }
 
 export default function AnalyticsPage() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const { isLoaidng, setIsLoaidng, wrap } = useLoading();
+  //const [isLoggedIn, setIsLoggedIn] = useState(false);
+  //const [isLoading, setIsLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const router = useRouter();
@@ -26,14 +29,14 @@ export default function AnalyticsPage() {
     activeUsers: 89,
   });
 
-  useEffect(() => {
+/*  useEffect(() => {
     // Guard against environments where localStorage is not available
     try {
-/*      const loginStatus = localStorage.getItem('isLoggedIn');
+      const loginStatus = localStorage.getItem('isLoggedIn');
       if (loginStatus !== 'true') {
         router.push('/login');
         return;
-      }*/
+      }
       setIsLoggedIn(true);
     } catch (error) {
       console.error('Failed to access localStorage:', error);
@@ -42,23 +45,11 @@ export default function AnalyticsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [router]);
+  }, [router]);*/
 
   const handleToggleSection = (section: string) => {
     setExpandedSection(prev => (prev === section ? null : section));
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
-        <div className="w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  if (!isLoggedIn) {
-    return null;
-  }
 
   return (
     <div className="flex h-screen bg-gray-50">

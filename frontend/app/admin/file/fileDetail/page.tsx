@@ -4,14 +4,17 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import AdminSidebar from '../../../../components/AdminSidebar';
-import AdminHeader  from '../../../../components/AdminHeader';
+import AdminHeader  from '../../../../components/AdminHeader_handleGoBack';
 import { apiUrl }  from '@/lib/api';
 import { formatDate }  from '../../../../utils/DateTimeFormat';
+import { useLoading } from '@/hooks/useLoading';
+import FullPageSpinner from '../../../../components/FullPageSpinner';
 
 export default function FileDetailPage() {
   /* ─────────────────────── 상태 ─────────────────────── */
-  const [isLoggedIn, setIsLoggedIn]   = useState(false);
-  const [isLoading,  setIsLoading]    = useState(true);
+  const { isLoading, setIsLoading, wrap } = useLoading();
+  //const [isLoggedIn, setIsLoggedIn]   = useState(false);
+  //const [isLoading,  setIsLoading]    = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [expandedSection, setExpandedSection] = useState<string | null>('file-system');
   
@@ -30,22 +33,12 @@ export default function FileDetailPage() {
     updateTime: '',    // ‘마지막 수정일자’
 	path: '',
   });
-
-  /* ─────────────────────── 권한 / 초기화 ─────────────────────── */
-  useEffect(() => {
-	/*const loginStatus = localStorage.getItem('isLoggedIn');
-	if (loginStatus !== 'true') {
-	  router.push('/login');
-	  return;
-	}*/
-    setIsLoggedIn(true);
-    setIsLoading(false);
-  }, []);
   
   useEffect(() => {
-	if(!isLoggedIn || !fileId) return;
+	if(!fileId) return;
 	fetchDetail();
-  }, [isLoggedIn, fileId]);
+	setIsLoading();
+  }, [fileId]);
 
   /* ─────────────────────── 헬퍼 ─────────────────────── */
   const handleInputChange = (field: keyof typeof formData, value: string) =>
@@ -54,8 +47,10 @@ export default function FileDetailPage() {
   const handleToggleSection = (section: string) =>
     setExpandedSection(prev => (prev === section ? null : section));
 
-  const handleGoBack = () => router.back();
-
+  const handleGoBack = () => {
+	router.back();
+  }
+  
   const fetchDetail = async () => {
 	try {
 		const url = apiUrl(`/admin/file/fileDetail?fileId=${fileId}`)
@@ -74,16 +69,6 @@ export default function FileDetailPage() {
 	}
   }
 
-  /* ─────────────────────── UI ─────────────────────── */
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
-        <div className="w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-  if (!isLoggedIn) return null;
-
   return (
     <div className="flex h-screen bg-gray-50">
       {/* ────────── 사이드바 ────────── */}
@@ -96,7 +81,8 @@ export default function FileDetailPage() {
       {/* ────────── 본문 영역 ────────── */}
       <div className="flex-1 flex flex-col">
         <AdminHeader
-          title="파일 정보"
+          title="파일 시스템 > 파일 정보"
+		  handleGoBack={() => handleGoBack()}
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         />
 

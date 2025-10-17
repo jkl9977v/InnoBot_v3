@@ -127,10 +127,11 @@ public class FilePathController { //파일 경로 관리
     	System.out.println("삭제: " + pathId);
         return "redirect:/admin/file";
     }
-    
+    /*
     @GetMapping("fileDetail")
     public String fileDetail(@RequestParam("fileId") String fileId, Model model) {
     	fileDetailService.fileDetail(fileId, model);
     	return "thymeleaf/file/fileDetail";
     }
+    */
 }

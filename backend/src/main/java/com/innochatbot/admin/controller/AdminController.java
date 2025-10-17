@@ -26,7 +26,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 @RequestMapping("admin")
-@Controller
+//@Controller
 public class AdminController {
 
 

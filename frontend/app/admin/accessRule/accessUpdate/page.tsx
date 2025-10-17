@@ -3,10 +3,12 @@
 	import { useState, useEffect } from 'react';
 	import { useRouter, useSearchParams } from 'next/navigation';
 	import AdminSidebar from '../../../../components/AdminSidebar';
-	import AdminHeader from '../../../../components/AdminHeader';
+	import AdminHeader from '../../../../components/AdminHeader_handleGoBack';
 	import AllowdSearchModal from '../../../../components/AllowdSearchModal'; //분리된 모달
 	import AllowgSearchModal from '../../../../components/AllowgSearchModal'; //모달
 	import { apiUrl } from '@/lib/api';
+	import { useLoading } from '@/hooks/useLoading';
+	import FullPageSpinner from '../../../../components/FullPageSpinner';
 	
 	interface AllowdRowDTO {
 		allowdId: string;
@@ -43,8 +45,9 @@
 	}
 	
 	export default function AccessWritePage() {
-	  const [isLoggedIn, setIsLoggedIn] = useState(false);
-	  const [isLoading, setIsLoading] = useState(true);
+	  //const [isLoggedIn, setIsLoggedIn] = useState(false);
+	  //const [isLoading, setIsLoading] = useState(true);
+	  const { isLoading, setIsLoading, wrap} = useLoading();
 	  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 	  const [expandedSection, setExpandedSection] = useState<string | null>('policies');
 	  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
@@ -72,30 +75,12 @@
 	
 	  const [allowd, setAllowd] = useState<DepartmentDTO[]>([]);
 	  const [allowg, setAllowg] = useState<GradeDTO[]>([]);
-	
-	  useEffect(() => {
-	    try {
-			//로그인 처리 로직
-			/*
-	      const loginStatus = localStorage.getItem('isLoggedIn');
-	      if (loginStatus !== 'true') {
-	        router.push('/login');
-	        return;
-	      }
-		  */
-	      setIsLoggedIn(true);
-	    } catch (e) {
-	      console.error('Failed to  login status:', e);
-	      router.push('/login');
-	    } finally {
-	      setIsLoading(false);
-	    }
-	  }, [router]);
 	  
 	  useEffect(() => {
-		if (!isLoggedIn || !accessId) return;
+		if (!accessId) return;
 		fetchDetail();
-	  }, [isLoggedIn, accessId]);
+		setIsLoading(false);
+	  }, [accessId]);
 	  
 	  const fetchDetail = async () => {
 		try {
@@ -213,15 +198,6 @@
 	  const handleGoBack = () => {
 	    router.push('/admin/accessRule/accessList');
 	  };
-	
-/*	  const handleSelectAllowd = (dto: DepartmentDTO) => {
-		setFormData(prev => ({ ...prev, allowdId: dto.allowdId}));
-		setFormData(prev => ({ ...prev, allowdName: dto.allowdName}));
-		setFormData(prev => ({ ...prev, departmentId: dto.departmentId}));
-	    setFormData(prev => ({ ...prev, departmentName: dto.departmentName }));
-	    setSelectedAllowd(dto);
-	    setIsAllowdSearchModalOpen(false);
-	  };*/
 	  
 	  const handleSelectAllowd = async ({allowdId, allowdName} : {allowdId: string; allowdName: string}) =>{
 		  //1. form - id / name만 저장
@@ -310,18 +286,6 @@
 		}
 	  }
 	  
-	  if (isLoading) {
-	    return (
-	      <div className="flex items-center justify-center h-screen bg-gray-50">
-	        <div className="w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-	      </div>
-	    );
-	  }
-	
-	  if (!isLoggedIn) {
-	    return null;
-	  }
-	
 	  return (
 	    <div className="flex h-screen bg-gray-50" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif' }}>
 	      <AdminSidebar
@@ -331,34 +295,11 @@
 	      />
 	
 	      <div className="flex-1 flex flex-col">
-	        <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-	          <div className="flex items-center space-x-3">
-	            <button
-	              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-	              className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
-	            >
-	              <i className="ri-menu-line w-5 h-5 flex items-center justify-center text-gray-600"></i>
-	            </button>
-	            <button
-	              onClick={handleGoBack}
-	              className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
-	            >
-	              <i className="ri-arrow-left-line w-5 h-5 flex items-center justify-center text-gray-600"></i>
-	            </button>
-	            <h1 className="text-xl font-semibold text-gray-900">
-	              접근정책 &gt; 접근정책 수정
-	            </h1>
-	          </div>
-	          <div className="flex items-center justify-between text-sm text-gray-600 relative">
-	            <div className="flex items-center space-x-2 cursor-pointer">
-	              <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
-	                <i className="ri-user-line text-indigo-600"></i>
-	              </div>
-	              <span className="text-sm text-gray-700">관리자</span>
-	              <i className="ri-arrow-down-s-line w-4 h-4 flex items-center justify-center text-gray-400"></i>
-	            </div>
-	          </div>
-	        </div>
+		  <AdminHeader
+		    title="접근정책 > 접근정책 수정"
+		  	handleGoBack={() => handleGoBack()}
+		    onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+		  />
 	
 	        <div className="flex-1 overflow-y-auto p-6">
 	          <div className="bg-white rounded-xl border border-gray-200 min-h-full flex">
