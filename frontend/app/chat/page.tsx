@@ -30,7 +30,7 @@ interface ChatSettings {
 }
 
 export default function ChatPage() {
-  const { isLoggedIn, checking, error, logout } = useAuth(); //훅 호출
+  const { isLoggedIn, checking, error, logout, manager } = useAuth(); //훅 호출
   
   const { isLoading, setIsLoading, wrap } = useLoading();
     
@@ -381,10 +381,15 @@ export default function ChatPage() {
         </div>
 
         <div className="p-4 border-t border-gray-700 space-y-2">
-          <Link href="/admin" className="flex items-center space-x-2 p-2 hover:bg-gray-800 rounded-lg transition-colors cursor-pointer">
-            <i className="ri-settings-3-line w-5 h-5 flex items-center justify-center text-gray-400"></i>
-            <span className="text-sm text-gray-300">챗봇 관리</span>
-          </Link>
+		{manager === 'y' && (
+			<Link href="/admin" className="flex items-center space-x-2 p-2 hover:bg-gray-800 rounded-lg transition-colors cursor-pointer">
+			  <i className="ri-settings-3-line w-5 h-5 flex items-center justify-center text-gray-400"></i>
+			  <span className="text-sm text-gray-300">챗봇 관리</span>
+			</Link>
+		)}
+
+		  
+		  
           <button 
             onClick={logout}
             className="w-full flex items-center space-x-2 p-2 hover:bg-gray-800 rounded-lg transition-colors cursor-pointer"

@@ -5,13 +5,17 @@
 import React, { useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
+import { useLoading } from '@/hooks/useLoading';
+import FullPageSpinner from '../../components/FullPageSpinner';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { isLoggedIn, checking } = useAuth(); // 훅 호출
+  const { isLoading, setIsLoading, wrap } = useLoading();
+  const { isLoggedIn, checking, manager } = useAuth(); // 훅 호출
   const router = useRouter();
   
   useEffect(() => {
 	if(!checking && !isLoggedIn) {
+		alert('로그인 후 이용하세요');
 		router.replace('/login'); // 렌더 끝난 뒤 실행 -> 경고 사라짐
 	}
   },[checking, isLoggedIn, router]);
@@ -19,9 +23,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   // 세션 확인 중 : 로딩 스핀
   if (checking) {
     return (
-      <div className="flex items-center justify-center h-screen">
+/*      <div className="flex items-center justify-center h-screen">
         <div className="w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-      </div>
+      </div>*/
+	  <FullPageSpinner/>
     );
   }
 

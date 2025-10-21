@@ -10,14 +10,22 @@ import FullPageSpinner from '../../components/FullPageSpinner';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { isLoading, setIsLoading, wrap } = useLoading();
-  const { isLoggedIn, checking } = useAuth(); // 훅 호출
+  const { isLoggedIn, checking, manager } = useAuth(); // 훅 호출
   const router = useRouter();
   
   useEffect(() => {
 	if(!checking && !isLoggedIn) {
+		alert('로그인 후 이용하세요');
 		router.replace('/login'); // 렌더 끝난 뒤 실행 -> 경고 사라짐
 	}
   },[checking, isLoggedIn, router]);
+  
+  useEffect(() => {
+	if (!checking && isLoggedIn && manager !== 'y') {
+		alert('접근할 수 없는 페이지 입니다.');
+		router.back();
+	}
+  }, [checking, isLoggedIn, manager, router]);
 
   // 세션 확인 중 : 로딩 스핀
   if (checking) {

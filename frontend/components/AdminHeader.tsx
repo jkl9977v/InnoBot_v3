@@ -1,8 +1,9 @@
 //adminHeader.tsx
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiUrl } from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
 
 interface UserDTO {
 	userNum: string;
@@ -31,92 +32,13 @@ interface AdminHeaderProps {
 }
 
 export default function AdminHeader({ title, onToggleSidebar }: AdminHeaderProps) {
+  const {isLoggedIn, checking, error, logout
+	, userNum, userId, userName, gradeId
+	, gradeName, gradeLevel, departmentId, departmentName
+  } = useAuth(); //훅 호출
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [checking, setChecking] = useState(false);
-  
-  //서버에서 가져온 유저 정보 저장
-  const [userNum, setUserNum] = useState('');
-  const [userId, setUserId] = useState('');
-  const [userName, setUserName] = useState('');
-  
-  const [gradeId, setGradeId] = useState('');
-  const [gradeName, setGradeName] = useState('');
-  const [gradeLevel, setGradeLevel] = useState<number | null>(null);
-  
-  const [departmentId, setDepartmentId] = useState('');
-  const [departmentName, setDepartmentName] = useState('');
 	
   const router = useRouter();
-  
-  const checkLogin = async () => {
-	setChecking(true);
-	try {
-		const url = apiUrl('/admin/getHeader')
-		const res = await fetch(url, {
-			method: 'GET',
-			credentials: 'include',
-			headers: { Accept : 'application/json' }
-		});
-		if (res.status === 204 || res.status === 401 ) {
-			//서버에 로그인 정보 없음
-			setIsLoggedIn(false);
-		} else if (res.ok) {
-			//로그인 정보가 있을 때 : 로그인으로 처리
-			const json = await res.json().catch(() => null);
-			//서버가 {user: {...}} 형태로 주는지 혹은 user 객체만 주는지 확인
-			const user = json?.user ?? null;
-			console.log(user);
-			if(user) {
-				setIsLoggedIn(true);
-				// 필요한 경우 user의 상세정보 작성
-				setUserNum(user.userNum);
-				setUserName(user.userName);
-				setUserId(user.userId);
-				
-				const gradeDTO = user.gradeDTO ?? {};
-				setGradeId(gradeDTO.gradeId ?? '');
-				setGradeName(gradeDTO.gradeName ?? '');
-				setGradeLevel(gradeDTO.gradeLevel ?? '');
-				
-				const departmentDTO = user.departmentDTO ?? {};
-				setDepartmentId(departmentDTO.departmentId ?? '');
-				setDepartmentName(departmentDTO.departmentName ?? '');
-			} else {
-				setIsLoggedIn(false);
-			}
-		} else {
-			// 500등 기타 에러: 안전하게 비로그인으로 처리하고 에러 표시
-			setIsLoggedIn(false);
-			setError(`서버오류 : ${res.status}`)
-		}
-	} catch (e) {
-		console.error('checkLogin error ', e);
-		setIsLoggedIn(false);
-		setError('네트워크 오류 또는 서버 접속 실패');
-	} finally {
-		setChecking(false);
-	}
-  }
-
-  const handleLogout = async () => {  //로그아웃 코드 지우고 공통 코드 가져다쓰기
-	try {
-		await fetch(apiUrl('/logout'), {
-			method: 'POST',
-			credentials: 'include',
-			headers: { 
-				/*'X-CSRF-TOKEN' : csrf,*/
-				'Accept' : 'application/json'
-			}
-		});
-	} catch (e) {
-		console.error('logout error ', e);
-	} finally {
-		//로그아웃 후 UI 갱신
-		setIsLoggedIn(false);
-	}
-    router.push('/');
-  };
   
   const userUpdate = () => {
 	//내용 추가하기
@@ -160,7 +82,7 @@ export default function AdminHeader({ title, onToggleSidebar }: AdminHeaderProps
 			  className="w-full text-left px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer text-sm text-gray-700">
                 내 정보 수정
               </button>
-              <button onClick={handleLogout} className="w-full text-left px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer text-sm text-gray-700">
+              <button onClick={logout} className="w-full text-left px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer text-sm text-gray-700">
                 로그아웃
               </button>
             </div>

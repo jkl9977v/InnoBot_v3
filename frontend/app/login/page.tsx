@@ -4,45 +4,17 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { apiUrl } from '@/lib/api';
+import { useLoading } from '@/hooks/useLoading';
+import FullPageSpinner from '../../components/FullPageSpinner';
+import { useAuth } from '@/hooks/useAuth';
+import { Login } from '@/hooks/login';
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [userId, setUserId] = useState('');
-  const [userPw, setUserPw] = useState('');
-  
-  //const [username, setUsername] = useState('');
-  //const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  //const [showPassword, setShowPassword] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setIsLoading(true);
-	
-	try{
-		const res = await fetch(apiUrl('/login'), {
-			method: 'POST',
-			credentials: 'include', //세션 쿠키 받으려면 필요
-			headers: {'Content-Type' : 'application/json'},
-			body: JSON.stringify({ userId, userPw })
-		});
-		
-		const data= await res.json().catch(() => null);
-		
-		if(res.ok && data && data.success){
-			router.push('/');
-		}else {
-			setError((data && data.message) || '로그인 실패')
-		}
-	} catch(err){
-		console.error(err);
-		setError('네트워크 오류');
-	} finally {
-		setIsLoading(false);
-	}
-  };
+  const { error, isLoading, setIsLoading
+	, userId, setUserId, userPw, setUserPw
+	, showPassword, setShowPassword
+	, loginSubmit
+  } = Login();
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
@@ -67,7 +39,7 @@ export default function LoginPage() {
 
         {/* Login Form */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={/*handleSubmit*/ loginSubmit } className="space-y-6">
             <div>
               <label htmlFor="userId" className="block text-sm font-medium text-gray-700 mb-2">
                 아이디
@@ -93,7 +65,7 @@ export default function LoginPage() {
               <div className="relative">
                 <input
                   id="userPw"
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   value={userPw}
                   onChange={(e) => setUserPw(e.target.value)}
                   className="w-full px-4 py-3 pl-12 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors text-sm"
@@ -103,10 +75,10 @@ export default function LoginPage() {
                 <i className="ri-lock-line absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                 <button
                   type="button"
-                  //onClick={() => setShowPassword(!showPassword)}
+                  onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
                 >
-                  <i className="ri-eye-off-line" /*"ri-eye-line"*/></i>
+                  <i className={`${!showPassword ? 'ri-eye-off-line' : 'ri-eye-line'}`}></i>
                 </button>
               </div>
             </div>

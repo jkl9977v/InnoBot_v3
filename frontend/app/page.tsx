@@ -14,82 +14,7 @@ export default function Home() {
 	const { isLoggedIn, checking, error, logout } = useAuth(); // 훅 호출
 	
 	const router = useRouter();
-/*	const [checking, setChecking] = useState(true); //초기 로그인 체크
-	const [isLoggedIn, setIsLoggedIn] = useState(false);
-	const [error, setError] = useState<string | null>(null);*/
-	  
-/*	  async function checkLogin(){
-		setChecking(true);
-		setError(null);
-		try{
-			const res = await fetch(apiUrl('/admin/getHeader'),{
-				method: 'GET',
-				credentials: 'include', //필수, 브라우저가 세션 쿠키를 포함해서 보냄
-				headers: { Accept : 'application/json' }
-			});
-			if (res.status === 204 || res.status === 401) {
-				//서버에 로그인 정보 없음
-				setIsLoggedIn(false);
-			} else if (res.ok) {
-				// 로그인 정보가 있을 때: 로그인으로 처리
-				const json = await res.json().catch(() => null);
-				// 서버가 { user: {...} } 형태로 주는지 혹은 user 객체만 주는지 확인
-				const user = json?.user ?? null;
-				if (user) {
-					setIsLoggedIn(true);
-					//필요한 경우 user의 상세정보 작성
-					//setUserName(user.userName);
-				} else {
-					setIsLoggedIn(false);
-				}
-			} else {
-				// 500등 기타 에러: 안전하게 비로그인으로 처리하고 에러 표시
-				setIsLoggedIn(false);
-				setError(`서버 오류 : ${res.status}`);
-			}
-		} catch(e) {
-			console.error('checkLogin error', e);
-			setIsLoggedIn(false);
-			setError('네트워크 오류 또는 서버 접속 실패');
-		} finally {
-			setChecking(false);
-		}
-	  }*/
-/*	  useEffect(() => {
-	    // 로그인 상태 확인
-	    checkLogin();
-		//setIsLoggedIn(true);
-		//const loginStatus = localStorage.getItem('isLoggedIn');
-	    //setIsLoggedIn(loginStatus === 'true');
-	  }, []);*/
 
-/*	  //로그아웃 핸들러
-	  async function handleLogout(){
-		try {
-			const res = await fetch(apiUrl('/logout'), { 
-				method: 'POST', 
-				credentials: 'include',
-				headers: { Accept : 'application/json' }			
-			});
-			
-			// 2xx 또는 3xx면 성공으로 간주 (Spring Security 기본은 302 가능)
-		    if (res.ok || (res.status >= 300 && res.status < 400)) {
-		      const contentType = res.headers.get("content-type") ?? "";
-		      if (contentType.includes("application/json")) {
-		        // 응답 바디가 JSON이면 참고용으로 소비 (실패해도 무시)
-		        try { await res.json(); } catch {}
-		      }
-		      setIsLoggedIn(false);
-		      return;
-		    }
-		} catch (e) {
-			console.error('logout error', e);
-		} finally {
-			//로그아웃 후 UI 갱신
-			setIsLoggedIn(false);
-		}
-	  }*/
-	  
 	  return (
 	    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
 	      {/* Header */}
@@ -130,6 +55,16 @@ export default function Home() {
 	                </>
 	              ) : (
 					<>
+					{/*<button
+					    type="button"
+					    // 이미 정의된 handleLogout 함수를 사용합니다.
+					    onClick={handleLogout logout}
+					    className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
+					    aria-label="로그아웃"
+					  >
+	                    로그아웃
+	                  </button>*/}
+					
 	                <Link href="/login" className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer">
 	                  사용자 로그인
 	                </Link>

@@ -5,6 +5,29 @@ import { useState, useEffect, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { apiUrl } from '@/lib/api';
 
+
+interface UserDTO {
+	userNum: string;
+	userId: string;
+	userPw: string;
+	userName: string;
+	manager : string;
+	
+	gradeId: string | null;
+	departmentId: string | null;
+}
+
+interface DepartmentDTO {
+	departmentId: string;
+	departmentName: string;
+}
+
+interface GradeDTO {
+	gradeId: string;
+	gradeName: string;
+	gradeLevel: number;
+}
+
 // 커스텀 훅
 export function useAuth() {
 	const router = useRouter();
@@ -13,6 +36,19 @@ export function useAuth() {
 	const [checking, setChecking] = useState(true); //서버에 로그인 되어있는지 확인
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	
+	//서버에서 가져온 유저 정보 저장
+	const [userNum, setUserNum] = useState('');
+	const [userId, setUserId] = useState('');
+	const [userName, setUserName] = useState('');
+	const [manager, setManager] = useState('n');
+ 
+	const [gradeId, setGradeId] = useState('');
+	const [gradeName, setGradeName] = useState('');
+	const [gradeLevel, setGradeLevel] = useState<number | null>(null);
+
+	const [departmentId, setDepartmentId] = useState('');
+	const [departmentName, setDepartmentName] = useState('');
 	
 	// 로그인 여부 확인
 	const checkLogin = useCallback(async () => {
@@ -27,12 +63,40 @@ export function useAuth() {
 			
 			if (res.status === 204 || res.status === 401 ){
 				//로그인 세션 없음
+				console.log('logout')
 				setIsLoggedIn(false);
 			} else if (res.ok) {
+				//console.log('bbb')
 				// {user: {...}} 형태라면 user 객체가 있는지 확인
+				
 				const json = await res.json().catch(() => null);
-				const user = json?.user ?? null;
-				setIsLoggedIn(Boolean(user));
+				const user = json?.user ?? json;
+				//setIsLoggedIn(true);
+				//setIsLoggedIn(/*Boolean(json)*/ true);
+				console.log(json);
+				console.log("user: " , user);
+				
+				
+				if(user && user.userNum) { //필수 키 확인
+					setIsLoggedIn(true);
+					console.log('login: ' , isLoggedIn);
+					// 필요한 경우 user의 상세정보 작성
+					setUserNum(user.userNum);
+					setUserName(user.userName);
+					setUserId(user.userId);
+					setManager(user.manager);
+					
+					const gradeDTO = user.gradeDTO ?? {};
+					setGradeId(gradeDTO.gradeId ?? '');
+					setGradeName(gradeDTO.gradeName ?? '');
+					setGradeLevel(gradeDTO.gradeLevel ?? '');
+					
+					const departmentDTO = user.departmentDTO ?? {};
+					setDepartmentId(departmentDTO.departmentId ?? '');
+					setDepartmentName(departmentDTO.departmentName ?? '');
+				} else {
+					//setIsLoggedIn(false);
+				}
 			} else {
 				setIsLoggedIn(false);
 				setError(`서버 오류 : ${res.status}`);
@@ -66,9 +130,10 @@ export function useAuth() {
 		} catch (e) {
 			console.error('logout error ', e);
 		} finally {
-			router.push('/');
+			
 			setIsLoggedIn(false); //클라이언트 상태 초기화
 		}
+		router.push('/');
 	}, [router]);
 	
 	// 첫 마운트 시 한번 실행
@@ -82,7 +147,7 @@ export function useAuth() {
 		
 		//로그인아 안되어있고, 현재 경로가 "/"가 아니면
 		
-		if(!isLoggedIn && pathname !== '/') {
+		if(!isLoggedIn && pathname !== '/' && !logout) {
 			router.replace('/login'); 
 		}
 	},[checking, isLoggedIn, pathname, router]);
@@ -91,7 +156,17 @@ export function useAuth() {
 		isLoggedIn,		// true / false
 		checking,		// 로딩 중
 		error, 			// 오류 메시지
+		setError,
 		checkLogin,		// 수동으로 재조회할 때 사용
 		logout,			// 로그아웃 함수
+		userNum,
+		userId,
+		userName,
+		manager,
+		gradeId,
+		gradeName,
+		gradeLevel,
+		departmentId,
+		departmentName
 	}
 }
