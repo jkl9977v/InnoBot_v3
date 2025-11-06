@@ -2,8 +2,10 @@ package com.innochatbot.api.service;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.PriorityQueue;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +40,7 @@ public class TopSearchService { //유사도 검색 서비스
      * @param topK            최종 상위 결과 수(예: 5)
      */
     public List<TopChunk> topChunkEmbedding(float[] queryVec, int chunkLimit, int topK) {
-		//0. 질문 L2 정규화 작업
+		//1. 질문 L2 정규화 작업
 		VectorUtils.l2NormalizeInPlace(queryVec);
 
         // 2) DB에서 후보 청크 가져오기 (embedding은 byte[])
@@ -55,6 +57,7 @@ public class TopSearchService { //유사도 검색 서비스
             String fileId  = String.valueOf(row.get("file_id"));
             String content = (String) row.get("content");
             byte[] embBytes = (byte[]) row.get("embedding");
+            int sequence = (int) row.get("sequence");
 
             if (embBytes == null || embBytes.length == 0) continue; //방어
 
@@ -73,17 +76,22 @@ public class TopSearchService { //유사도 검색 서비스
 
             // 6) Top‑K 유지
             if (heap.size() < topK) {
-                heap.add(new TopChunk(chunkId, fileId, content, score));
+                heap.add(new TopChunk(chunkId, fileId, content, score, sequence));
             } else if (score > heap.peek().score()) {
                 heap.poll(); //최솟값 제거
-                heap.add(new TopChunk(chunkId, fileId, content, score)); 
+                heap.add(new TopChunk(chunkId, fileId, content, score, sequence)); 
             }
         }
-
-        // 7) 최종 결과: 점수 내림차순으로 정렬하여 반환
+        
+        // 7) 결과: 점수 내림차순으로 정렬
         List<TopChunk> result = new ArrayList<>(heap);
         result.sort((a, b) -> Double.compare(b.score(), a.score()));
-        return result;
+        
+        // 8. sequence 기준으로 다음 청크 조회
+        List<TopChunk> expanded = nextChunks(result);
+        
+        // 반환
+        return expanded;
     }
 
     
@@ -132,7 +140,8 @@ public class TopSearchService { //유사도 검색 서비스
                 ((Number) row.get("chunk_id")).longValue(),
                 (String) row.get("file_id"),
                 (String) row.get("content"),
-                score
+                score,
+                (int) row.get("sequence")
             );
 
             if (K.size() < topK) {
@@ -143,10 +152,19 @@ public class TopSearchService { //유사도 검색 서비스
             }
         }
         
-        // 4) 최종 결과를 점수 내림차순으로 정렬하여 반환
-        return K.stream()
+        // 4) 최종 결과를 점수 내림차순으로 정렬
+        List<TopChunk> result = new ArrayList<>(K);
+        
+		result = K.stream()
                 .sorted((a, b) -> Double.compare(b.score(), a.score()))
                 .toList();
+		
+		// 5. sequence 기준으로 다음 청크 조회
+		List<TopChunk> expanded = nextChunks(result);
+		
+		//반환
+        return expanded;
+
     }
 	
     
@@ -222,7 +240,8 @@ public class TopSearchService { //유사도 검색 서비스
 				((Number) row.get("chunk_id")).longValue(),
 				(String) row.get("file_id"),
 				(String) row.get("content"),
-				score
+				score,
+				(int) row.get("sequence")
 				
 			);
 			
@@ -233,12 +252,55 @@ public class TopSearchService { //유사도 검색 서비스
 				K.add(topChunk);
 			}
 		}
-		//2-4) 최종 결과 반환 (점수 내림차순)
-		return K.stream()
-				.sorted((a,b) -> Double.compare(b.score(), a.score()))
-				.toList();
+		//2-4) 최종 결과 (점수 내림차순)
+		List<TopChunk> result = new ArrayList<>(K);
+		result = K.stream()
+		.sorted((a,b) -> Double.compare(b.score(), a.score()))
+		.toList();
+		
+		// sequence 기준으로 nextChunk 조회
+		List<TopChunk> expanded = nextChunks(result);
+		
+		return expanded;
 	}
 	
+	
+	
+	//(추가기능) sequence 기준으로 다음 청크를 조회
+	public List<TopChunk> nextChunks(List<TopChunk> topChunks) {
+		
+        // 8) TopChunk의 다음 청크 조회 (여기에서 neighborChunkSelect 호출)
+        List<TopChunk> expanded = new ArrayList<>();
+        
+        for(TopChunk tc : topChunks) {
+        	// 8-1. 현재 청크 추가
+        	expanded.add(tc);
+        	
+        	// 8-2. DB에서 이웃 청크 조회
+        	Map<String, Object> param = new HashMap<>();
+        	param.put("fileId", tc.fileId());
+        	param.put("sequence", tc.sequence());
+        	
+        	//nextChunkSelect -> fileI 동일 && sequence = seq+1
+        	List<Map<String, Object>> nextChunks = chatMapper.nextChunkSelect(param);
+        	
+        	for(Map<String, Object> nc : nextChunks) {
+        		Long nextId = ((Number) nc.get("chunk_id")).longValue();
+        		String nextFileId = String.valueOf(nc.get("file_id"));
+        		String nextContent = (String) nc.get("content");
+        		int sequence = (int) nc.get("sequence");
+        		
+        		//(선택) 같은 chunk_id 이면 중복 방지
+        		if(!Objects.equals(tc.chunkId(), nextId)) {
+        			expanded.add(new TopChunk(nextId, nextFileId, nextContent, tc.score(), sequence));
+        		}
+        		
+        	}
+        }
+        
+        return expanded;
+		
+	}
 
     
 }

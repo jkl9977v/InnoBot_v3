@@ -8,7 +8,7 @@
 
 <!-- 1. chunk만 유사도 검색 -->
 <select id="chunkEmbeddingOnlySelect" resultType="map" parameterType="int">
-select chunk_id, file_id, content, embedding
+select chunk_id, file_id, content, embedding, sequence
 from chunk
 Limit #{chunkLimit}
 </select>
@@ -16,7 +16,7 @@ Limit #{chunkLimit}
 <!-- 2. file과 chunk 동시에 유사도 검색 -->
 <select id="fileAndChunkEmbeddingSelect" resultType="map">
 select f.file_id, f.file_name, f.embedding
-, c.chunk_id, c.content, c.embedding
+, c.chunk_id, c.content, c.embedding, sequence
 from file f
 join chunk c on f.file_id = c.file_id
 where f.embedding is not null
@@ -31,7 +31,7 @@ where embedding is not null;
 </select>
 
 <select id="chunkEmbeddingSelect2" resultType="map" parameterType="list">
-select chunk_id, file_id, content, embedding
+select chunk_id, file_id, content, embedding, sequence
 from chunk
 where file_id in
 	<foreach item="id" collection="fileIds" open='(' separator=',' close=')'>
@@ -39,4 +39,13 @@ where file_id in
 	</foreach>
 </select>
 
+<!--  4. 다음 청크를 함께 조회 (n, n+1) -->
+<select id="nextChunkSelect" parameterType="map" resultType="map">
+select chunk_id, file_id, sequence, content, embedding
+from chunk
+where file_id = #{fileId}
+	and (sequence = #{sequence} or sequence = #{sequence} +1)
+order by sequence asc
+</select>
+ 
 </mapper>

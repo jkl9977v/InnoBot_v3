@@ -20,7 +20,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 	}
   },[checking, isLoggedIn, router]);
 
-
   // 세션 확인 중 : 로딩 스핀
   if (checking) {
     return (

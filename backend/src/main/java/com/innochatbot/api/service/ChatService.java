@@ -67,7 +67,7 @@ public class ChatService {
         //유사도 검색 로직 3개
         //1. chunk만 유사도 검색
         int chunkLimit = 200;  //DB에서 가져올 후보 청크 수(예: 1000)
-        int topK = 10;  //최종 상위 결과 수(예: 5)
+        int topK = 5;  //최종 상위 결과 수(예: 5)
         //List<TopChunk> rows = topSearchService.topChunkEmbedding(queryVec, chunkLimit, topK);
         
         //2. file과 chunk 동시에 유사도 검색
@@ -77,7 +77,7 @@ public class ChatService {
         //List<TopChunk> rows = topSearchService.topFileChunkEmbedding(queryVec, wTitle, wChunk, topK);
         
         //3. file -> chunk 순서로 유사도 검색
-        int topM = 100;  //제목 1차 후보 개수 (예: 20~50)
+        int topM = 20;  //제목 1차 후보 개수 (예: 20~50)
         // int K;  	  //최종 청크 Top-K (예: 5)
         List<TopChunk> rows = topSearchService.topFileChunk(queryVec, topM, topK);
         

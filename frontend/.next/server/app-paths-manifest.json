@@ -2,10 +2,7 @@
   "/page": "app/page.js",
   "/login/page": "app/login/page.js",
   "/chat/page": "app/chat/page.js",
+  "/admin/page": "app/admin/page.js",
   "/admin/analytics/page": "app/admin/analytics/page.js",
-  "/admin/embedding-setting/page": "app/admin/embedding-setting/page.js",
-  "/admin/user/userList/page": "app/admin/user/userList/page.js",
-  "/admin/department/departmentList/page": "app/admin/department/departmentList/page.js",
-  "/admin/grade/gradeList/page": "app/admin/grade/gradeList/page.js",
   "/admin/accessRule/accessList/page": "app/admin/accessRule/accessList/page.js"
 }

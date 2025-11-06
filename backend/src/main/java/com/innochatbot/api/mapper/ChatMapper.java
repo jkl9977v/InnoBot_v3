@@ -22,4 +22,7 @@ public interface ChatMapper {
 	public List<Map<String, Object>> chunkEmbeddingSelect2(@Param("fileIds") List<String> fileIds);
 	//List<String> fileIds
 
+	//4. sequence기준으로 다음 청크 조회 
+	public List<Map<String, Object>> nextChunkSelect(Map<String, Object> param);
+
 }
