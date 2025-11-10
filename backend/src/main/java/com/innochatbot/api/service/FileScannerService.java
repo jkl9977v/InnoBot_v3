@@ -5,6 +5,7 @@ import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.innochatbot.admin.dto.FileDTO;
 import com.innochatbot.admin.mapper.FilePathMapper;
@@ -39,6 +40,7 @@ public class FileScannerService {
 	}
 	
 	//개별 파일 처리 함수
+	@Transactional
 	public void processFile(String fileName, String filePath, Path parentPath
 			, Date updateTime, long size, Path currentPath) {
         System.out.println("처리대상 파일: " + filePath);
@@ -59,7 +61,7 @@ public class FileScannerService {
 				extension = fileName.substring(dotIndex + 1); //확장자만 추출
 			}
 			
-			if (fileId != null) {
+			if (fileId != null) { // file_id가 null이 아닐때 (이미 파일 정보가 있을때)
 				//기존 파일 hash 계산 
 				String oldHash = fileHashSelect(fileId);
 				if (currentHash.equals(oldHash)) {
@@ -70,7 +72,7 @@ public class FileScannerService {
 					
 					//기존 Chunk삭제
 					chunkMapper.chunkDelete(fileId);
-					fileTextEmbeddingService.contentEmbedding(currentPath, extension, fileId);
+					fileTextEmbeddingService.contentEmbedding(currentPath, extension, fileId); 
 				}
 			} else if (fileId == null) { // 1. file_id가 null일때 : file 이번에 감지함   		
 	            fileId = fileWrite(fileName, currentHash, extension, pathId, size, updateTime); //파일테이블 작성
@@ -112,7 +114,7 @@ public class FileScannerService {
         dto.setUpdateTime(updateTime); 
         dto.setEmbedding(embedding);
             
-        fileMapper.fileInsert(dto);
+        //fileMapper.fileInsert(dto);
         System.out.println(fileName + " 파일 테이블 입력 완료");
         
         return fileId;

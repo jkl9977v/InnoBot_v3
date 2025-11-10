@@ -9,6 +9,8 @@ import java.util.Date;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.innochatbot.admin.dto.ChatbotDTO;
 import com.innochatbot.admin.service.chatBot.ChatbotDetailService;
 import com.innochatbot.api.mapper.FileMapper;

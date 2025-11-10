@@ -9,14 +9,20 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.innochatbot.config.PreprocessConfig;
+
 @Service
 public class FileTextEmbeddingService {
 	@Autowired
 	ChunkService chunkService;
 	private Map<String, TextExtractor> extractorMap = new HashMap<>();
 	private TextExtractor fallbackExtractor; //TikaFallbackTextExtractor
-	
 	@Autowired
+	private TextCleanerService textCleanerService; //textCleanerService;
+	@Autowired
+	private PreprocessConfig preprocessConfig;
+	
+
 	// 생성자 주입을 통해 모든 TextExtractor 구현체를 받아옴
 	public FileTextEmbeddingService(List<TextExtractor> extractors, ChunkService chunkService) {
 		this.chunkService = chunkService;
@@ -54,32 +60,39 @@ public class FileTextEmbeddingService {
 		
         // 텍스트 추출
         String text = extractor.extract(filePath);
+        
+        // ++ 전처리 추가 (clean, split, dedupe)
+        if(preprocessConfig.isEnable()) {
+        	text = textCleanerService.clean(text); //1. 불필요한 문자 제거
+        	List<String> sentences = textCleanerService.split(text); //2. 문장 단위로 분리
+        	
+        	int before = sentences.size(); //중복 제거 전 개수 기록
+        	
+        	//System.out.println(sentences);
+        	if(preprocessConfig.isDedupe()) { //3. 중복 제거
+        		
+        		
+        		sentences = textCleanerService.removeDuplicates(sentences);
+        		
+        		int after = sentences.size(); // 중복 제거 후 개수 리고
+        		
+        		System.out.printf("[3단계] 중복 제거: %d → %d (%d개 제거, %.1f%% 감소)%n",
+                        before, after, before - after, 
+                        100.0 * (before - after) / Math.max(1, before));
+        	}
+        	
+        	//다시 하나의 텍스트로 합치기 (청크 분할을 위해)
+        	text = String.join("\n", sentences);
+        }
+         
 
         // 청크 분할 + 저장
         if(text!= null || text != "") {
         	List<String> chunks = chunkService.split(text, 400);
-            chunkService.saveChunks(fileId, chunks);
+            //chunkService.saveChunks(fileId, chunks);
             System.out.println(extension + " 파일 임베딩 완료 : " + filePath);
         }else System.out.println(filePath + "처리할 청크 없음");
 
-        
-		/*
-		if (extractor == null) {
-			System.out.println("지원하지 않는 확장자 : " + extension);
-			return;
-		}
-		if (extractor != null) {
-			// 1) 확장자에 맞는 텍스트 추출기 실행
-			String text = extractor.extract(filePath);
-			
-			// 2) 추출된 텍스트를 일정 길이 단위로 분할
-			List<String> chunks = chunkService.split(text, 400);
-			// 3) 분할된 청크를 DB에 저장
-			chunkService.saveChunks(fileId, chunks);
-			
-			System.out.println(extension + " 파일 임베딩 완료 : " + filePath);
-		}
-		*/
 	}
 
 }
