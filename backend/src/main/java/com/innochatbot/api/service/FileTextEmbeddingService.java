@@ -12,13 +12,16 @@ import org.springframework.stereotype.Service;
 import com.innochatbot.config.PreprocessConfig;
 
 @Service
-public class FileTextEmbeddingService {
+public class FileTextEmbeddingService { //텍스트 임베딩 서비스
 	@Autowired
 	ChunkService chunkService;
 	private Map<String, TextExtractor> extractorMap = new HashMap<>();
 	private TextExtractor fallbackExtractor; //TikaFallbackTextExtractor
 	@Autowired
 	private TextCleanerService textCleanerService; //textCleanerService;
+	@Autowired
+	QualityScoreService qulityScoreService; 
+	
 	@Autowired
 	private PreprocessConfig preprocessConfig;
 	
@@ -54,6 +57,7 @@ public class FileTextEmbeddingService {
      * @param fileId     DB에 저장된 file_id
      */
 	public void contentEmbedding(Path filePath, String extension, String fileId) throws Exception {
+		// 파일 내용을 임베딩
 		if (extension == null) extension = "";
 		extension = extension.toLowerCase(); //확장자 소문자로 통일
 		TextExtractor extractor = extractorMap.getOrDefault(extension,fallbackExtractor);
@@ -61,7 +65,7 @@ public class FileTextEmbeddingService {
         // 텍스트 추출
         String text = extractor.extract(filePath);
         
-        // ++ 전처리 추가 (clean, split, dedupe)
+        // ++ 전처리 추가 (clean, split, removeDuplicates)
         if(preprocessConfig.isEnable()) {
         	text = textCleanerService.clean(text); //1. 불필요한 문자 제거
         	List<String> sentences = textCleanerService.split(text); //2. 문장 단위로 분리
@@ -79,7 +83,17 @@ public class FileTextEmbeddingService {
         		System.out.printf("[3단계] 중복 제거: %d → %d (%d개 제거, %.1f%% 감소)%n",
                         before, after, before - after, 
                         100.0 * (before - after) / Math.max(1, before));
+        		
+            	// 4. 퀄리티 측정: 문장별 퀄리티 점수 측정, 임계치 미만 문장은 제외
+            	for (String sentence : sentences ) {
+            		int q = qulityScoreService.score(sentence);
+            		System.out.println(sentence +" 점수 : " + q);
+            		//if (q < 50) continue; //임계치 미만은 저장*임베딩 생략
+            		//sentences.add(sentence);
+            	}
         	}
+        	
+
         	
         	//다시 하나의 텍스트로 합치기 (청크 분할을 위해)
         	text = String.join("\n", sentences);

@@ -30,32 +30,6 @@ public class TextCleanerService implements Preprocessor{ //텍스트 추출 후 
 
 	@Override
 	public List<String> split(String cleaned) {	 //문장 단위로 분리
-		/*
-	    // 1) 줄 단위 1차 분리  (\\R: 모든 종류의 줄바꿈 대응)	
-	    String[] rawLines = cleaned.split("\\R", -1); // -1: 마지막 빈 줄까지 보존
-	    int beforeLines = rawLines.length;
-
-	    // 2) 줄 단위로 '빈 줄' 정규화 + 제거
-	    List<String> lines = Arrays.stream(rawLines)
-	            .map(TextCleanerService::normalizeForBlankCheck) // NBSP/전각/제로폭/제어문자 제거 + trim
-	            .filter(s -> !s.isEmpty())                       // ← 진짜 빈 줄 제거 포인트
-	            .toList();
-	    int afterLines = lines.size();
-	    System.out.printf("[2단계] 빈 줄 제거: %d → %d (%d개 제거)%n",
-	            beforeLines, afterLines, beforeLines - afterLines);
-
-	    // 3) 각 줄을 다시 문장부호 기준으로 세분화 (기존 정규식 유지)
-	    List<String> out = new ArrayList<>();
-	    for (String line : lines) {
-	        String[] sentences = line.split("(?<=[.!?])(?!\\s*[a-zA-Z0-9/:])(?<!\\d\\.)");
-	        for (String s : sentences) {
-	            String t = normalizeForBlankCheck(s); // 안전하게 한 번 더 정규화
-	            if (!t.isEmpty()) out.add(t);
-	        }
-	    }
-	    System.out.printf("[2단계] 최종 문장 수: %d%n", out.size());
-	    return out;
-	    */
 		// 1️⃣ 줄 단위 split (모든 종류의 줄바꿈 대응)
 		String[] rawLines = cleaned.split("\\R", -1); // -1: 마지막 빈 줄까지 보존
 
@@ -78,14 +52,6 @@ public class TextCleanerService implements Preprocessor{ //텍스트 추출 후 
 		        rawSentences.size(), out.size(), rawSentences.size() - out.size());
 
 		return out;
-		
-		/*
-		return Arrays.stream(cleaned.split("(?<=[.!?])(?!\\s*[a-zA-Z0-9/:])(?<!\\d\\.)")) // 문장부호를 기준으로 줄바꿈 진행
-				.map(String::trim)
-				.filter(s -> s != null && !s.trim().isEmpty()) //빈 줄 제거
-				//.filter(s -> s.length()>10)
-				.toList();
-		*/
 	}
 	
 	/** 빈 줄 판단용 정규화: NBSP/전각공백/제로폭/제어문자 제거 후 trim */
@@ -131,7 +97,7 @@ public class TextCleanerService implements Preprocessor{ //텍스트 추출 후 
 			String key = sentence.trim().toLowerCase(Locale.ROOT);   // 비교용 키 (간단)
 
 	        if (!seen.add(key)) {
-	            System.out.println("[중복-제거] " + sentence);       // ← ★ 이 한 줄 : 빠지는 문장 출력
+	            //System.out.println("[중복-제거] " + sentence);       // ← ★ 이 한 줄 : 빠지는 문장 출력
 	            continue;                                     // 중복이면 skip
 	        }
 	        result.add(sentence.trim());
