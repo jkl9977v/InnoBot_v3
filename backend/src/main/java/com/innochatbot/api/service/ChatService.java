@@ -10,9 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.innochatbot.api.dto.ChatResponse;
 import com.innochatbot.api.dto.TopChunk;
-
-import com.innochatbot.api.utill.VectorUtils;
-
+import com.innochatbot.api.util.VectorUtils;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
 import com.theokanning.openai.completion.chat.ChatMessage;
 import com.theokanning.openai.service.OpenAiService;
@@ -38,7 +36,7 @@ public class ChatService {
     }
 
     // @PostConstruct 로 초기화해도 좋습니다.
-    private OpenAiService getClient() {
+    private OpenAiService getClient() { //OpenAI API 호출
         if (client == null) {
             client = new OpenAiService(apiKey);
         }
@@ -83,8 +81,6 @@ public class ChatService {
         
         // 공통 출력(검색 결과 확인)
         printResults(rows);
-        
-
         
         /*
         //빈 결과 방어 
@@ -150,15 +146,15 @@ public class ChatService {
             idx++;
         }
     }
-    
-    
-    // float[] → byte[] 변환 (PostgreSQL pgvector용, LE 방식)
+}
+/*
+     // float[] → byte[] 변환 (PostgreSQL pgvector용, LE 방식)
     private byte[] toBytes(float[] vec) {
         ByteBuffer buf = ByteBuffer.allocate(vec.length * 4);
         buf.order(ByteOrder.LITTLE_ENDIAN);
         for (float v : vec) {
             buf.putFloat(v);
         }
-        return buf.array();
+        return buf.array(); 
     }
-}
+ */

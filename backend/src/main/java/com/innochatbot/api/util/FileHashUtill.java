@@ -1,4 +1,4 @@
-package com.innochatbot.api.utill;
+package com.innochatbot.api.util;
 
 import java.nio.file.Files;
 import java.nio.file.Path;

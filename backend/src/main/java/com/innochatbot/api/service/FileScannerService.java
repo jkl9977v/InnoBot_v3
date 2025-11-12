@@ -12,7 +12,7 @@ import com.innochatbot.admin.mapper.FilePathMapper;
 import com.innochatbot.admin.service.AutoNumService;
 import com.innochatbot.api.mapper.ChunkMapper;
 import com.innochatbot.api.mapper.FileMapper;
-import com.innochatbot.api.utill.FileHashUtill;
+import com.innochatbot.api.util.FileHashUtill;
 
 @Service
 public class FileScannerService {

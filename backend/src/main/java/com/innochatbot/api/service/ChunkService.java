@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.innochatbot.api.dto.ChunkDTO;
 import com.innochatbot.api.mapper.ChunkMapper;
-import com.innochatbot.api.utill.VectorUtils;
+import com.innochatbot.api.util.VectorUtils;
 
 @Service
 public class ChunkService {

@@ -3,12 +3,14 @@ package com.innochatbot.api.service;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.innochatbot.api.util.SentenceSplitter;
 import com.innochatbot.config.PreprocessConfig;
 
 @Service
@@ -68,7 +70,14 @@ public class FileTextEmbeddingService { //텍스트 임베딩 서비스
         // ++ 전처리 추가 (clean, split, removeDuplicates)
         if(preprocessConfig.isEnable()) {
         	text = textCleanerService.clean(text); //1. 불필요한 문자 제거
-        	List<String> sentences = textCleanerService.split(text); //2. 문장 단위로 분리
+        	//2. 문장 단위로 분리
+        	List<String> sentences;
+        	//List<String> sentences = textCleanerService.split(text); //2-1. (직접 설정한 규칙 기반)
+        	//sentences = SentenceSplitter.split(text);	//2-2. (apache 문장 분리기 유틸 사용) // .bin 파일이 있어야 사용 가능함 (현재는 없음)
+        	sentences = SentenceSplitter.breakInterator(text, Locale.KOREAN); //2-3. breakInterator 기반 문장 분리기
+        	
+        	// sentences 결과 확인
+        	sentences.forEach(System.out::println);
         	
         	int before = sentences.size(); //중복 제거 전 개수 기록
         	
@@ -78,19 +87,21 @@ public class FileTextEmbeddingService { //텍스트 임베딩 서비스
         		
         		sentences = textCleanerService.removeDuplicates(sentences);
         		
-        		int after = sentences.size(); // 중복 제거 후 개수 리고
+        		int after = sentences.size(); // 중복 제거 후 개수 기록
         		
         		System.out.printf("[3단계] 중복 제거: %d → %d (%d개 제거, %.1f%% 감소)%n",
                         before, after, before - after, 
                         100.0 * (before - after) / Math.max(1, before));
         		
             	// 4. 퀄리티 측정: 문장별 퀄리티 점수 측정, 임계치 미만 문장은 제외
+        		/*
             	for (String sentence : sentences ) {
             		int q = qulityScoreService.score(sentence);
             		System.out.println(sentence +" 점수 : " + q);
             		//if (q < 50) continue; //임계치 미만은 저장*임베딩 생략
             		//sentences.add(sentence);
             	}
+            	*/
         	}
         	
 

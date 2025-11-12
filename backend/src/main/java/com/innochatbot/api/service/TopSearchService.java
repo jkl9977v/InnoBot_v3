@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import com.innochatbot.api.dto.TopChunk;
 import com.innochatbot.api.dto.TopFile;
 import com.innochatbot.api.mapper.ChatMapper;
-import com.innochatbot.api.utill.VectorUtils;
+import com.innochatbot.api.util.VectorUtils;
 
 @Service
 public class TopSearchService { //유사도 검색 서비스

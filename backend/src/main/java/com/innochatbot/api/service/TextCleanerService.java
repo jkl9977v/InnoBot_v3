@@ -17,15 +17,37 @@ import com.innochatbot.api.dto.Preprocessor;
 public class TextCleanerService implements Preprocessor{ //텍스트 추출 후 정제 (기본 정제) 
 	
 	@Override
-	public String clean(String raw) {	// 불필요한 문자 제거
-		String s = raw;
+	public String clean(String text) {	// 불필요한 문자 제거
+		String refinedText = text;
+		
+		
+		refinedText = refinedText
+				.replaceAll("[\\x00-\\x1F\\x7F\\u200B\\t]+", " "); // 제어문자/탭/비가시 문자 제거
+		refinedText = refinedText
+				.replaceAll("[※★▶▣◆◇•○●■□▽▲▶▷✅]", " "); // 특수 기호 / 불필요한 문자 제거
+		refinedText = refinedText
+				.replaceAll("[^\\p{L}\\p{N}\\p{P}\\p{Z}\\n]", " "); // 이모지/비문자 제거 (한글, 영문, 숫자, 구두점, 공백, 개행만 유지)
+		//중복 구두점 축약
+		refinedText = refinedText
+				.replaceAll("(\\.{2,})", ".") // .. → .
+				.replaceAll("!{2,}", "!") // !!! → !
+				.replaceAll("\\?{2,}", "?") // ?? → ?
+				.replaceAll("[-_]{2,}", "-"); // --, __ → -
+		
+		refinedText = refinedText
+				.replaceAll("(?m)^[=\\-#]{3,}$", ""); //ASCII아트, 표 기호 제거
+		refinedText = refinedText
+				.replaceAll("\\s+", " ").trim(); //공백 제거
+		 
+		/*
 		s = s.replaceAll("(?m)^\\s*Page\\s*\\d+\\s*(/\\s*\\d+)?\\s*$", "");  // 문서의 페이지 번호 줄을 지운다.
 		s = s.replaceAll("(?i)(?m)^목차\\s*$", "");	// "목차" 단독 줄 제거
 		s = s.replaceAll("(?i)(?m)^(copyright|저작권).*$", ""); // 본 문서는 ... 저작권/법적 문구 제거
 		s = s.replaceAll("[\\t ]{2,}", " ");	//공백 탭 다중 -> 단일화
 	    s = s.replaceAll("(?m)^[ \\t]*\\r?\\n", "");	// 앞뒤 공백 제거 (" 내용 " -> "내용"), 빈 줄 제거
 	    s = s.replaceAll("(?m)^[0-9]{1,3}\\s*$", "");	// 3글자 이하 숫자만 있는 줄 제거
-	    return s.trim();	//맨 앞과 맽 끝의 불필요한 공백(스페이스, 개행) 등을 제거해서 깔끔하게 마무리
+	    */
+	    return refinedText;	
 	}
 
 	@Override
